@@ -10,7 +10,11 @@ ENV PYTHONUNBUFFERED 1
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     build-essential \
+    python3-dev \
     libpq-dev \
+    pkg-config \
+    libcairo2-dev \
+    libffi-dev \
     netcat-openbsd && \
     rm -rf /var/lib/apt/lists/*
 
@@ -29,6 +33,9 @@ WORKDIR /app
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     libpq-dev \
+    libcairo2 \
+    libpangocairo-1.0-0 \
+    libffi8 \
     netcat-openbsd \
     gettext && \
     rm -rf /var/lib/apt/lists/*
