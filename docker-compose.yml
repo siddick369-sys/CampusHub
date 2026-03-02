@@ -14,7 +14,7 @@ services:
     expose:
       - "5432"
     networks:
-      - campushub_net
+      - campuhub_net
 
   redis:
     image: redis:7-alpine
@@ -23,7 +23,7 @@ services:
     expose:
       - "6379"
     networks:
-      - campushub_net
+      - campuhub_net
 
   django-app:
     build:
@@ -46,7 +46,7 @@ services:
       - redis
     restart: unless-stopped
     networks:
-      - campushub_net
+      - campuhub_net
 
   celery-worker:
     build:
@@ -68,7 +68,7 @@ services:
       - redis
     restart: unless-stopped
     networks:
-      - campushub_net
+      - campuhub_net
 
   celery-beat:
     build:
@@ -90,7 +90,7 @@ services:
       - redis
     restart: unless-stopped
     networks:
-      - campushub_net
+      - campuhub_net
 
   nginx:
     image: nginx:1.25-alpine
@@ -107,7 +107,7 @@ services:
       - django-app
     restart: unless-stopped
     networks:
-      - campushub_net
+      - campuhub_net
 
 networks:
   campuhub_net:
