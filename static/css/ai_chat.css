@@ -17,10 +17,40 @@
 
 #ai-chat-widget {
     position: fixed;
-    bottom: 35px !important;
-    right: 35px !important;
+    bottom: 20px !important;
+    right: 20px !important;
     z-index: 10005 !important;
     font-family: 'Outfit', 'Inter', sans-serif;
+}
+
+/* Voice Assistant Button (Common with Chat) */
+.floating-assistant-btn {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: var(--chat-primary);
+    color: white;
+    border: none;
+    box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    position: fixed;
+    z-index: 10004;
+}
+
+.floating-assistant-btn:hover {
+    transform: scale(1.1) rotate(5deg);
+    box-shadow: 0 8px 25px rgba(37, 99, 235, 0.5);
+}
+
+#btn-nav-mic-fixed {
+    bottom: 95px;
+    /* Above the chat button */
+    right: 20px;
+    background: linear-gradient(135deg, #2563eb, #7c3aed);
 }
 
 #ai-chat-button {
@@ -30,17 +60,16 @@
     background: var(--chat-primary);
     color: white;
     border: none;
-    box-shadow: var(--chat-shadow);
+    box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4);
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: transform 0.3s ease, background 0.3s ease;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 #ai-chat-button:hover {
-    transform: scale(1.1);
-    background: #1d4ed8;
+    transform: scale(1.1) rotate(-5deg);
 }
 
 #ai-chat-window {
@@ -151,4 +180,30 @@
     color: #64748b;
     margin-bottom: 4px;
     display: none;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+
+    #ai-chat-button,
+    .floating-assistant-btn {
+        width: 70px;
+        height: 70px;
+    }
+
+    #ai-chat-button svg,
+    .floating-assistant-btn i {
+        transform: scale(1.2);
+    }
+
+    #btn-nav-mic-fixed {
+        bottom: 105px;
+    }
+
+    #ai-chat-window {
+        width: calc(100vw - 40px);
+        height: 70vh;
+        right: -10px;
+        bottom: 85px;
+    }
 }

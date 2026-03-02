@@ -1817,8 +1817,8 @@
     </script>
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            const navBtn = document.getElementById('btn-nav-mic');
-            const navWave = document.getElementById('nav-wave');
+            const navBtn = document.getElementById('btn-nav-mic-fixed');
+            const navWave = document.getElementById('nav-wave-fixed');
 
             // --- GESTION DE LA MODALE ---
             const modalOverlay = document.getElementById('voice-modal-overlay');
@@ -1885,8 +1885,14 @@
                 recognition.maxAlternatives = 1;
 
                 navBtn.addEventListener('click', () => {
+                    if (navBtn.classList.contains('active-mic')) {
+                        recognition.stop();
+                        return;
+                    }
+
                     try {
-                        navWave.style.display = 'flex';
+                        navBtn.classList.add('active-mic');
+                        navWave.style.display = 'block';
                         recognition.start();
                         console.log("Micro activé...");
                     } catch (err) {
@@ -1897,6 +1903,7 @@
                 recognition.onresult = function (event) {
                     const command = event.results[0][0].transcript;
                     console.log("Commande reçue :", command);
+                    navBtn.classList.remove('active-mic');
                     navWave.style.display = 'none';
 
                     if (command.length < 2) return;
@@ -1931,6 +1938,7 @@
                 // --- GESTION DES ERREURS PRÉCISE (AVEC MODALES) ---
                 recognition.onerror = (event) => {
                     console.error("Erreur Recognition:", event.error);
+                    navBtn.classList.remove('active-mic');
                     navWave.style.display = 'none';
 
                     if (event.error === 'no-speech') {
@@ -1945,6 +1953,7 @@
                 };
 
                 recognition.onend = () => {
+                    navBtn.classList.remove('active-mic');
                     navWave.style.display = 'none';
                 };
             } else {
@@ -2065,8 +2074,40 @@
     </script>
     {% endif %}
 
-    <!-- AI Chat Widget -->
+    <!-- AI Assistant Chat Widget -->
     <link rel="stylesheet" href="/static/css/ai_chat.css">
+
+    <!-- Fixed Voice Assistant Button -->
+    <button id="btn-nav-mic-fixed" class="floating-assistant-btn" title="Commande Vocale">
+        <i class="bi bi-mic-fill fs-4"></i>
+        <div id="nav-wave-fixed" class="nav-wave-mini">
+            <span></span><span></span><span></span>
+        </div>
+    </button>
+
+    <style>
+        .nav-wave-mini {
+            display: none;
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            border: 2px solid white;
+            animation: pulse-wave 1.5s infinite;
+        }
+
+        @keyframes pulse-wave {
+            0% {
+                transform: scale(1);
+                opacity: 0.8;
+            }
+
+            100% {
+                transform: scale(1.5);
+                opacity: 0;
+            }
+        }
+    </style>
+
     {% include "ai_assistant/chat_widget.html" %}
 
 </body>
