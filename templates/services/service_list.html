@@ -11,7 +11,8 @@
 <div id="pageLoader" class="loader-overlay">
     <div class="loader-content">
         <div class="spinner-rings">
-            <div></div><div></div>
+            <div></div>
+            <div></div>
         </div>
         <p class="loader-text">Recherche des services...</p>
     </div>
@@ -38,7 +39,7 @@
         <div class="filter-panel shadow-lg">
             <form method="get" id="searchForm">
                 <div class="row g-3">
-                    
+
                     <div class="col-lg-4 col-md-6">
                         <label class="form-label-pro">Mot-clé</label>
                         <div class="input-icon-wrapper">
@@ -50,15 +51,14 @@
                     <div class="col-lg-3 col-md-6">
                         <label class="form-label-pro">Catégorie</label>
                         <input type="hidden" name="category" id="input_category" value="{{ filters.category }}">
-                        
+
                         <div class="dropdown w-100">
-                            <button class="form-control-pro d-flex justify-content-between align-items-center bg-white" 
-                                    type="button" id="dropdownCategory" data-bs-toggle="dropdown" aria-expanded="false">
+                            <button class="form-control-pro d-flex justify-content-between align-items-center bg-white" type="button" id="dropdownCategory" data-bs-toggle="dropdown" aria-expanded="false">
                                 <span id="selected_label" class="text-truncate">
                                     {% if filters.category %}
-                                        {% for cat in categories %}
-                                            {% if cat.slug == filters.category %}{{ cat.name }}{% endif %}
-                                        {% endfor %}
+                                    {% for cat in categories %}
+                                    {% if cat.slug == filters.category %}{{ cat.name }}{% endif %}
+                                    {% endfor %}
                                     {% else %}Toutes les catégories{% endif %}
                                 </span>
                                 <i class="bi bi-chevron-down small text-muted"></i>
@@ -66,15 +66,13 @@
 
                             <div class="dropdown-menu shadow-sm border-0 w-100 p-0 mt-1" aria-labelledby="dropdownCategory">
                                 <div class="p-2 border-bottom bg-light">
-                                    <input type="text" class="form-control form-control-sm border-0" 
-                                           id="categorySearchInput" placeholder="Filtrer..." autocomplete="off">
+                                    <input type="text" class="form-control form-control-sm border-0" id="categorySearchInput" placeholder="Filtrer..." autocomplete="off">
                                 </div>
                                 <div class="custom-scroll-area">
                                     <a class="dropdown-item category-option" href="#" onclick="selectCategory('', 'Toutes les catégories')">Toutes</a>
                                     {% for cat in categories %}
-                                    <a class="dropdown-item category-option" href="#" data-name="{{ cat.name|lower }}" 
-                                       onclick="selectCategory('{{ cat.slug }}', '{{ cat.name }}')">
-                                       {{ cat.name }}
+                                    <a class="dropdown-item category-option" href="#" data-name="{{ cat.name|lower }}" onclick="selectCategory('{{ cat.slug }}', '{{ cat.name }}')">
+                                        {{ cat.name }}
                                     </a>
                                     {% endfor %}
                                     <div id="noResults" class="text-muted small text-center py-2" style="display: none;">Aucun résultat</div>
@@ -107,7 +105,7 @@
                                 <label class="form-check-label" for="id_top_only">Top Prestataires <i class="bi bi-star-fill text-warning"></i></label>
                             </div>
                         </div>
-                        
+
                         <div class="d-flex gap-2">
                             {% if user.is_authenticated %}
                             <a href="{% url 'my_favorite_services' %}" class="btn-fav-filter" title="Mes Favoris">
@@ -128,19 +126,19 @@
 
 <section class="section-padding bg-light" id="servicesSection">
     <div class="container">
-        
+
         {% if services %}
         <div class="services-grid" id="servicesGrid">
             {% for service in services %}
             <div class="service-card js-service-card reveal-on-scroll">
-                
+
                 <div class="card-header-svc">
                     <div class="svc-icon-box">
                         <i class="bi bi-briefcase"></i>
                     </div>
                     <div class="badges-wrapper">
-                        {% if service.is_featured %}
-                            <span class="badge-pro warning"><i class="bi bi-lightning-fill"></i> Top</span>
+                        {% if service.id in top_service_ids %}
+                        <span class="badge-pro warning"><i class="bi bi-lightning-fill"></i> Top</span>
                         {% endif %}
                         <span class="badge-pro price">{{ service.price_min }} {{ service.currency }}</span>
                     </div>
@@ -148,18 +146,18 @@
 
                 <div class="card-body-svc">
                     <h3 class="svc-title" title="{{ service.title }}">{{ service.title|truncatechars:40 }}</h3>
-                    
+
                     <div class="provider-mini">
                         {% if service.provider.profile.photo %}
-                            <img src="{{ service.provider.profile.photo.url }}" alt="Avatar" class="provider-img">
+                        <img src="{{ service.provider.profile.photo.url }}" alt="Avatar" class="provider-img">
                         {% else %}
-                            <div class="provider-placeholder">{{ service.provider.username|slice:":1" }}</div>
+                        <div class="provider-placeholder">{{ service.provider.username|slice:":1" }}</div>
                         {% endif %}
                         <div class="provider-txt">
                             <span class="p-name">
                                 {{ service.provider.username }}
                                 {% if service.provider.profile.is_service_provider_verified %}
-                                    <i class="bi bi-patch-check-fill text-primary" title="Vérifié"></i>
+                                <i class="bi bi-patch-check-fill text-primary" title="Vérifié"></i>
                                 {% endif %}
                             </span>
                             <span class="p-city"><i class="bi bi-geo-alt"></i> {{ service.provider.profile.city|default:"Cameroun" }}</span>
@@ -176,21 +174,21 @@
 
                 <div class="card-footer-svc">
                     <a href="{% url 'service_detail' service.slug %}" class="btn-link-pro">Détails</a>
-                    
+
                     <div class="d-flex gap-2">
                         {% if user.is_authenticated %}
-                            <form method="post" action="{% url 'service_toggle_favorite' service.id %}" class="d-inline">
-                                {% csrf_token %}
-                                <button type="submit" class="icon-btn-sm" title="Favoris">
-                                    <i class="bi bi-bookmark"></i>
-                                </button>
-                            </form>
+                        <form method="post" action="{% url 'service_toggle_favorite' service.id %}" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="icon-btn-sm" title="Favoris">
+                                <i class="bi {% if service.is_favorite %}bi-bookmark-fill text-primary{% else %}bi-bookmark{% endif %}"></i>
+                            </button>
+                        </form>
                         {% endif %}
-                        
+
                         {% if user.is_authenticated and user.id != service.provider.id %}
-                            <a href="{% url 'service_order_create' service.slug %}" class="liquid-btn btn-primary-pro btn-sm-custom">
-                                <span>Réserver</span>
-                            </a>
+                        <a href="{% url 'service_order_create' service.slug %}" class="liquid-btn btn-primary-pro btn-sm-custom">
+                            <span>Réserver</span>
+                        </a>
                         {% endif %}
                     </div>
                 </div>
@@ -198,7 +196,7 @@
             </div>
             {% endfor %}
         </div>
-        
+
         <div id="paginationControls" class="pagination-container"></div>
 
         {% else %}
@@ -216,296 +214,559 @@
 <button id="backToTop" title="Retour en haut">
     <i class="bi bi-arrow-up"></i>
 </button>
+
 <style>
-/* --- VARIABLES (Cohérentes avec Student List) --- */
-:root {
-    --primary: #2563eb;
-    --primary-dark: #1e40af;
-    --dark: #0f172a;
-    --light: #f8fafc;
-    --text: #334155;
-    --text-muted: #64748b;
-    --border: #e2e8f0;
-    --white: #ffffff;
-    --radius: 12px;
-    --shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
-    --shadow-hover: 0 20px 25px -5px rgba(0,0,0,0.1);
-}
+    :root {
+        --primary: #2563eb;
+        --primary-dark: #1e40af;
+        --dark: #0f172a;
+        --light: #f8fafc;
+        --text: #334155;
+        --text-muted: #64748b;
+        --border: #e2e8f0;
+        --white: #ffffff;
+        --radius: 12px;
+        --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        --shadow-hover: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    }
 
-body { background: var(--light); color: var(--text); font-family: 'Inter', sans-serif; overflow-x: hidden; }
-h1, h2, h3, h5 { font-family: 'Outfit', sans-serif; font-weight: 700; color: var(--dark); }
+    .service-header {
+        padding: 80px 0 60px;
+        background: white;
+        border-bottom: 1px solid var(--border);
+        position: relative;
+    }
 
-/* --- HEADER & FILTERS --- */
-.service-header { padding: 100px 0 80px; background: white; border-bottom: 1px solid var(--border); position: relative; }
-.badge-header { background: #eff6ff; color: var(--primary); padding: 5px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; margin-bottom: 15px; display: inline-block; }
-.text-primary { color: var(--primary) !important; }
-.subtitle { color: var(--text-muted); font-size: 1.1rem; max-width: 600px; margin: 0 auto 40px; }
+    .badge-header {
+        background: #eff6ff;
+        color: var(--primary);
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        margin-bottom: 15px;
+        display: inline-block;
+    }
 
-.filter-panel {
-    background: white; border: 1px solid var(--border); border-radius: 16px;
-    padding: 30px; position: relative; z-index: 10;
-}
-.form-label-pro { font-size: 0.85rem; font-weight: 600; color: var(--dark); margin-bottom: 5px; display: block; }
+    .text-primary {
+        color: var(--primary) !important;
+    }
 
-/* Inputs Pro */
-.form-control-pro {
-    width: 100%; padding: 10px 15px; border: 1px solid var(--border); border-radius: 8px;
-    background: #f8fafc; color: var(--dark); transition: 0.3s;
-}
-.form-control-pro:focus { border-color: var(--primary); background: white; outline: none; }
-.input-icon-wrapper { position: relative; }
-.input-icon-wrapper i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
-.input-icon-wrapper input { padding-left: 40px; }
+    .subtitle {
+        color: var(--text-muted);
+        font-size: 1.1rem;
+        max-width: 600px;
+        margin: 0 auto 40px;
+    }
 
-/* Custom Checkbox */
-.form-check-input:checked { background-color: var(--primary); border-color: var(--primary); }
-.btn-fav-filter { 
-    width: 45px; height: 45px; display: flex; align-items: center; justify-content: center;
-    border: 1px solid var(--border); border-radius: 8px; color: #ef4444; background: white; transition: 0.3s;
-}
-.btn-fav-filter:hover { background: #fee2e2; border-color: #ef4444; }
+    .filter-panel {
+        background: white;
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 30px;
+        position: relative;
+        z-index: 10;
+    }
 
-/* Category Dropdown */
-.custom-scroll-area { max-height: 250px; overflow-y: auto; }
-.dropdown-item { font-size: 0.9rem; padding: 8px 15px; color: var(--text); }
-.dropdown-item:hover { background: #eff6ff; color: var(--primary); }
+    .form-label-pro {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--dark);
+        margin-bottom: 5px;
+        display: block;
+    }
 
-/* --- SERVICES GRID --- */
-.section-padding { padding: 60px 0; }
-.services-grid {
-    display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 30px; min-height: 400px;
-}
+    .form-control-pro {
+        width: 100%;
+        padding: 10px 15px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: #f8fafc;
+        color: var(--dark);
+        transition: 0.3s;
+    }
 
-.service-card {
-    background: white; border: 1px solid var(--border); border-radius: var(--radius);
-    padding: 25px; display: flex; flex-direction: column; transition: 0.3s;
-    position: relative; overflow: hidden; box-shadow: var(--shadow);
-    /* Animation JS Reveal */
-    opacity: 0; transform: translateY(20px); animation: fadeInUp 0.5s forwards;
-}
-.service-card:hover { transform: translateY(-8px); box-shadow: var(--shadow-hover); border-color: #cbd5e1; }
+    .form-control-pro:focus {
+        border-color: var(--primary);
+        background: white;
+        outline: none;
+    }
 
-/* Card Header */
-.card-header-svc { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
-.svc-icon-box {
-    width: 50px; height: 50px; background: #eff6ff; color: var(--primary);
-    border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;
-}
-.badge-pro { padding: 5px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
-.badge-pro.warning { background: #fffbeb; color: #d97706; margin-right: 5px; }
-.badge-pro.price { background: #f0fdf4; color: #15803d; border: 1px solid #dcfce7; }
+    .input-icon-wrapper {
+        position: relative;
+    }
 
-/* Card Body */
-.svc-title { font-size: 1.2rem; margin-bottom: 15px; line-height: 1.4; color: var(--dark); }
-.provider-mini { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; }
-.provider-img, .provider-placeholder { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; }
-.provider-placeholder { background: #e2e8f0; display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--text-muted); font-size: 0.9rem; }
-.provider-txt { display: flex; flex-direction: column; line-height: 1.2; flex-grow: 1; }
-.p-name { font-size: 0.9rem; font-weight: 600; color: var(--dark); }
-.p-city { font-size: 0.75rem; color: var(--text-muted); }
-.rating-box { font-size: 0.85rem; font-weight: 700; color: #f59e0b; display: flex; align-items: center; gap: 4px; }
-.svc-desc { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .input-icon-wrapper i {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-muted);
+    }
 
-.divider-card { height: 1px; background: var(--border); margin: 20px 0; width: 100%; }
+    .input-icon-wrapper input {
+        padding-left: 40px;
+    }
 
-/* Card Footer */
-.card-footer-svc { display: flex; justify-content: space-between; align-items: center; margin-top: auto; }
-.btn-link-pro { color: var(--text-muted); font-size: 0.9rem; font-weight: 600; text-decoration: none; transition: 0.2s; }
-.btn-link-pro:hover { color: var(--primary); }
-.icon-btn-sm {
-    width: 38px; height: 38px; border: 1px solid var(--border); border-radius: 8px;
-    background: white; color: var(--text-muted); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s;
-}
-.icon-btn-sm:hover { border-color: var(--primary); color: var(--primary); }
-.btn-sm-custom { padding: 8px 15px; font-size: 0.9rem; height: 38px; }
+    .btn-fav-filter {
+        width: 45px;
+        height: 45px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        color: #ef4444;
+        background: white;
+        transition: 0.3s;
+    }
 
-/* --- WIDGET & LOADER & PAGINATION (Identique Student List) --- */
-.loader-overlay { position: fixed; inset: 0; background: white; z-index: 9999; display: flex; justify-content: center; align-items: center; transition: opacity 0.6s; }
-.spinner-rings div { position: absolute; width: 40px; height: 40px; border: 4px solid var(--primary); border-radius: 50%; animation: spin 1s infinite; border-color: var(--primary) transparent transparent transparent; }
+    .btn-fav-filter:hover {
+        background: #fee2e2;
+        border-color: #ef4444;
+    }
 
-.pagination-container { display: flex; justify-content: center; gap: 10px; margin-top: 50px; flex-wrap: wrap; }
-.page-btn { width: 40px; height: 40px; border-radius: 50%; background: white; border: 1px solid var(--border); color: #64748b; font-weight: 600; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; box-shadow: var(--shadow); }
-.page-btn:hover { border-color: var(--primary); color: var(--primary); transform: translateY(-3px); }
-.page-btn.active { background: var(--primary); color: white; border-color: var(--primary); transform: scale(1.1); }
+    .custom-scroll-area {
+        max-height: 250px;
+        overflow-y: auto;
+    }
 
-.progress-widget { position: fixed; top: 100px; right: 30px; z-index: 900; background: rgba(255,255,255,0.9); backdrop-filter: blur(10px); padding: 15px; border-radius: 12px; box-shadow: var(--shadow-hover); border: 1px solid var(--border); width: 180px; transform: translateX(150%); transition: 0.5s; }
-.progress-widget.visible { transform: translateX(0); }
-.progress-track { height: 6px; background: #e2e8f0; border-radius: 10px; margin-top: 8px; overflow: hidden; }
-.progress-fill { height: 100%; background: var(--primary); width: 0; transition: 0.5s; }
+    .dropdown-item {
+        font-size: 0.9rem;
+        padding: 8px 15px;
+        color: var(--text);
+    }
 
-#backToTop { position: fixed; bottom: 30px; right: 30px; width: 45px; height: 45px; background: var(--primary); color: white; border: none; border-radius: 50%; display: none; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 5px 15px rgba(37,99,235,0.3); z-index: 900; transition: 0.3s; }
-#backToTop.show { display: flex; animation: fadeInUp 0.3s; }
+    .dropdown-item:hover {
+        background: #eff6ff;
+        color: var(--primary);
+    }
 
-/* Animations & Responsive */
-@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-@keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
-.reveal-on-scroll { opacity: 0; transform: translateY(30px); transition: all 0.6s ease-out; }
-.reveal-on-scroll.active { opacity: 1; transform: translateY(0); }
-.header-bg-shape { position: absolute; top: 0; right: 0; width: 50%; height: 100%; background: radial-gradient(circle at top right, rgba(37,99,235,0.03), transparent 70%); pointer-events: none; }
+    .section-padding {
+        padding: 60px 0;
+    }
+
+    .services-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 30px;
+        min-height: 400px;
+    }
+
+    .service-card {
+        background: white;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 25px;
+        display: flex;
+        flex-direction: column;
+        transition: 0.3s;
+        position: relative;
+        overflow: hidden;
+        box-shadow: var(--shadow);
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    .service-card:hover {
+        transform: translateY(-8px);
+        box-shadow: var(--shadow-hover);
+        border-color: #cbd5e1;
+    }
+
+    .card-header-svc {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 20px;
+    }
+
+    .svc-icon-box {
+        width: 50px;
+        height: 50px;
+        background: #eff6ff;
+        color: var(--primary);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+
+    .badge-pro {
+        padding: 5px 10px;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    .badge-pro.warning {
+        background: #fffbeb;
+        color: #d97706;
+        margin-right: 5px;
+    }
+
+    .badge-pro.price {
+        background: #f0fdf4;
+        color: #15803d;
+        border: 1px solid #dcfce7;
+    }
+
+    .svc-title {
+        font-size: 1.2rem;
+        margin-bottom: 15px;
+        line-height: 1.4;
+        color: var(--dark);
+    }
+
+    .provider-mini {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 15px;
+    }
+
+    .provider-img,
+    .provider-placeholder {
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .provider-placeholder {
+        background: #e2e8f0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        color: var(--text-muted);
+        font-size: 0.9rem;
+    }
+
+    .provider-txt {
+        display: flex;
+        flex-direction: column;
+        line-height: 1.2;
+        flex-grow: 1;
+    }
+
+    .p-name {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--dark);
+    }
+
+    .p-city {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+    }
+
+    .rating-box {
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: #f59e0b;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .svc-desc {
+        font-size: 0.9rem;
+        color: var(--text-muted);
+        margin-bottom: 0;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .divider-card {
+        height: 1px;
+        background: var(--border);
+        margin: 20px 0;
+        width: 100%;
+    }
+
+    .card-footer-svc {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: auto;
+    }
+
+    .btn-link-pro {
+        color: var(--text-muted);
+        font-size: 0.9rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: 0.2s;
+    }
+
+    .btn-link-pro:hover {
+        color: var(--primary);
+    }
+
+    .icon-btn-sm {
+        width: 38px;
+        height: 38px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: white;
+        color: var(--text-muted);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+
+    .icon-btn-sm:hover {
+        border-color: var(--primary);
+        color: var(--primary);
+    }
+
+    .loader-overlay {
+        position: fixed;
+        inset: 0;
+        background: white;
+        z-index: 9999;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        transition: opacity 0.6s;
+    }
+
+    .spinner-rings div {
+        position: absolute;
+        width: 40px;
+        height: 40px;
+        border: 4px solid var(--primary);
+        border-radius: 50%;
+        animation: spin 1s infinite;
+        border-color: var(--primary) transparent transparent transparent;
+    }
+
+    .pagination-container {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin-top: 50px;
+        flex-wrap: wrap;
+    }
+
+    .page-btn {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: white;
+        border: 1px solid var(--border);
+        color: #64748b;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: 0.3s;
+        box-shadow: var(--shadow);
+    }
+
+    .page-btn:hover {
+        border-color: var(--primary);
+        color: var(--primary);
+        transform: translateY(-3px);
+    }
+
+    .page-btn.active {
+        background: var(--primary);
+        color: white;
+        border-color: var(--primary);
+        transform: scale(1.1);
+    }
+
+    .progress-widget {
+        position: fixed;
+        top: 100px;
+        right: 30px;
+        z-index: 900;
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+        padding: 15px;
+        border-radius: 12px;
+        box-shadow: var(--shadow-hover);
+        border: 1px solid var(--border);
+        width: 180px;
+        transform: translateX(150%);
+        transition: 0.5s;
+    }
+
+    .progress-widget.visible {
+        transform: translateX(0);
+    }
+
+    .progress-track {
+        height: 6px;
+        background: #e2e8f0;
+        border-radius: 10px;
+        margin-top: 8px;
+        overflow: hidden;
+    }
+
+    .progress-fill {
+        height: 100%;
+        background: var(--primary);
+        width: 0;
+        transition: 0.5s;
+    }
+
+    #backToTop {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        width: 45px;
+        height: 45px;
+        background: var(--primary);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 5px 15px rgba(37, 99, 235, 0.3);
+        z-index: 900;
+        transition: 0.3s;
+    }
+
+    #backToTop.show {
+        display: flex;
+        animation: fadeInUp 0.3s;
+    }
+
+    @keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    @keyframes fadeInUp {
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .reveal-on-scroll {
+        opacity: 0;
+        transform: translateY(30px);
+        transition: all 0.6s ease-out;
+    }
+
+    .reveal-on-scroll.active {
+        opacity: 1;
+        transform: translateY(0);
+    }
 </style>
 
-### 3. JAVASCRIPT (Logique de Pagination)
-
-C'est exactement le même script que pour la liste des étudiants, adapté aux classes des services (`js-service-card`).
-
-```javascript
 <script>
-document.addEventListener("DOMContentLoaded", function() {
-    
-    // --- VARIABLES ---
-    const itemsPerPage = 9;
-    const grid = document.getElementById('servicesGrid');
-    // On vérifie si la grille existe (au cas où recherche vide)
-    if (!grid) return;
-
-    const allCards = Array.from(grid.getElementsByClassName('js-service-card'));
-    const controls = document.getElementById('paginationControls');
-    const progressWidget = document.getElementById('progressWidget');
-    const progressText = document.getElementById('progressText');
-    const progressBar = document.getElementById('progressBar');
-    const totalItems = allCards.length;
-    let currentPage = 1;
-
-    // --- 1. FONCTION D'AFFICHAGE ---
-    function showPage(page) {
-        const startIndex = (page - 1) * itemsPerPage;
-        const endIndex = startIndex + itemsPerPage;
-        let visibleCount = 0;
-
-        allCards.forEach((card, index) => {
-            if (index >= startIndex && index < endIndex) {
-                card.style.display = 'flex';
-                // Reset animation
-                card.style.animation = 'none';
-                card.offsetHeight; 
-                card.style.animation = 'fadeInUp 0.5s forwards';
-                card.style.animationDelay = `${(index - startIndex) * 0.1}s`;
-                visibleCount++;
-            } else {
-                card.style.display = 'none';
-            }
-        });
-
-        updatePaginationButtons(page);
-        updateProgressBar(endIndex);
-
-        if(page > 1) {
-            document.getElementById('servicesSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-    }
-
-    // --- 2. PROGRESS BAR ---
-    function updateProgressBar(currentEndIndex) {
-        const realCount = Math.min(currentEndIndex, totalItems);
-        const percent = (realCount / totalItems) * 100;
-        progressText.textContent = `${realCount} / ${totalItems}`;
-        progressBar.style.width = `${percent}%`;
-        if(totalItems > 0) progressWidget.classList.add('visible');
-    }
-
-    // --- 3. CONTROLES PAGINATION ---
-    function updatePaginationButtons(activePage) {
-        const totalPages = Math.ceil(totalItems / itemsPerPage);
-        controls.innerHTML = "";
-        if (totalPages <= 1) return;
-
-        if (activePage > 1) {
-            controls.appendChild(createBtn('<i class="bi bi-chevron-left"></i>', () => showPage(activePage - 1)));
+    document.addEventListener("DOMContentLoaded", function () {
+        const itemsPerPage = 9;
+        const grid = document.getElementById('servicesGrid');
+        if (!grid) {
+            removeLoader();
+            return;
         }
 
-        let startPage = Math.max(1, activePage - 2);
-        let endPage = Math.min(totalPages, startPage + 4);
-        if (endPage - startPage < 4) startPage = Math.max(1, endPage - 4);
+        const allCards = Array.from(grid.getElementsByClassName('js-service-card'));
+        const controls = document.getElementById('paginationControls');
+        const progressWidget = document.getElementById('progressWidget');
+        const progressText = document.getElementById('progressText');
+        const progressBar = document.getElementById('progressBar');
+        const totalItems = allCards.length;
+        let currentPage = 1;
 
-        for (let i = startPage; i <= endPage; i++) {
-            const btn = createBtn(i, () => { currentPage = i; showPage(i); });
-            if (i === activePage) btn.classList.add('active');
-            controls.appendChild(btn);
-        }
-
-        if (activePage < totalPages) {
-            controls.appendChild(createBtn('<i class="bi bi-chevron-right"></i>', () => showPage(activePage + 1)));
-        }
-    }
-
-    function createBtn(content, onClick) {
-        const btn = document.createElement('div');
-        btn.className = 'page-btn';
-        btn.innerHTML = content;
-        btn.addEventListener('click', onClick);
-        return btn;
-    }
-
-    // --- SEARCH DROPDOWN LOGIC ---
-    // (Ta logique existante pour le dropdown de catégories)
-    const categoryInput = document.getElementById('categorySearchInput');
-    if(categoryInput) {
-        categoryInput.addEventListener('keyup', function() {
-            let filter = this.value.toLowerCase();
-            let options = document.querySelectorAll('.category-option');
-            let hasVisible = false;
-            options.forEach(option => {
-                if(option.innerText.trim() === "Toutes") return;
-                let txt = option.getAttribute('data-name');
-                if(txt.includes(filter)) {
-                    option.style.display = ""; hasVisible = true;
+        function showPage(page) {
+            const startIndex = (page - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            allCards.forEach((card, index) => {
+                if (index >= startIndex && index < endIndex) {
+                    card.style.display = 'flex';
+                    card.style.animation = 'none';
+                    card.offsetHeight;
+                    card.style.animation = 'fadeInUp 0.5s forwards';
+                    card.style.animationDelay = `${(index - startIndex) * 0.1}s`;
                 } else {
-                    option.style.display = "none";
+                    card.style.display = 'none';
                 }
             });
-            document.getElementById('noResults').style.display = (!hasVisible && filter !== "") ? "block" : "none";
-        });
-        categoryInput.addEventListener('click', e => e.stopPropagation());
-    }
+            updatePaginationButtons(page);
+            updateProgressBar(endIndex);
+            if (page > 1) document.getElementById('servicesSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
 
-    // --- INIT ---
-    const loader = document.getElementById("pageLoader");
-    if(loader) {
-        setTimeout(() => {
-            loader.style.opacity = "0";
-            setTimeout(() => { 
-                loader.style.display = "none"; 
-                if(totalItems > 0) showPage(1);
-            }, 600);
-        }, 800);
-    }
+        function updateProgressBar(currentEndIndex) {
+            const realCount = Math.min(currentEndIndex, totalItems);
+            const percent = (realCount / totalItems) * 100;
+            progressText.textContent = `${realCount} / ${totalItems}`;
+            progressBar.style.width = `${percent}%`;
+            if (totalItems > 0) progressWidget.classList.add('visible');
+        }
 
-    // Reveal on Scroll Standard
-    const revealObserver = new IntersectionObserver((entries, observer) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add('active');
-                observer.unobserve(entry.target);
+        function updatePaginationButtons(activePage) {
+            const totalPages = Math.ceil(totalItems / itemsPerPage);
+            controls.innerHTML = "";
+            if (totalPages <= 1) return;
+            if (activePage > 1) controls.appendChild(createBtn('<i class="bi bi-chevron-left"></i>', () => showPage(activePage - 1)));
+            for (let i = 1; i <= totalPages; i++) {
+                if (i === 1 || i === totalPages || (i >= activePage - 2 && i <= activePage + 2)) {
+                    const btn = createBtn(i, () => { currentPage = i; showPage(i); });
+                    if (i === activePage) btn.classList.add('active');
+                    controls.appendChild(btn);
+                }
             }
-        });
-    }, { threshold: 0.1 });
-    document.querySelectorAll('.reveal-on-scroll').forEach(el => revealObserver.observe(el));
+            if (activePage < totalPages) controls.appendChild(createBtn('<i class="bi bi-chevron-right"></i>', () => showPage(activePage + 1)));
+        }
 
-    // Back to Top
-    const backToTopBtn = document.getElementById("backToTop");
-    window.addEventListener("scroll", () => {
-        if (window.scrollY > 300) backToTopBtn.classList.add("show");
-        else backToTopBtn.classList.remove("show");
-    });
-    if(backToTopBtn) backToTopBtn.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
-    
-    // Liquid Buttons Effect
-    document.querySelectorAll(".liquid-btn").forEach(btn => {
-        btn.addEventListener("mousemove", e => {
-            const rect = btn.getBoundingClientRect();
-            btn.style.transform = `translate(${(e.clientX - rect.left - rect.width/2)/10}px, ${(e.clientY - rect.top - rect.height/2)/10}px)`;
-        });
-        btn.addEventListener("mouseleave", () => btn.style.transform = "translate(0,0)");
-    });
-});
+        function createBtn(content, onClick) {
+            const btn = document.createElement('div');
+            btn.className = 'page-btn';
+            btn.innerHTML = content;
+            btn.addEventListener('click', onClick);
+            return btn;
+        }
 
-// Helper Category Select
-function selectCategory(slug, name) {
-    document.getElementById('input_category').value = slug;
-    document.getElementById('selected_label').innerText = name;
-    // event is deprecated in strict mode, passing it explicitly is better, but this works in simple contexts
-}
+        function removeLoader() {
+            const loader = document.getElementById("pageLoader");
+            if (loader) {
+                loader.style.opacity = "0";
+                setTimeout(() => { loader.style.display = "none"; if (totalItems > 0) showPage(1); }, 600);
+            }
+        }
+
+        setTimeout(removeLoader, 800);
+
+        const revealObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => { if (entry.isIntersecting) { entry.target.classList.add('active'); } });
+        }, { threshold: 0.1 });
+        document.querySelectorAll('.reveal-on-scroll').forEach(el => revealObserver.observe(el));
+
+        const backToTopBtn = document.getElementById("backToTop");
+        window.addEventListener("scroll", () => {
+            if (window.scrollY > 300) backToTopBtn.classList.add("show");
+            else backToTopBtn.classList.remove("show");
+        });
+        if (backToTopBtn) backToTopBtn.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
+    });
+
+    function selectCategory(slug, name) {
+        document.getElementById('input_category').value = slug;
+        document.getElementById('selected_label').innerText = name;
+    }
 </script>
 {% endblock %}
-
