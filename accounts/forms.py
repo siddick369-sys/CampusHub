@@ -104,8 +104,8 @@ class ProfileForm(forms.ModelForm):
             'chat_start_time',
             'chat_end_time',
             'chat_manual_enabled',
-            "kyc_document",
-            
+            'kyc_document',
+            'is_service_provider',
         ]
     
     def __init__(self, *args, **kwargs):

@@ -125,10 +125,13 @@ def register_view(request):
             profile.city = form.cleaned_data.get('city')
             profile.country = form.cleaned_data.get('country')
             
-            # Code de vérification
-            code = f"{random.randint(100000, 999999)}"
             profile.verification_code = code
             profile.email_verified = False
+            
+            # 🚀 Auto-activation du rôle prestataire si choisi à l'inscription
+            if profile.role == 'provider':
+                profile.is_service_provider = True
+                
             profile.save()
 
             # Envoi Email Asynchrone
