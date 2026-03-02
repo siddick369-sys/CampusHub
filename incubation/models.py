@@ -338,7 +338,10 @@ from django.db import models
 # On garde les compétences pour les tags visuels (facultatif mais recommandé pour le design)
 class Competence(models.Model):
     nom = models.CharField(max_length=50)
-    def __str__(self): return self.nom
+    couleur = models.CharField(max_length=7, default="#3B82F6", help_text="Code Hex (ex: #3B82F6)")
+    
+    def __str__(self): 
+        return self.nom
 
 class EtudiantTalent(models.Model):
     noms_prenoms = models.CharField(max_length=200, verbose_name="Noms et Prénoms")
