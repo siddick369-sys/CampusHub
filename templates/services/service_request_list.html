@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block title %}Demandes reçues{% endblock %}
+
+{% block content %}
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+
+<div class="desktop-bg-animation">
+    <div class="shape-blob shape-1"></div>
+    <div class="shape-blob shape-2"></div>
+</div>
+
+<div class="container py-5 relative-z">
+    
+    <div class="d-flex justify-content-between align-items-center mb-5 reveal-on-scroll">
+        <div>
+            <span class="badge-pill-glow mb-2">Boîte de réception</span>
+            <h2 class="fw-bold text-white">Demandes de Prestation</h2>
+        </div>
+        <div class="d-none d-md-block">
+            <span class="text-white-50 small">Total: <strong class="text-white">{{ requests.count }}</strong></span>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        {% for req in requests %}
+            <div class="col-md-6 col-lg-4 reveal-on-scroll">
+                <article class="card-glass h-100 d-flex flex-column hover-effect">
+                    
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <span class="badge bg-white bg-opacity-10 border border-white border-opacity-10 text-white small">
+                            {{ req.created_at|date:"d M Y" }}
+                        </span>
+                        <span class="badge 
+                            {% if req.status == 'pending' %}bg-warning text-dark
+                            {% elif req.status == 'accepted' %}bg-success text-white
+                            {% elif req.status == 'rejected' %}bg-danger text-white
+                            {% else %}bg-secondary text-white{% endif %} bg-opacity-75">
+                            {{ req.get_status_display }}
+                        </span>
+                    </div>
+
+                    <h5 class="fw-bold text-white mb-2">{{ req.service.title|truncatechars:30 }}</h5>
+                    
+                    <div class="d-flex align-items-center mb-3 text-white-50 small">
+                        <i class="bi bi-person-circle me-2"></i>
+                        <span>{{ req.client.full_name|default:req.client.username }}</span>
+                    </div>
+
+                    <div class="msg-box mb-3 flex-grow-1">
+                        <p class="text-white-50 small fst-italic mb-0">"{{ req.message|default:"(Aucun message)"|truncatechars:80 }}"</p>
+                    </div>
+
+                    <div class="mt-auto pt-3 border-top border-white border-opacity-10 text-end">
+                        <a href="#" class="text-primary text-decoration-none fw-600 small">
+                            Gérer la demande <i class="bi bi-arrow-right ms-1"></i>
+                        </a>
+                    </div>
+                </article>
+            </div>
+        {% empty %}
+            <div class="col-12">
+                <div class="card-glass text-center py-5">
+                    <div class="icon-box-empty mx-auto mb-3">
+                        <i class="bi bi-inbox"></i>
+                    </div>
+                    <h4 class="text-white">Aucune demande</h4>
+                    <p class="text-white-50">Vous n'avez reçu aucune demande pour le moment.</p>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+/* Variables (Reuse from others) */
+:root { --primary: #2563eb; --glass-bg: rgba(20, 30, 48, 0.6); --glass-border: rgba(255, 255, 255, 0.08); }
+body { background-color: #050505; font-family: 'Inter', sans-serif; color: #f8fafc; }
+h2, h4, h5 { font-family: 'Outfit', sans-serif; }
+
+.badge-pill-glow { background: rgba(37, 99, 235, 0.15); color: #60a5fa; padding: 5px 12px; border-radius: 50px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; border: 1px solid rgba(37, 99, 235, 0.3); display: inline-block; }
+
+.card-glass { background: var(--glass-bg); backdrop-filter: blur(16px); border: 1px solid var(--glass-border); border-radius: 16px; padding: 1.5rem; transition: 0.3s; }
+.hover-effect:hover { transform: translateY(-5px); background: rgba(30, 41, 59, 0.8); border-color: rgba(37, 99, 235, 0.3); box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5); }
+
+.msg-box { background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; border-left: 2px solid var(--primary); }
+
+.icon-box-empty { width: 60px; height: 60px; background: rgba(255,255,255,0.05); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: #64748b; }
+
+.desktop-bg-animation { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; }
+.shape-blob { position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0.4; }
+.shape-1 { top: 20%; left: 10%; width: 400px; height: 400px; background: #2563eb; opacity: 0.2; }
+.shape-2 { bottom: 10%; right: 10%; width: 300px; height: 300px; background: #06b6d4; opacity: 0.2; }
+
+.reveal-on-scroll { animation: fadeIn 0.6s ease-out; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+{% endblock %}

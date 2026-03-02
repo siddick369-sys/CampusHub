@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+{% load static %} <html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Preuve de prestation #{{ order.id }}</title>
+    <style>
+        /* --- DÉCLARATION DE LA POLICE MANUSCRITE --- */
+        /* xhtml2pdf a besoin du chemin absolu ou static */
+        @font-face {
+            font-family: 'SignatureFont';
+            /* Assure-toi que le fichier est bien dans static/fonts/ */
+            src: url("{% static 'fonts/GreatVibes-Regular.ttf' %}");
+        }
+
+        /* --- RÈGLES XHTML2PDF (Corrigées) --- */
+        @page {
+            size: a4 portrait;
+            margin: 1.5cm;
+            margin-bottom: 2.5cm;
+
+            @frame footer_frame {
+                -pdf-frame-content: footerContent;
+                bottom: 0cm;
+                margin-left: 1.5cm;
+                margin-right: 1.5cm;
+                height: 2cm;
+            }
+        }
+
+        body {
+            font-family: Helvetica, Arial, sans-serif;
+            font-size: 13px;
+            color: #0f172a;
+        }
+
+        /* --- STYLES EXISTANTS (Header, Tables...) --- */
+        .header-container { border-bottom: 2px solid #2563eb; padding-bottom: 20px; margin-bottom: 30px; }
+        .logo-text { font-size: 24px; font-weight: bold; color: #2563eb; text-transform: uppercase; }
+        .invoice-meta { text-align: right; }
+        .status-badge { color: #2563eb; font-weight: bold; text-transform: uppercase; font-size: 10px; }
+        
+        table { width: 100%; }
+        td { vertical-align: top; }
+        
+        /* --- STYLE DES SIGNATURES GÉNÉRÉES --- */
+        .sig-container {
+            margin-top: 40px;
+            width: 100%;
+        }
+        
+        .sig-block {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 10px;
+            border-radius: 4px;
+        }
+
+        .sig-title {
+            font-size: 9px;
+            text-transform: uppercase;
+            color: #64748b;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        /* L'effet "Manuscrit" */
+        .sig-handwriting {
+            font-family: 'SignatureFont', Helvetica, sans-serif; /* Fallback si la font ne charge pas */
+            font-size: 24px; /* Plus grand pour faire signature */
+            color: #1e293b;
+            margin-top: 5px;
+            margin-bottom: 5px;
+        }
+
+        /* L'empreinte numérique (Timestamp + ID) */
+        .sig-digital-stamp {
+            font-size: 8px;
+            color: #94a3b8;
+            border-top: 1px dotted #cbd5e1;
+            padding-top: 3px;
+            font-family: Courier, monospace; /* Police style machine à écrire */
+        }
+        
+        .text-right { text-align: right; }
+        
+        /* Footer & Details (Gardés de ton ancien fichier) */
+        .details-table th { background-color: #f1f5f9; padding: 8px; border-bottom: 1px solid #e2e8f0; font-size: 10px; text-align: left; }
+        .details-table td { padding: 10px 8px; border-bottom: 1px solid #e2e8f0; }
+        #footerContent { font-size: 9px; color: #94a3b8; text-align: center; border-top: 1px solid #e2e8f0; padding-top: 10px; }
+
+    </style>
+</head>
+<body>
+
+    <div class="header-container">
+        <table>
+            <tr>
+                <td>
+                    <div class="logo-text">CampusHub</div>
+                    <div style="font-size: 10px; color: #64748b;">CERTIFICAT DE SERVICE</div>
+                </td>
+                <td class="invoice-meta">
+                    <div style="font-size: 16px; font-weight: bold;">#{{ order.id }}</div>
+                    <div class="status-badge">{{ order.get_status_display }}</div>
+                    <div style="font-size: 10px; color: #64748b;">Émis le : {% now "d/m/Y" %}</div>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <table cellpadding="5" cellspacing="0">
+        <tr>
+            <td width="48%">
+                <div style="background:#f8fafc; border:1px solid #e2e8f0; padding:10px;">
+                    <div style="font-size:9px; color:#64748b; font-weight:bold;">CLIENT</div>
+                    <div style="font-size:12px; font-weight:bold;">{{ client.profile.full_name|default:client.username }}</div>
+                    <div style="font-size:10px;">{{ client.email }}</div>
+                </div>
+            </td>
+            <td width="4%">&nbsp;</td>
+            <td width="48%">
+                <div style="background:#f8fafc; border:1px solid #e2e8f0; padding:10px;">
+                    <div style="font-size:9px; color:#64748b; font-weight:bold;">PRESTATAIRE</div>
+                    <div style="font-size:12px; font-weight:bold;">{{ provider.profile.provider_title|default:provider.username }}</div>
+                    <div style="font-size:10px;">{{ provider.email }}</div>
+                </div>
+            </td>
+        </tr>
+    </table>
+
+    <table class="details-table" cellspacing="0" cellpadding="0" style="margin-top: 20px;">
+        <thead>
+            <tr>
+                <th width="60%">Désignation</th>
+                <th width="40%" class="text-right">Valeur</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>
+                    <strong>{{ service.title }}</strong><br>
+                    <span style="color:#64748b; font-size:10px;">{{ service.short_description|truncatechars:80 }}</span>
+                </td>
+                <td class="text-right">
+                    {% if order.agreed_price %}
+                        <strong style="color:#2563eb;">{{ order.agreed_price }} {{ order.currency }}</strong>
+                    {% else %}
+                        Sur devis
+                    {% endif %}
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <table class="sig-container" cellpadding="0" cellspacing="0">
+        <tr>
+            <td width="48%">
+                <div class="sig-block">
+                    <div class="sig-title">SIGNATURE ÉLECTRONIQUE (CLIENT)</div>
+                    <div class="sig-handwriting">{{ client.profile.full_name|default:client.username }}</div>
+                    
+                    <div class="sig-digital-stamp">
+                        Approuvé le : {{ order.created_at|date:"d/m/Y H:i" }}<br>
+                        IP: Signature Numérique CampusHub<br>
+                        ID: CL-{{ client.id }}-{{ order.id|stringformat:"04d" }}
+                    </div>
+                </div>
+            </td>
+            
+            <td width="4%">&nbsp;</td>
+
+            <td width="48%">
+                <div class="sig-block">
+                    <div class="sig-title">SIGNATURE ÉLECTRONIQUE (PRESTATAIRE)</div>
+                    <div class="sig-handwriting">{{ provider.profile.provider_title|default:provider.username }}</div>
+                    
+                    <div class="sig-digital-stamp">
+                        Certifié le : {% now "d/m/Y H:i" %}<br>
+                        Status: {{ order.get_status_display|upper }}<br>
+                        ID: PR-{{ provider.id }}-{{ order.id|stringformat:"04d" }}
+                    </div>
+                </div>
+            </td>
+        </tr>
+    </table>
+
+    <div style="margin-top: 10px; font-size: 8px; color: #94a3b8; text-align: center;">
+        * Ce document a été signé électroniquement via la plateforme sécurisée CampusHub. Les identifiants ci-dessus garantissent l'authenticité de la transaction.
+    </div>
+
+    <div id="footerContent">
+        Preuve de prestation générée par CampusHub • Page <pdf:pagenumber> / <pdf:pagecount>
+    </div>
+
+</body>
+</html>

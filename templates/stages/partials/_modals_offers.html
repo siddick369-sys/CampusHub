@@ -1,0 +1,77 @@
+<div class="modal fade" id="jobAlertsModal" tabindex="-1" aria-labelledby="jobAlertsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-md modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header border-0 pb-0">
+                <div class="d-flex align-items-center">
+                    <div class="icon-box-sm bg-primary bg-opacity-10 text-primary rounded-circle me-3 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                        <i class="bi bi-bell-fill"></i>
+                    </div>
+                    <div>
+                        <h5 class="modal-title fw-bold text-white" id="jobAlertsModalLabel">Alertes de recherche</h5>
+                        <p class="text-muted x-small mb-0">Gérez vos notifications automatiques</p>
+                    </div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+            </div>
+
+            <div class="modal-body p-4">
+                <div id="job-alerts-loading" class="text-center py-4">
+                    <div class="spinner-border text-primary spinner-border-sm" role="status"></div>
+                    <p class="text-small x-small mt-2">Synchronisation de vos alertes...</p>
+                </div>
+
+                <div id="job-alerts-empty" class="text-center py-4 d-none">
+                    <i class="bi bi-patch-question text-light display-4 mb-2 d-block"></i>
+                    <p class="text-small small">Vous n'avez aucune alerte active pour le moment.</p>
+                </div>
+
+                <div id="job-alerts-list" class="d-flex flex-column gap-3 d-none">
+                    </div>
+            </div>
+
+            <div class="modal-footer border-top bg-light bg-opacity-50 p-3 rounded-bottom-4">
+                <div class="d-flex align-items-center w-100">
+                    <i class="bi bi-info-circle text-primary me-2 x-small"></i>
+                    <p class="text-small x-small mb-0 flex-grow-1">Une alerte est créée quand une recherche ne retourne aucun résultat.</p>
+                    <button type="button" class="btn btn-light btn-sm rounded-pill px-3 fw-600" data-bs-dismiss="modal">Fermer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-body p-4 text-center">
+                <div class="icon-box-lg bg-danger bg-opacity-10 text-danger rounded-circle mx-auto mb-4 d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                    <i class="bi bi-trash3-fill fs-3"></i>
+                </div>
+                <h5 class="fw-bold text-white mb-2">Supprimer l'alerte ?</h5>
+                <p class="text-small small mb-4">Cette action est irréversible. Vous ne recevrez plus de notifications pour cette recherche.</p>
+                
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-light rounded-pill flex-grow-1 fw-600" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-danger rounded-pill flex-grow-1 fw-600 shadow-sm" id="confirmDeleteBtn">Supprimer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Styles spécifiques pour les items de la liste d'alertes */
+.alert-item-pro {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 15px;
+    transition: 0.2s;
+}
+.alert-item-pro:hover {
+    border-color: var(--primary);
+    background: #fcfdfe;
+}
+.x-small { font-size: 0.75rem; }
+.fw-600 { font-weight: 600; }
+</style>

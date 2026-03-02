@@ -1,0 +1,233 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+
+<div id="pageLoader" class="loader-overlay">
+    <div class="loader-content">
+        <div class="spinner-rings">
+            <div class="ring-1"></div>
+            <div class="ring-2"></div>
+            <div class="ring-3"></div>
+        </div>
+        <p class="loader-text">Analyse des flux...</p>
+    </div>
+</div>
+
+<div class="desktop-bg-animation">
+    <div class="shape-blob shape-1"></div>
+    <div class="shape-blob shape-2"></div>
+</div>
+
+<div class="container py-5 relative-z">
+  <div class="row justify-content-center">
+    <div class="col-lg-10">
+
+      <div class="d-flex justify-content-between align-items-center mb-5 reveal-on-scroll">
+          <div>
+              <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 rounded-pill px-3 py-2 mb-2">
+                  <i class="bi bi-broadcast me-1"></i> Active Search
+              </span>
+              <h2 class="fw-bold text-dark mb-1">Mes Alertes</h2>
+              <p class="text-muted small mb-0">Recevez des notifications dès qu'un service correspond à vos critères.</p>
+          </div>
+          <a href="{% url 'service_list' %}" class="btn btn-outline-secondary rounded-pill btn-sm d-none d-md-inline-block">
+              <i class="bi bi-arrow-left me-1"></i> Retour Recherche
+          </a>
+      </div>
+
+      {% if alerts %}
+        <div class="d-flex flex-column gap-3">
+          {% for alert in alerts %}
+            <div class="card-pro p-4 d-flex flex-column flex-md-row justify-content-between align-items-md-center reveal-on-scroll">
+              
+              <div class="mb-3 mb-md-0 flex-grow-1">
+                <div class="d-flex align-items-center mb-2">
+                    <div class="icon-box-sm bg-primary-subtle text-primary me-3">
+                        <i class="bi bi-search"></i>
+                    </div>
+                    <h5 class="fw-bold text-dark mb-0">
+                      {% if alert.q %}
+                        "{{ alert.q }}"
+                      {% else %}
+                        <span class="text-muted fst-italic">Recherche globale</span>
+                      {% endif %}
+                    </h5>
+                </div>
+
+                <div class="d-flex flex-wrap gap-2 ms-md-5 ps-md-2 mt-2">
+                  {% if alert.category %}
+                    <span class="badge bg-light text-secondary border"><i class="bi bi-tag me-1"></i> {{ alert.category.name }}</span>
+                  {% endif %}
+
+                  {% if alert.min_price or alert.max_price %}
+                    <span class="badge bg-light text-secondary border">
+                        <i class="bi bi-cash me-1"></i> 
+                        {% if alert.min_price %}{{ alert.min_price }}{% else %}0{% endif %} - 
+                        {% if alert.max_price %}{{ alert.max_price }}{% else %}∞{% endif %}
+                    </span>
+                  {% endif %}
+
+                  {% if alert.provider_city %}
+                    <span class="badge bg-light text-secondary border"><i class="bi bi-geo-alt me-1"></i> {{ alert.provider_city }}</span>
+                  {% endif %}
+                  
+                  <span class="badge bg-light text-muted border border-0">ID: #{{ alert.id }}</span>
+                </div>
+              </div>
+
+              <div class="text-md-end d-flex flex-row flex-md-column align-items-center align-items-md-end gap-3 gap-md-2">
+                
+                {% if alert.is_active %}
+                    <div class="d-flex align-items-center text-success fw-bold small">
+                        <span class="status-dot bg-success me-2"></span> ACTIVE
+                    </div>
+                {% else %}
+                    <div class="d-flex align-items-center text-muted fw-bold small">
+                        <span class="status-dot bg-secondary me-2"></span> PAUSE
+                    </div>
+                {% endif %}
+
+                <div class="btn-group shadow-sm rounded-pill overflow-hidden">
+                  <a href="{% url 'service_search_alert_toggle' alert.id %}"
+                     class="btn btn-sm btn-light border-end fw-600 px-3 hover-bg-primary">
+                    {% if alert.is_active %}
+                      <i class="bi bi-pause-fill me-1"></i> Désactiver
+                    {% else %}
+                      <i class="bi bi-play-fill me-1"></i> Activer
+                    {% endif %}
+                  </a>
+                  <button type="button"
+                        class="btn btn-sm btn-light text-danger fw-600 px-3 hover-bg-danger"
+                        data-bs-toggle="modal"
+                        data-bs-target="#confirmDeleteAlertModal"
+                        data-alert-id="{{ alert.id }}"
+                        data-alert-label="{{ alert.q|default:'(Recherche globale)' }}">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </div>
+              </div>
+
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="card-pro p-5 text-center reveal-on-scroll">
+          <div class="icon-box-xl bg-light text-muted mx-auto mb-3 rounded-circle d-flex align-items-center justify-content-center" style="width:80px; height:80px; font-size:2rem;">
+              <i class="bi bi-bell-slash"></i>
+          </div>
+          <h4 class="fw-bold text-dark">Aucune alerte active</h4>
+          <p class="text-muted">Créez une alerte depuis la page de recherche pour être notifié des nouveautés.</p>
+          <a href="{% url 'service_list' %}" class="btn btn-primary rounded-pill fw-600 px-4 mt-3">
+              Explorer les services
+          </a>
+        </div>
+      {% endif %}
+
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="confirmDeleteAlertModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-sm">
+    <div class="modal-content border-0 shadow-lg rounded-4 p-3">
+
+      <div class="modal-body text-center">
+        <div class="icon-box-danger mx-auto mb-3 rounded-circle d-flex align-items-center justify-content-center" style="width:60px; height:60px; background:#fef2f2; color:#ef4444; font-size:1.5rem;">
+            <i class="bi bi-trash3-fill"></i>
+        </div>
+        <h5 class="fw-bold text-dark">Supprimer l'alerte ?</h5>
+        <p class="text-muted small mb-3">
+          Vous ne recevrez plus de notifications pour :<br>
+          <strong id="alertLabelPreview" class="text-dark"></strong>
+        </p>
+
+        <form method="post" id="deleteAlertForm">
+          {% csrf_token %}
+          <div class="d-grid gap-2">
+              <button type="submit" class="btn btn-danger rounded-pill fw-600">Confirmer</button>
+              <button type="button" class="btn btn-light rounded-pill fw-600" data-bs-dismiss="modal">Annuler</button>
+          </div>
+        </form>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<style>
+/* Variables */
+:root {
+    --primary: #2563eb; --primary-dark: #1e40af; --light-bg: #f8fafc; --white: #ffffff;
+    --text-dark: #0f172a; --text-muted: #64748b; --border: #e2e8f0; --radius: 16px;
+}
+
+body { background-color: var(--light-bg); color: var(--text-dark); font-family: 'Inter', sans-serif; }
+h2, h4, h5 { font-family: 'Outfit', sans-serif; }
+
+/* Loader */
+.loader-overlay { position: fixed; inset: 0; background: var(--white); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: opacity 0.6s ease; }
+.spinner-rings { position: relative; width: 60px; height: 60px; }
+.spinner-rings div { position: absolute; width: 100%; height: 100%; border: 3px solid var(--primary); border-radius: 50%; animation: spin 1s infinite cubic-bezier(0.5, 0, 0.5, 1); border-color: var(--primary) transparent transparent transparent; }
+.spinner-rings div:nth-child(1) { animation-delay: -0.45s; } .spinner-rings div:nth-child(2) { animation-delay: -0.3s; }
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+.loader-text { margin-top: 20px; font-family: 'Outfit', sans-serif; color: var(--primary); letter-spacing: 1px; font-size: 0.8rem; animation: pulse 1.5s infinite; }
+
+/* Card Pro */
+.card-pro { 
+    background: var(--white); border-radius: var(--radius); border: 1px solid var(--border); 
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); transition: 0.3s;
+}
+.card-pro:hover { transform: translateY(-3px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); border-color: #bfdbfe; }
+
+/* Elements */
+.icon-box-sm { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1rem; }
+.status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+.hover-bg-primary:hover { background-color: var(--primary) !important; color: white !important; }
+.hover-bg-danger:hover { background-color: #ef4444 !important; color: white !important; }
+
+/* Anim */
+.desktop-bg-animation { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; }
+.shape-blob { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.5; animation: float 10s infinite alternate; }
+.shape-1 { top: -10%; left: -10%; width: 500px; height: 500px; background: rgba(37, 99, 235, 0.1); }
+.shape-2 { bottom: -10%; right: -10%; width: 400px; height: 400px; background: rgba(147, 197, 253, 0.15); }
+@keyframes float { 0% { transform: translate(0,0); } 100% { transform: translate(30px, 30px); } }
+
+.reveal-on-scroll { animation: fadeInUp 0.6s ease-out; }
+@keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  // Loader
+  const loader = document.getElementById("pageLoader");
+  if(loader) {
+      setTimeout(() => {
+          loader.style.opacity = "0";
+          setTimeout(() => { loader.style.display = "none"; }, 600);
+      }, 500);
+  }
+
+  // Modal Logic
+  const deleteModal = document.getElementById("confirmDeleteAlertModal");
+  const labelPreview = document.getElementById("alertLabelPreview");
+  const deleteForm = document.getElementById("deleteAlertForm");
+
+  if (deleteModal) {
+    deleteModal.addEventListener("show.bs.modal", function (event) {
+      const button = event.relatedTarget;
+      const alertId = button.getAttribute("data-alert-id");
+      const alertLabel = button.getAttribute("data-alert-label");
+
+      if (labelPreview) labelPreview.textContent = alertLabel;
+      
+      // Assurez-vous que l'URL correspond à votre route Django
+      const baseDeleteUrl = "/services/alerts/" + alertId + "/delete/"; 
+      deleteForm.setAttribute("action", baseDeleteUrl);
+    });
+  }
+});
+</script>
+{% endblock %}

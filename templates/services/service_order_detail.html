@@ -1,0 +1,303 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Commande #{{ order.id }}{% endblock %}
+
+{% block content %}
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+
+<div id="pageLoader" class="loader-overlay">
+    <div class="loader-content">
+        <div class="spinner-rings">
+            <div class="ring-1"></div>
+            <div class="ring-2"></div>
+            <div class="ring-3"></div>
+        </div>
+        <p class="loader-text">Chargement...</p>
+    </div>
+</div>
+
+<div class="desktop-bg-animation">
+    <div class="shape-blob shape-1"></div>
+    <div class="shape-blob shape-2"></div>
+</div>
+
+<div class="container py-5 relative-z">
+
+  <div class="card-pro mb-4 d-flex flex-column flex-md-row justify-content-between align-items-center p-4 reveal-on-scroll">
+    <div class="d-flex align-items-center mb-3 mb-md-0">
+        <div class="icon-box-header me-3">
+            <i class="bi bi-box-seam"></i>
+        </div>
+        <div>
+            <span class="text-muted small text-uppercase fw-bold letter-spacing-1">Commande #{{ order.id }}</span>
+            <h3 class="fw-bold text-dark mb-0">{{ order.service_title_snapshot }}</h3>
+        </div>
+    </div>
+    
+    <div class="status-pill {% if order.status == 'pending' %}status-pending{% elif order.status == 'completed' %}status-success{% elif order.status == 'cancelled' %}status-danger{% else %}status-active{% endif %}">
+        <span class="dot"></span> {{ order.get_status_display }}
+    </div>
+  </div>
+
+  <div class="row g-4">
+    
+    <div class="col-lg-8">
+      
+      <div class="card-pro mb-4 p-0 overflow-hidden reveal-on-scroll">
+        <div class="bg-light p-3 border-bottom">
+            <h6 class="mb-0 fw-bold text-dark"><i class="bi bi-grid-1x2 me-2 text-primary"></i>Informations</h6>
+        </div>
+        <div class="p-4">
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="detail-item">
+                        <label>Client</label>
+                        <div class="value"><i class="bi bi-person-circle me-2 text-primary-subtle"></i>{{ order.client.username }}</div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="detail-item">
+                        <label>Prestataire</label>
+                        <div class="value"><i class="bi bi-briefcase-fill me-2 text-primary-subtle"></i>{{ order.provider.username }}</div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="detail-item">
+                        <label>Création</label>
+                        <div class="value">{{ order.created_at|date:"d M Y" }} <small class="text-muted ms-1">{{ order.created_at|date:"H:i" }}</small></div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="detail-item">
+                        <label>Échéance</label>
+                        {% if order.due_date %}
+                            <div class="value text-warning"><i class="bi bi-flag-fill me-2"></i>{{ order.due_date|date:"d M Y" }}</div>
+                        {% else %}
+                            <div class="value text-muted">-</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            {% if order.description_brief %}
+            <div class="mt-4 pt-4 border-top">
+                <label class="detail-label mb-2">Brief du client</label>
+                <div class="bg-light p-3 rounded-3 border text-secondary fst-italic">
+                    "{{ order.description_brief|linebreaksbr }}"
+                </div>
+            </div>
+            {% endif %}
+        </div>
+      </div>
+
+      <div class="card-pro reveal-on-scroll" style="animation-delay: 0.1s;">
+        <div class="bg-light p-3 border-bottom mb-3">
+            <h6 class="mb-0 fw-bold text-dark"><i class="bi bi-clock-history me-2 text-primary"></i>Activité</h6>
+        </div>
+        <div class="p-4 pt-0">
+            {% if order.events.all %}
+                <div class="timeline-wrapper">
+                  {% for event in order.events.all %}
+                    <div class="timeline-item">
+                      <div class="timeline-dot"></div>
+                      <div class="timeline-content">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="event-title">{{ event.get_event_type_display }}</span>
+                            <span class="event-time">{{ event.created_at|date:"d/m H:i" }}</span>
+                        </div>
+                        {% if event.from_status and event.to_status %}
+                            <div class="event-change">
+                                <span class="badge bg-secondary text-white">{{ event.from_status }}</span>
+                                <i class="bi bi-arrow-right mx-1 text-muted"></i>
+                                <span class="badge bg-primary text-white">{{ event.to_status }}</span>
+                            </div>
+                        {% endif %}
+                        {% if event.message %}
+                            <p class="event-msg">{{ event.message }}</p>
+                        {% endif %}
+                      </div>
+                    </div>
+                  {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-muted text-center my-3">Aucun historique disponible.</p>
+            {% endif %}
+        </div>
+      </div>
+
+    </div>
+
+    <div class="col-lg-4">
+        
+        {% if order.conversation %}
+        <div class="card-pro mb-4 p-4 text-center reveal-on-scroll" style="animation-delay: 0.2s;">
+            <div class="icon-box-chat mx-auto mb-3">
+                <i class="bi bi-chat-square-text-fill"></i>
+            </div>
+            <h5 class="text-dark mb-3 fw-bold">Discussion</h5>
+            <a href="{% url 'messaging_conversation' order.conversation.id %}" class="liquid-btn btn-primary-pro w-100 text-decoration-none">
+                <span>Ouvrir le Chat</span>
+            </a>
+        </div>
+        {% endif %}
+
+        <div class="card-pro mb-4 p-0 overflow-hidden reveal-on-scroll" style="animation-delay: 0.3s;">
+            <div class="bg-light p-3 border-bottom">
+                <h6 class="mb-0 fw-bold text-dark text-uppercase ls-1">Actions</h6>
+            </div>
+            <div class="p-3 d-grid gap-2">
+
+                {# --- PRESTATAIRE --- #}
+                {% if user.is_authenticated and user == order.provider %}
+                    {% if order.status == "pending" %}
+                        <form method="post" action="{% url 'service_order_accept' order.id %}">{% csrf_token %}<button class="btn btn-action btn-success w-100"><i class="bi bi-check-lg me-2"></i>Accepter</button></form>
+                        <form method="post" action="{% url 'service_order_reject' order.id %}">{% csrf_token %}<button class="btn btn-action btn-danger w-100"><i class="bi bi-x-lg me-2"></i>Refuser</button></form>
+                    {% endif %}
+                    {% if order.status in "accepted,in_progress"|cut:"," %}
+                        <form method="post" action="{% url 'service_order_complete_provider' order.id %}">{% csrf_token %}<button class="btn btn-action btn-primary w-100" {% if order.provider_mark_complete %}disabled{% endif %}><i class="bi bi-flag-fill me-2"></i>Marquer terminé</button></form>
+                    {% endif %}
+                {% endif %}
+
+                {# --- CLIENT --- #}
+                {% if user.is_authenticated and user == order.client %}
+                    {% if order.status in "pending,accepted,in_progress"|cut:"," %}
+                        <form method="post" action="{% url 'service_order_cancel' order.id %}">{% csrf_token %}<button class="btn btn-action btn-outline-danger w-100">Annuler la commande</button></form>
+                    {% endif %}
+                    {% if order.status in "accepted,in_progress"|cut:"," %}
+                        <form method="post" action="{% url 'service_order_complete_client' order.id %}">{% csrf_token %}<button class="btn btn-action btn-success w-100" {% if order.client_mark_complete %}disabled{% endif %}><i class="bi bi-check-circle-fill me-2"></i>Confirmer réception</button></form>
+                    {% endif %}
+                {% endif %}
+                
+                <hr class="border-light my-1">
+                
+                {% if user == order.client or user == order.provider %}
+                    <a href="{% url 'service_order_invoice' order.id %}" class="btn btn-action btn-outline-secondary w-100 text-start">
+                        <i class="bi bi-file-earmark-pdf me-2"></i>Télécharger Preuve
+                    </a>
+                {% endif %}
+                {% if user.is_authenticated and user.id == order.client.id or user.id == order.provider.id %}
+                    <a href="{% url 'service_order_report' order.id %}" class="btn btn-action btn-outline-secondary w-100 text-start text-danger-hover">
+                        <i class="bi bi-exclamation-triangle me-2"></i>Signaler un problème
+                    </a>
+                {% endif %}
+
+            </div>
+        </div>
+
+        {% if user.is_authenticated and user.id == order.client.id and order.status == "completed" %}
+        <div class="card-pro p-4 text-center reveal-on-scroll">
+            <h6 class="text-dark mb-3">Votre Avis</h6>
+            {% if order.review %}
+                <div class="fs-1 mb-0 text-warning">⭐ {{ order.review.rating }}</div>
+                <p class="text-muted small fst-italic mb-0">"{{ order.review.comment }}"</p>
+            {% else %}
+                <a href="{% url 'service_review_create' order.id %}" class="btn btn-outline-warning rounded-pill w-100 fw-600">
+                    ⭐ Laisser une note
+                </a>
+            {% endif %}
+        </div>
+        {% endif %}
+
+    </div>
+  </div>
+</div>
+
+<style>
+/* Variables */
+:root {
+    --primary: #2563eb;
+    --primary-dark: #1e40af;
+    --success: #10b981;
+    --danger: #ef4444;
+    --warning: #f59e0b;
+    --light-bg: #f8fafc;
+    --white: #ffffff;
+    --border: #e2e8f0;
+    --text-dark: #0f172a;
+    --text-muted: #64748b;
+    --radius: 16px;
+}
+
+body { background-color: var(--light-bg); color: var(--text-dark); font-family: 'Inter', sans-serif; overflow-x: hidden; }
+h3, h5, h6 { font-family: 'Outfit', sans-serif; }
+
+/* 1. LOADER STYLES (Fond Blanc) */
+.loader-overlay { position: fixed; inset: 0; background: var(--white); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: opacity 0.6s ease; }
+.spinner-rings { position: relative; width: 80px; height: 80px; }
+.spinner-rings div { position: absolute; border-radius: 50%; border: 3px solid transparent; border-top-color: var(--primary); animation: spin 1.5s linear infinite; }
+.ring-1 { top: 0; left: 0; width: 100%; height: 100%; border-top-color: var(--primary); animation-duration: 2s; }
+.ring-2 { top: 10px; left: 10px; width: 60px; height: 60px; border-top-color: #06b6d4; animation-duration: 1.5s; animation-direction: reverse; }
+.ring-3 { top: 20px; left: 20px; width: 40px; height: 40px; border-top-color: #f472b6; animation-duration: 3s; }
+.loader-text { margin-top: 25px; font-family: 'Outfit', sans-serif; font-weight: 600; color: var(--primary); letter-spacing: 1px; font-size: 0.9rem; animation: pulse 1.5s infinite; }
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+@keyframes pulse { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
+
+/* 2. CARD PRO (Light Mode) */
+.card-pro { 
+    background: var(--white); border-radius: var(--radius); border: 1px solid var(--border); 
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05); transition: 0.3s;
+}
+
+/* 3. HEADER & STATUS */
+.icon-box-header { width: 50px; height: 50px; background: #eff6ff; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: var(--primary); }
+.status-pill { padding: 8px 16px; border-radius: 50px; font-weight: 600; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px; display: flex; align-items: center; gap: 8px; }
+.status-pill .dot { width: 8px; height: 8px; border-radius: 50%; display: block; }
+
+.status-pending { background: #fffbeb; color: #d97706; border: 1px solid #fcd34d; } .status-pending .dot { background: #d97706; }
+.status-active { background: #eff6ff; color: var(--primary); border: 1px solid #bfdbfe; } .status-active .dot { background: var(--primary); }
+.status-success { background: #dcfce7; color: #15803d; border: 1px solid #86efac; } .status-success .dot { background: #15803d; }
+.status-danger { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; } .status-danger .dot { background: #b91c1c; }
+
+/* 4. DETAILS */
+.detail-item label { display: block; color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; font-weight: 600; margin-bottom: 4px; }
+.detail-item .value { font-size: 1rem; color: var(--text-dark); font-weight: 500; }
+.detail-label { color: var(--text-dark); font-size: 0.9rem; font-weight: 700; }
+
+/* 5. TIMELINE (Dark on Light) */
+.timeline-wrapper { position: relative; padding-left: 24px; border-left: 1px solid var(--border); margin-top: 10px; margin-left: 10px; }
+.timeline-item { position: relative; margin-bottom: 25px; }
+.timeline-dot { position: absolute; left: -29px; top: 6px; width: 10px; height: 10px; background: var(--white); border: 2px solid var(--primary); border-radius: 50%; }
+.timeline-content { background: #f8fafc; border-radius: 8px; padding: 12px; border: 1px solid var(--border); transition: 0.2s; }
+.timeline-content:hover { background: #f1f5f9; }
+.event-title { font-weight: 600; color: var(--text-dark); font-size: 0.9rem; }
+.event-time { font-size: 0.75rem; color: var(--text-muted); }
+.event-msg { font-size: 0.85rem; color: #475569; margin-top: 6px; font-style: italic; margin-bottom: 0; }
+
+/* 6. BUTTONS */
+.liquid-btn { position: relative; display: flex; justify-content: center; padding: 12px; border: none; border-radius: 50px; background: var(--primary); color: white; font-weight: 700; text-transform: uppercase; font-size: 0.9rem; transition: 0.3s; box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2); }
+.liquid-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 15px rgba(37, 99, 235, 0.3); color: white; }
+.liquid-btn::before { content: ''; position: absolute; top: 0; left: 0; width: 0; height: 100%; background: var(--primary-dark); z-index: -1; transition: width 0.4s ease; border-radius: 50px; }
+.liquid-btn:hover::before { width: 100%; }
+
+.btn-action { border-radius: 8px; padding: 10px 15px; font-size: 0.9rem; font-weight: 500; transition: 0.2s; }
+.btn-outline-danger { border: 1px solid var(--danger); color: var(--danger); }
+.btn-outline-danger:hover { background: var(--danger); color: white; }
+.btn-outline-secondary { border: 1px solid #cbd5e1; color: var(--text-muted); }
+.btn-outline-secondary:hover { background: #f1f5f9; color: var(--text-dark); }
+.text-danger-hover:hover { color: var(--danger) !important; border-color: var(--danger) !important; }
+
+/* 7. BG ANIMATION (Pastel on White) */
+.desktop-bg-animation { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; overflow: hidden; }
+.shape-blob { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.5; animation: float 10s infinite alternate; }
+.shape-1 { top: -10%; right: -10%; width: 600px; height: 600px; background: rgba(37, 99, 235, 0.1); } /* Bleu très clair */
+.shape-2 { bottom: -10%; left: -10%; width: 500px; height: 500px; background: rgba(6, 182, 212, 0.1); } /* Cyan très clair */
+@keyframes float { 0% { transform: translate(0,0); } 100% { transform: translate(30px, 30px); } }
+
+.reveal-on-scroll { animation: fadeInUp 0.6s ease-out; }
+@keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const loader = document.getElementById("pageLoader");
+    if(loader) {
+        setTimeout(() => {
+            loader.style.opacity = "0";
+            setTimeout(() => { loader.style.display = "none"; }, 500);
+        }, 600);
+    }
+});
+</script>
+{% endblock %}

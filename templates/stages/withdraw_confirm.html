@@ -1,0 +1,184 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Retirer ma candidature – CampusHub{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="https://unpkg.com/aos@2.3.4/dist/aos.css" />
+
+<style>
+/* === FOND GLOBAL === */
+body {
+  background: radial-gradient(circle at top left, #0f172a, #020617);
+  color: #f8fafc;
+  font-family: "Inter", sans-serif;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* === CURSEUR TRIANGULAIRE === */
+.cursor-tri {
+  position: fixed;
+  top: 0; left: 0;
+  width: 22px; height: 22px;
+  background: linear-gradient(90deg, #9333ea, #22d3ee);
+  clip-path: polygon(50% 0, 0 100%, 100% 100%);
+  mix-blend-mode: difference;
+  pointer-events: none;
+  z-index: 9999;
+  transform: translate(-50%, -50%);
+  transition: transform 0.05s ease;
+}
+
+/* === ICONES FLOTTANTES === */
+.floating-icon {
+  position: fixed;
+  font-size: 1.6rem;
+  color: rgba(147,51,234,0.45);
+  animation: floatIcon 12s ease-in-out infinite;
+  z-index: 1;
+}
+@keyframes floatIcon {
+  0%,100% { transform: translateY(0); }
+  50% { transform: translateY(-20px); }
+}
+
+/* === TOURBILLONS === */
+.tornado {
+  position: absolute;
+  width: 100px;
+  height: 100px;
+  border: 3px solid rgba(147,51,234,0.3);
+  border-radius: 50%;
+  animation: swirl 10s linear infinite;
+  z-index: 0;
+}
+.tornado::before, .tornado::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  border: 3px solid rgba(34,211,238,0.3);
+}
+.tornado::before {
+  width: 100%; height: 100%;
+  animation: swirl 14s linear infinite reverse;
+}
+.tornado::after {
+  width: 60%; height: 60%;
+  top: 20%; left: 20%;
+  animation: swirl 8s linear infinite;
+}
+@keyframes swirl {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* === CONTAINER PRINCIPAL === */
+.card {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(147,51,234,0.3);
+  border-radius: 16px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 0 25px rgba(147,51,234,0.15);
+  transition: all 0.3s ease;
+  position: relative;
+  z-index: 2;
+}
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 0 30px rgba(147,51,234,0.5);
+}
+
+/* === BOUTONS === */
+.btn-primary, .btn-danger {
+  border-radius: 999px;
+  transition: all 0.3s ease;
+}
+.btn-danger {
+  background: linear-gradient(90deg, #ef4444, #f97316);
+  border: none;
+}
+.btn-danger:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 25px rgba(239,68,68,0.6);
+}
+.btn-secondary {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(147,51,234,0.3);
+  color: #e2e8f0;
+  transition: all 0.3s ease;
+}
+.btn-secondary:hover {
+  background: linear-gradient(90deg, #9333ea, #22d3ee);
+  color: white;
+}
+
+/* === TITRE === */
+.text-gradient {
+  background: linear-gradient(90deg, #9333ea, #22d3ee);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* === ANIMATION DE FOND === */
+@keyframes wave {
+  0% { background-position: 0 0; }
+  100% { background-position: 1000px 1000px; }
+}
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle at 20% 20%, rgba(147,51,234,0.1), transparent 70%),
+              radial-gradient(circle at 80% 80%, rgba(34,211,238,0.15), transparent 70%);
+  animation: wave 30s linear infinite;
+  z-index: 0;
+}
+</style>
+
+<!-- === ICONES FLOTTANTES === -->
+<i class="floating-icon" style="top:10%;left:10%;">💼</i>
+<i class="floating-icon" style="top:80%;right:10%;animation-delay:2s;">💔</i>
+<i class="floating-icon" style="bottom:20%;left:25%;animation-delay:4s;">✨</i>
+
+<!-- === CURSEUR TRIANGULAIRE === -->
+<div class="cursor-tri" id="cursorTri"></div>
+
+<!-- === TOURBILLONS === -->
+<div class="tornado" style="top:10%;left:5%;"></div>
+<div class="tornado" style="bottom:20%;right:10%;"></div>
+
+<!-- === CONTENU PRINCIPAL === -->
+<div class="container mt-5" data-aos="fade-up">
+  <div class="card shadow-sm p-4 text-center">
+    <h2 class="fw-bold text-gradient mb-3">Retirer ma candidature</h2>
+    <p class="text-muted mb-4">
+      Voulez-vous vraiment retirer votre candidature pour :  
+      <strong>{{ application.offer.title }}</strong> ?
+    </p>
+
+    <form method="post">
+      {% csrf_token %}
+      <div class="d-flex justify-content-center gap-3">
+        <button type="submit" class="btn btn-danger px-4 py-2">
+          🚫 Oui, retirer ma candidature
+        </button>
+        <a href="{% url 'student_applications' %}" class="btn btn-secondary px-4 py-2">
+          Annuler
+        </a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+<script>
+AOS.init({ duration: 800, once: true });
+
+/* === CURSEUR TRIANGULAIRE === */
+const cursor = document.getElementById("cursorTri");
+document.addEventListener("mousemove", e => {
+  cursor.style.left = e.clientX + "px";
+  cursor.style.top = e.clientY + "px";
+});
+</script>
+{% endblock %}

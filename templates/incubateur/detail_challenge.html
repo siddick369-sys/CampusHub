@@ -1,0 +1,310 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ challenge.titre }} - Challenge CampusHub{% endblock %}
+
+{% block content %}
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+<div id="pageLoader" class="page-loader">
+    <div class="loader-content">
+        <div class="logo-placeholder mb-4">
+            <div class="main-spinner"></div>
+            <i class="bi bi-trophy-fill spinner-icon text-primary"></i>
+        </div>
+        <div class="loader-text-wrap">
+            <h5 class="fw-bold text-dark mb-1">CampusHub</h5>
+            <div class="progress-bar-wrap"><div class="progress-bar-fill"></div></div>
+            <small class="text-muted mt-2 d-block">Chargement du dossier challenge...</small>
+        </div>
+    </div>
+</div>
+
+<div class="desktop-bg-animation">
+    <div class="shape-blob shape-1"></div>
+    <div class="shape-blob shape-2"></div>
+</div>
+
+<div class="container py-5 relative-z">
+
+    <div class="mb-4" data-aos="fade-right">
+        <a href="{% url 'liste_challenges' %}" class="btn btn-link text-muted text-decoration-none p-0 fw-600">
+            <i class="bi bi-arrow-left me-2"></i>Retour aux challenges
+        </a>
+    </div>
+
+    <div class="card-pro mb-5" data-aos="fade-down">
+        <div class="card-body p-4 p-lg-5">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-10 px-3 py-2 rounded-pill mb-3 fw-600">
+                        {{ challenge.get_type_challenge_display }}
+                    </span>
+                    <h1 class="fw-bold text-dark mb-4 display-6">{{ challenge.titre }}</h1>
+                    
+                    <div class="d-flex align-items-center">
+                        <div class="company-avatar-pro me-3">
+                            {% if challenge.entreprise.user.profile.photo %}
+                                <img src="{{ challenge.entreprise.user.profile.photo.url }}" class="img-fit rounded-3">
+                            {% else %}
+                                <div class="avatar-placeholder rounded-3">{{ challenge.entreprise.company_name|slice:":1"|upper }}</div>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <h6 class="fw-bold text-dark mb-0">{{ challenge.entreprise.company_name }}</h6>
+                            <span class="text-muted small"><i class="bi bi-globe me-1"></i>{{ challenge.get_secteur_display }}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 mt-4 mt-lg-0 text-lg-end border-start-lg ps-lg-5">
+                    <div class="p-3 bg-light rounded-4 border">
+                        <span class="text-muted x-small fw-bold text-uppercase d-block mb-1 ls-1">Date limite de dépôt</span>
+                        <div class="d-flex align-items-center justify-content-lg-end text-danger fw-bold">
+                            <i class="bi bi-clock-history me-2"></i>
+                            <span class="fs-5">{{ challenge.date_limite|date:"d M Y" }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-8">
+            {% if challenge.image_illustration %}
+            <div class="card-pro overflow-hidden mb-4" data-aos="zoom-in">
+                <div class="ratio ratio-21x9">
+                    <img src="{{ challenge.image_illustration.url }}" class="object-fit-cover" alt="Banner">
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="card-pro mb-4" data-aos="fade-up">
+                <div class="card-body p-4 p-md-5">
+                    <h5 class="fw-bold text-dark mb-4 d-flex align-items-center">
+                        <i class="bi bi-journal-text me-3 text-primary"></i>Contexte & Mission
+                    </h5>
+                    <div class="description-text text-muted leading-relaxed mb-5">
+                        {{ challenge.description|linebreaks }}
+                    </div>
+
+                    <div class="p-4 bg-primary bg-opacity-10 rounded-4 border-start border-primary border-4">
+                        <h6 class="fw-bold text-primary mb-2"><i class="bi bi-file-earmark-check me-2"></i>Format Attendu</h6>
+                        <p class="text-dark small mb-0 fw-500">{{ challenge.get_format_rendu_display }}</p>
+                        <small class="text-muted">Le dépôt des livrables se fait exclusivement via notre plateforme sécurisée.</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card-pro mb-4 bg-primary text-white border-0 overflow-hidden" data-aos="fade-left">
+                <div class="blob-bg"></div>
+                <div class="card-body p-4 position-relative">
+                    <h6 class="text-white text-opacity-75 small fw-bold mb-3 text-uppercase ls-1">Récompense</h6>
+                    <div class="d-flex align-items-center">
+                        <div class="icon-box-sm bg-white bg-opacity-20 rounded-circle me-3">
+                            <i class="bi bi-trophy-fill text-warning fs-4"></i>
+                        </div>
+                        <h3 class="fw-bold mb-0">{{ challenge.recompense }}</h3>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-pro mb-4 p-3" data-aos="fade-left" data-aos-delay="100">
+                {% if request.user.profile.role == 'student' %}
+                    {% if deja_participe %}
+                        <div class="alert alert-success border-0 rounded-pill mb-0 py-3 text-center">
+                            <i class="bi bi-check-circle-fill me-2"></i> Candidature envoyée
+                        </div>
+                    {% else %}
+                        <a href="{% url 'soumettre_solution' challenge.pk %}" class="liquid-btn btn-primary-pro w-100 py-3">
+                            <span>Relever le défi</span>
+                        </a>
+                    {% endif %}
+                {% elif request.user.profile.role == 'company' %}
+                    <a href="{% url 'gerer_soumissions' challenge.pk %}" class="btn btn-outline-primary w-100 rounded-pill fw-600 py-3">
+                        <i class="bi bi-people me-2"></i>Gérer les candidats
+                    </a>
+                    {% if request.user.profile == challenge.entreprise %}
+<div class="card-pro p-4 mt-4 border-danger border-opacity-25 bg-danger bg-opacity-5" data-aos="fade-left" data-aos-delay="500">
+    <h6 class="fw-bold text-danger mb-2">
+        <i class="bi bi-exclamation-octagon-fill me-2"></i>Zone de Danger
+    </h6>
+    <p class="x-small text-muted mb-3 leading-tight">
+        La suppression est définitive. Les participants seront automatiquement informés par email.
+    </p>
+    <a href="{% url 'supprimer_challenge' challenge.pk %}" class="liquid-btn btn-danger-pro w-100 py-2">
+        <span><i class="bi bi-trash3 me-2"></i>Supprimer le challenge</span>
+    </a>
+</div>
+{% endif %}
+                {% endif %}
+            </div>
+
+            {% if challenge.cahier_des_charges %}
+            <div class="card-pro mb-4" data-aos="fade-left" data-aos-delay="200">
+                <div class="card-body p-4">
+                    <h6 class="fw-bold text-dark mb-3"><i class="bi bi-file-earmark-pdf text-danger me-2"></i>Ressources</h6>
+                    <p class="text-muted small mb-4">Téléchargez le cahier des charges complet pour bien démarrer.</p>
+                    <a href="{{ challenge.cahier_des_charges.url }}" target="_blank" class="btn btn-light border w-100 rounded-pill fw-600 text-dark">
+                        Télécharger le Brief
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if challenge.competences_cibles.exists %}
+            <div class="card-pro mb-4" data-aos="fade-left" data-aos-delay="300">
+                <div class="card-body p-4">
+                    <h6 class="fw-bold text-dark mb-3"><i class="bi bi-bullseye text-primary me-2"></i>Profils Ciblés</h6>
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for skill in challenge.competences_cibles.all %}
+                            <span class="badge bg-light text-muted border fw-normal">{{ skill.nom }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if request.user == challenge.entreprise.user %}
+            <div class="card-pro p-4 border-primary border-opacity-10 bg-primary bg-opacity-5" data-aos="fade-left" data-aos-delay="400">
+                <h6 class="fw-bold text-dark mb-3">Administration</h6>
+                <div class="d-grid gap-2">
+                    <a href="{% url 'modifier_challenge' challenge.pk %}" class="btn btn-white border w-100 rounded-pill fw-600 text-dark btn-sm">
+                        <i class="bi bi-pencil-square me-2"></i>Modifier l'annonce
+                    </a>
+                    <a href="{% url 'gerer_soumissions' challenge.pk %}" class="btn btn-primary rounded-pill fw-600 btn-sm">
+                        Voir les candidatures
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<button id="btnBackToTop" class="btn-back-to-top"><i class="bi bi-arrow-up"></i></button>
+
+<style>
+:root { --primary: #2563eb; --primary-dark: #1e40af; --light-bg: #f8fafc; --white: #ffffff; --text-dark: #0f172a; --text-muted: #64748b; --border: #e2e8f0; --radius: 16px; }
+
+body { background-color: var(--light-bg); color: var(--text-dark); font-family: 'Inter', sans-serif; overflow-x: hidden; }
+h1, h5, h6 { font-family: 'Outfit', sans-serif; }
+
+/* Loader */
+.page-loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 9999; display: flex; align-items: center; justify-content: center; transition: opacity 0.6s ease; }
+.main-spinner { width: 60px; height: 60px; border: 4px solid #f1f5f9; border-top: 4px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
+@keyframes spin { 100% { transform: rotate(360deg); } }
+.progress-bar-wrap { height: 4px; width: 200px; background: #f1f5f9; border-radius: 10px; overflow: hidden; margin-top: 15px; }
+.progress-bar-fill { height: 100%; width: 0%; background: var(--primary); animation: loadProgress 1.5s forwards; }
+@keyframes loadProgress { 100% { width: 100%; } }
+
+/* Card Pro */
+.card-pro { background: var(--white); border-radius: var(--radius); border: 1px solid var(--border); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); overflow: hidden; }
+
+/* Avatars & Boxes */
+.company-avatar-pro { width: 64px; height: 64px; }
+.avatar-placeholder { width: 64px; height: 64px; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 700; }
+.icon-box-sm { width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; }
+
+/* Typography & Layout */
+.leading-relaxed { line-height: 1.8; }
+.border-start-lg { border-left: 1px solid var(--border); }
+@media (max-width: 991px) { .border-start-lg { border-left: none; } }
+.ls-1 { letter-spacing: 1px; }
+.x-small { font-size: 0.7rem; }
+.fw-600 { font-weight: 600; }
+.fw-500 { font-weight: 500; }
+
+/* Buttons */
+.liquid-btn { background: var(--primary); color: white; border: none; border-radius: 50px; font-weight: 700; text-transform: uppercase; transition: 0.3s; cursor: pointer; display: flex; align-items: center; justify-content: center; text-decoration: none; }
+.liquid-btn:hover { background: var(--primary-dark); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(37, 99, 235, 0.25); color: white; }
+.btn-white { background: white; transition: 0.3s; }
+.btn-white:hover { background: #f8fafc; }
+
+/* Rewards Card Blob */
+.blob-bg { position: absolute; top: -50%; right: -50%; width: 200%; height: 200%; background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%); pointer-events: none; }
+
+/* Back to Top */
+.btn-back-to-top { position: fixed; bottom: 30px; right: 30px; width: 50px; height: 50px; background: var(--primary); color: white; border: none; border-radius: 50%; opacity: 0; visibility: hidden; transition: 0.3s; z-index: 1000; display: flex; align-items: center; justify-content: center; }
+.btn-back-to-top.show { opacity: 1; visibility: visible; }
+
+/* Desktop Background Blobs */
+.desktop-bg-animation { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; }
+.shape-blob { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.4; animation: float 10s infinite alternate; }
+.shape-1 { top: -10%; left: -10%; width: 600px; height: 600px; background: rgba(37, 99, 235, 0.15); }
+.shape-2 { bottom: -10%; right: -10%; width: 500px; height: 500px; background: rgba(16, 185, 129, 0.1); }
+@keyframes float { 0% { transform: translate(0,0); } 100% { transform: translate(40px, 40px); } }
+/* Style spécifique pour le bouton de suppression liquide */
+.btn-danger-pro {
+    position: relative;
+    background: #ef4444; /* Rouge danger */
+    color: white !important;
+    border: none;
+    border-radius: 50px;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 1px;
+    transition: 0.3s;
+    overflow: hidden;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+}
+
+.btn-danger-pro span {
+    position: relative;
+    z-index: 2;
+}
+
+.btn-danger-pro::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    height: 200%;
+    background: #dc2626; /* Rouge plus sombre au survol */
+    transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1;
+    border-radius: 40%;
+}
+
+.btn-danger-pro:hover::after {
+    transform: translateY(-150%) rotate(180deg);
+}
+
+.btn-danger-pro:hover {
+    box-shadow: 0 8px 20px rgba(239, 68, 68, 0.3);
+}
+
+.leading-tight { line-height: 1.3; }
+</style>
+
+<script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script>
+    // Loader Logic
+    window.addEventListener('load', () => {
+        const loader = document.getElementById('pageLoader');
+        setTimeout(() => {
+            loader.style.opacity = '0';
+            setTimeout(() => loader.style.visibility = 'hidden', 600);
+        }, 1000);
+    });
+
+    document.addEventListener("DOMContentLoaded", function () {
+        AOS.init({ duration: 800, once: true });
+
+        // Back to top
+        const btt = document.getElementById("btnBackToTop");
+        window.addEventListener("scroll", () => { btt.classList.toggle("show", window.scrollY > 400); });
+        btt.onclick = () => window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+</script>
+{% endblock %}

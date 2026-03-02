@@ -1,0 +1,435 @@
+{% extends "base.html" %}
+{% block title %}Offres de stage – CampusHub{% endblock %}
+{% load static %}
+
+{% block content %}
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+<link rel="stylesheet" href="https://unpkg.com/aos@2.3.4/dist/aos.css" />
+
+<style>
+/* === DESIGN SYSTEM === */
+:root {
+    --primary: #2563eb; --accent: #22d3ee; --success: #10b981;
+    --white: #ffffff; --text-dark: #0f172a; --text-muted: #64748b; 
+    --border: #e2e8f0; --radius: 20px;
+}
+
+body {
+    background-color: #f8fafc;
+    color: var(--text-dark);
+    font-family: 'Inter', sans-serif;
+}
+
+h1, h2, h5, .fw-600 { font-family: 'Outfit', sans-serif; }
+
+/* === LOADER (Style Business) === */
+.page-loader {
+    position: fixed; inset: 0; background: #fff; z-index: 10000;
+    display: flex; align-items: center; justify-content: center;
+    transition: opacity 0.6s ease, visibility 0.6s;
+}
+.loader-content { text-align: center; width: 300px; }
+.main-spinner {
+    width: 80px; height: 80px; border: 4px solid #f1f5f9; border-top: 4px solid var(--primary);
+    border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto; position: relative;
+}
+.spinner-icon { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 2rem; color: var(--primary); }
+
+@keyframes spin { 100% { transform: rotate(360deg); } }
+
+/* === FILTRES (Glassmorphism Light) === */
+.card-filter {
+    background: #fff; border-radius: var(--radius); border: 1px solid var(--border);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+}
+.form-control, .form-select {
+    border-radius: 12px; border: 1px solid var(--border); padding: 10px 15px; font-size: 0.9rem;
+}
+.form-control:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.08); }
+
+/* === CARTE OFFRE SAAS PREMIUM === */
+.offer-card-pro {
+    background: #fff; border-radius: var(--radius); border: 1px solid var(--border);
+    padding: 24px; transition: all 0.3s ease; position: relative; height: 100%;
+    display: flex; flex-direction: column;
+}
+.offer-card-pro:hover {
+    transform: translateY(-5px); border-color: var(--primary);
+    box-shadow: 0 15px 30px rgba(37, 99, 235, 0.08);
+}
+
+.company-logo-mini {
+    width: 45px; height: 45px; border-radius: 12px; background: var(--light-bg);
+    display: flex; align-items: center; justify-content: center; font-weight: 700;
+}
+
+.info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 15px 0; }
+.info-item { display: flex; align-items: center; font-size: 0.8rem; color: var(--text-muted); }
+.info-item i { color: var(--primary); margin-right: 8px; font-size: 1rem; }
+
+/* === LIQUID BUTTONS === */
+.btn-liquid {
+    position: relative; display: inline-block; border-radius: 50px; overflow: hidden; 
+    border: none; cursor: pointer; text-decoration: none; font-weight: 700; font-size: 0.85rem;
+    transition: 0.4s; background: rgba(37, 99, 235, 0.08); text-align: center;
+}
+.btn-liquid span { position: relative; z-index: 2; color: var(--primary); transition: 0.4s; }
+.btn-liquid::before {
+    content: ''; position: absolute; top: 100%; left: 0; width: 100%; height: 100%;
+    background: var(--primary); transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 1;
+}
+.btn-liquid:hover::before { top: 0; }
+.btn-liquid:hover span { color: #fff; }
+
+/* === PAGINATION JS STYLE === */
+.page-btn {
+    width: 42px; height: 42px; border-radius: 12px; border: 1px solid var(--border);
+    background: #fff; color: var(--text-dark); font-weight: 600; cursor: pointer; transition: 0.3s;
+}
+.page-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); box-shadow: 0 5px 15px rgba(37, 99, 235, 0.2); }
+
+/* === BACK TO TOP === */
+.back-to-top {
+    position: fixed; bottom: 30px; right: 30px; width: 50px; height: 50px;
+    background: var(--primary); color: white; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; opacity: 0; visibility: hidden; transition: 0.4s; z-index: 1000;
+}
+.back-to-top.show { opacity: 1; visibility: visible; }
+
+/* Background Blobs */
+.desktop-bg-animation { position: fixed; inset: 0; z-index: -1; pointer-events: none; }
+.shape-blob { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.3; }
+.shape-1 { top: -10%; left: -10%; width: 500px; height: 500px; background: rgba(37, 99, 235, 0.1); }
+.shape-2 { bottom: -10%; right: -10%; width: 400px; height: 400px; background: rgba(16, 185, 129, 0.1); }
+</style>
+
+<div id="pageLoader" class="page-loader">
+    <div class="loader-content">
+        <div class="main-spinner">
+            <i class="bi bi-search spinner-icon"></i>
+        </div>
+        <p class="mt-3 small text-uppercase fw-600 text-primary" style="letter-spacing: 2px;">Analyse des opportunités...</p>
+    </div>
+</div>
+
+<div class="desktop-bg-animation">
+    <div class="shape-blob shape-1"></div>
+    <div class="shape-blob shape-2"></div>
+</div>
+
+<div class="container py-5 relative-z">
+    
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end mb-5 reveal-on-scroll">
+        <div>
+            <h1 class="fw-bold text-dark h2 mb-1">Portail des Offres</h1>
+            <p class="text-muted mb-0">Trouvez le stage ou l'emploi qui propulsera votre carrière.</p>
+        </div>
+        <div class="d-flex gap-2 mt-3 mt-md-0">
+            <a href="{% url 'recommended_offers' %}" class="btn btn-outline-primary rounded-pill px-4 fw-600 btn-sm">
+                <i class="bi bi-lightning-charge-fill me-2"></i>Recommandations
+            </a>
+            {% if user.is_authenticated and user.profile.role == "student" %}
+                <button class="btn btn-primary rounded-pill px-4 fw-600 btn-sm shadow-sm" data-bs-toggle="modal" data-bs-target="#jobAlertsModal">
+                    <i class="bi bi-bell-fill me-2"></i>Mes Alertes
+                </button>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="card-filter p-4 mb-5 reveal-on-scroll">
+        <form id="searchForm" method="get">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label x-small fw-600 text-uppercase">Recherche</label>
+                    <input type="text" name="q" class="form-control" value="{{ filters.q|default:'' }}" placeholder="Métier, mot-clé...">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label x-small fw-600 text-uppercase">Localisation</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-end-0"><i class="bi bi-geo-alt"></i></span>
+                        <input type="text" name="city" class="form-control border-start-0" value="{{ filters.city|default:'' }}" placeholder="Ville ou Pays">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label x-small fw-600 text-uppercase">Type de contrat</label>
+                    <select name="contract" class="form-select">
+                        <option value="">Tous les contrats</option>
+                        {% for value,label in contract_choices %}<option value="{{ value }}">{{ label }}</option>{% endfor %}
+                    </select>
+                </div>
+                
+                <div class="col-12 mt-2">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <button class="btn btn-link text-primary text-decoration-none x-small fw-600 p-0" type="button" data-bs-toggle="collapse" data-bs-target="#advancedFilters">
+                            <i class="bi bi-sliders me-2"></i>Plus de filtres
+                        </button>
+                        <div class="d-flex gap-2">
+                            <a href="{% url 'offer_list' %}" class="btn btn-light rounded-pill btn-sm px-4">Réinitialiser</a>
+                            <button type="submit" class="btn btn-primary rounded-pill btn-sm px-5 fw-600">Filtrer</button>
+                        </div>
+                    </div>
+                    
+                    <div class="collapse mt-4" id="advancedFilters">
+                        <div class="row g-3 p-3 bg-light rounded-4">
+                            <div class="col-md-3">
+                                <label class="x-small fw-600">Niveau requis</label>
+                                <input type="text" name="required_level" class="form-control" placeholder="Bac+2, Master...">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="x-small fw-600">Salaire min (XAF)</label>
+                                <input type="number" name="min_salary" class="form-control">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="x-small fw-600">Expérience</label>
+                                <select name="experience" class="form-select">
+                                    <option value="">Tous</option>
+                                    {% for value,label in experience_choices %}<option value="{{ value }}">{{ label }}</option>{% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-3 d-flex align-items-center">
+                                <div class="form-check form-switch mt-3">
+                                    <input class="form-check-input" type="checkbox" name="paid_only" id="paidOnly">
+                                    <label class="form-check-label x-small fw-600" for="paidOnly">Rémunéré uniquement</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div id="offersGrid" class="row g-4">
+        {% if offers %}
+            {% for offer in offers %}
+                <div class="col-md-6 col-lg-4 offer-item" style="display: none;">
+                    <div class="offer-card-pro">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div class="company-logo-mini bg-primary bg-opacity-10 text-primary">
+                                {{ offer.company.username|slice:":1"|upper }}
+                            </div>
+                            <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill x-small px-3">
+                                {{ offer.get_contract_type_display }}
+                            </span>
+                        </div>
+                        
+                        <h5 class="fw-bold text-dark mb-1">{{ offer.title }}</h5>
+                        <p class="text-muted x-small mb-3"><i class="bi bi-building me-1"></i>{{ offer.company_name_snapshot|default:offer.company.username }}</p>
+
+                        <div class="info-grid">
+                            <div class="info-item"><i class="bi bi-geo-alt"></i>{{ offer.location_city|default:"Distanciel" }}</div>
+                            <div class="info-item"><i class="bi bi-bar-chart"></i>{{ offer.get_experience_level_display }}</div>
+                            <div class="info-item"><i class="bi bi-cash-stack"></i>{% if offer.is_paid %}Rémunéré{% else %}Bénévole{% endif %}</div>
+                            <div class="info-item"><i class="bi bi-calendar-event"></i>{{ offer.application_deadline|date:"d M Y"|default:"Illimité" }}</div>
+                        </div>
+
+                        <p class="text-muted x-small lh-base mb-4 flex-grow-1">
+                            {{ offer.description|truncatechars:100 }}
+                        </p>
+
+                        <div class="mt-auto d-flex justify-content-between align-items-center">
+                            <a href="{% url 'offer_detail' offer.slug %}" class="btn-liquid primary btn-sm w-75 py-2">
+                                <span>Voir les détails</span>
+                            </a>
+                            {% if user.is_authenticated and user.profile.role == "student" %}
+                                <form method="post" action="{% url 'offer_save_toggle' slug=offer.slug %}" class="m-0">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-outline-warning btn-sm rounded-circle border-0 fs-5" title="Sauvegarder">
+                                        <i class="bi bi-star"></i>
+                                    </button>
+                                </form>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12 text-center py-5">
+                <i class="bi bi-search display-1 text-light mb-4"></i>
+                <h4 class="fw-bold text-dark">Aucun résultat</h4>
+                <p class="text-muted">Ajustez vos filtres pour trouver plus d'opportunités.</p>
+            </div>
+        {% endif %}
+    </div>
+
+    <div id="paginationControls" class="d-flex justify-content-center gap-2 mt-5"></div>
+
+</div>
+
+{% include "stages/partials/_modals_offers.html" %}
+
+<div id="backToTop" class="back-to-top shadow-lg"><i class="bi bi-arrow-up"></i></div>
+
+<script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+<script>
+// --- CONFIGURATION PAGINATION JS (6 par page) ---
+const itemsPerPage = 6;
+let currentPage = 1;
+const offerItems = document.querySelectorAll('.offer-item');
+const paginationContainer = document.getElementById('paginationControls');
+
+function displayPage(page) {
+    currentPage = page;
+    const start = (page - 1) * itemsPerPage;
+    const end = start + itemsPerPage;
+
+    offerItems.forEach((item, index) => {
+        item.style.display = (index >= start && index < end) ? 'block' : 'none';
+    });
+
+    updatePaginationButtons();
+    if(page > 1) window.scrollTo({ top: 400, behavior: 'smooth' });
+}
+
+function updatePaginationButtons() {
+    const totalPages = Math.ceil(offerItems.length / itemsPerPage);
+    paginationContainer.innerHTML = '';
+    if (totalPages <= 1) return;
+
+    for (let i = 1; i <= totalPages; i++) {
+        const btn = document.createElement('button');
+        btn.innerText = i;
+        btn.classList.add('page-btn');
+        if (i === currentPage) btn.classList.add('active');
+        btn.onclick = () => displayPage(i);
+        paginationContainer.appendChild(btn);
+    }
+}
+
+// --- LOADER & BTT ---
+window.addEventListener('load', () => {
+    setTimeout(() => {
+        document.getElementById('pageLoader').style.opacity = '0';
+        setTimeout(() => document.getElementById('pageLoader').style.visibility = 'hidden', 600);
+    }, 800);
+    displayPage(1);
+});
+
+const btt = document.getElementById('backToTop');
+window.onscroll = () => {
+    if (window.scrollY > 300) btt.classList.add('show');
+    else btt.classList.remove('show');
+};
+btt.onclick = () => window.scrollTo({top: 0, behavior: 'smooth'});
+
+AOS.init({ duration: 1000, once: true });
+
+// === INITIALISATION DES ÉLÉMENTS ===
+const jobAlertsModal = document.getElementById("jobAlertsModal");
+const alertsListEl = document.getElementById("job-alerts-list");
+const alertsLoadingEl = document.getElementById("job-alerts-loading");
+const alertsEmptyEl = document.getElementById("job-alerts-empty");
+const confirmBtn = document.getElementById("confirmDeleteBtn");
+
+let alertIdToDelete = null; // Variable globale pour stocker l'ID à supprimer
+
+if (jobAlertsModal) {
+    jobAlertsModal.addEventListener("show.bs.modal", function () {
+        // 1. Reset de l'interface
+        alertsLoadingEl.classList.remove("d-none");
+        alertsEmptyEl.classList.add("d-none");
+        alertsListEl.classList.add("d-none");
+        alertsListEl.innerHTML = ""; 
+
+        // 2. Requête vers ton API Django
+        fetch("{% url 'job_alerts_list_api' %}", {
+            headers: { "X-Requested-With": "XMLHttpRequest" }
+        })
+        .then(response => {
+            if (!response.ok) throw new Error("Erreur de communication avec le serveur");
+            return response.json();
+        })
+        .then(data => {
+            // 3. On cache systématiquement le spinner ici
+            alertsLoadingEl.classList.add("d-none");
+
+            const alerts = data.alerts || [];
+            if (alerts.length === 0) {
+                alertsEmptyEl.classList.remove("d-none");
+            } else {
+                alertsListEl.classList.remove("d-none");
+                
+                // 4. Construction de la liste SaaS Premium
+                alerts.forEach(alert => {
+                    const matchInfo = alert.last_matched_at 
+                        ? `<span class="ms-2 text-success"><i class="bi bi-lightning-fill"></i> Match : ${alert.last_matched_at}</span>`
+                        : "";
+
+                    const alertHtml = `
+                        <div class="alert-item-pro d-flex justify-content-between align-items-center shadow-sm p-3 mb-2 rounded-3 border bg-white">
+                            <div class="overflow-hidden">
+                                <div class="fw-bold text-dark text-truncate" style="max-width: 250px;">${alert.label}</div>
+                                <div class="text-muted x-small mt-1">
+                                    <i class="bi bi-calendar3 me-1"></i> Créée le ${alert.created_at} ${matchInfo}
+                                </div>
+                            </div>
+                            <button class="btn btn-sm btn-outline-danger border-0 rounded-circle" 
+                                    onclick="prepareDeleteAlert(${alert.id})">
+                                <i class="bi bi-trash3"></i>
+                            </button>
+                        </div>
+                    `;
+                    alertsListEl.insertAdjacentHTML('beforeend', alertHtml);
+                });
+            }
+        })
+        .catch(err => {
+            // 5. Sécurité : En cas de crash, on arrête le spinner et on affiche l'erreur
+            console.error("Erreur CampusHub Connect:", err);
+            alertsLoadingEl.classList.add("d-none");
+            alertsEmptyEl.classList.remove("d-none");
+            alertsEmptyEl.innerHTML = `<i class="bi bi-exclamation-triangle text-danger fs-3"></i><br><span class="small">Impossible de charger les alertes. Vérifiez votre connexion.</span>`;
+        });
+    });
+}
+
+// --- FONCTIONS DE SUPPRESSION ---
+
+// Cette fonction est appelée par le clic sur la corbeille
+window.prepareDeleteAlert = function(id) {
+    alertIdToDelete = id;
+    const confirmModal = new bootstrap.Modal(document.getElementById('confirmModal'));
+    confirmModal.show();
+};
+
+if (confirmBtn) {
+    confirmBtn.addEventListener("click", function() {
+        if (!alertIdToDelete) return;
+
+        // On change l'état du bouton pour montrer qu'on travaille
+        confirmBtn.disabled = true;
+        confirmBtn.innerHTML = `<span class="spinner-border spinner-border-sm"></span>`;
+
+        fetch("{% url 'delete_job_alert_api' 0 %}".replace("0", alertIdToDelete), {
+            method: "POST",
+            headers: {
+                "X-CSRFToken": "{{ csrf_token }}",
+                "X-Requested-With": "XMLHttpRequest"
+            }
+        })
+        .then(resp => resp.json())
+        .then(res => {
+            if (res.status === "success") {
+                // Fermeture propre du modal de confirmation
+                const m = bootstrap.Modal.getInstance(document.getElementById('confirmModal'));
+                m.hide();
+                
+                // On réinitialise le bouton
+                confirmBtn.disabled = false;
+                confirmBtn.innerHTML = "Supprimer";
+
+                // On rafraîchit la liste des alertes
+                jobAlertsModal.dispatchEvent(new Event('show.bs.modal'));
+            }
+        })
+        .catch(err => {
+            console.error("Erreur suppression:", err);
+            confirmBtn.disabled = false;
+            confirmBtn.innerHTML = "Réessayer";
+        });
+    });
+}
+</script>
+{% endblock %}

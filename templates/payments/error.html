@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container py-5 text-center">
+    <div class="card shadow border-0 p-5 mx-auto" style="max-width: 600px; border-radius: 20px;">
+        <div class="mb-4">
+            <i class="bi bi-exclamation-triangle-fill text-danger" style="font-size: 5rem;"></i>
+        </div>
+        <h2 class="fw-bold mb-3">Échec du Paiement</h2>
+        <p class="text-muted mb-4">{{ error|default:"Une erreur est survenue lors du traitement de votre paiement. Veuillez réessayer." }}</p>
+        <div class="d-flex gap-2 justify-content-center">
+            <a href="javascript:history.back()" class="btn btn-outline-secondary px-4 py-2">Précédent</a>
+            <a href="{% url 'home' %}" class="btn btn-primary px-4 py-2">Accueil</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

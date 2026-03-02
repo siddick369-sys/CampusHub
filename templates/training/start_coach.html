@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Coach IA 2.0 - CampusHub{% endblock %}
+
+{% block content %}
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+<div id="pageLoader" class="page-loader">
+    <div class="loader-content">
+        <div class="logo-placeholder mb-4">
+            <div class="main-spinner"></div>
+            <i class="bi bi-cpu spinner-icon text-primary"></i>
+        </div>
+        <div class="loader-text-wrap">
+            <h5 class="fw-bold text-dark mb-1">Coach IA 2.0</h5>
+            <div class="progress-bar-wrap"><div class="progress-bar-fill"></div></div>
+            <small class="text-muted mt-2 d-block">Initialisation des réseaux neuronaux...</small>
+        </div>
+    </div>
+</div>
+
+<div class="desktop-bg-animation">
+    <div class="shape-blob shape-1"></div>
+    <div class="shape-blob shape-2"></div>
+</div>
+
+<div class="container py-5 relative-z min-vh-100 d-flex flex-column justify-content-center">
+    
+    <div class="row justify-content-center">
+        <div class="col-lg-6 col-md-8">
+            
+            <div class="text-center mb-5" data-aos="fade-down">
+                <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 rounded-pill px-3 py-2 mb-3">
+                    <i class="bi bi-robot me-2"></i>Simulation d'Entretien
+                </span>
+                <h1 class="fw-bold text-dark mb-2">Coach IA 2.0</h1>
+                <p class="text-muted">Préparez-vous à l'excellence en vous entraînant face à notre intelligence artificielle spécialisée.</p>
+            </div>
+
+            <div class="card-pro shadow-lg border-0 reveal-on-scroll" data-aos="zoom-in" data-aos-delay="100">
+                <div class="card-body p-4 p-md-5">
+                    
+                    <div class="text-center mb-4">
+                        <div class="ai-avatar-pulse bg-primary bg-opacity-10 text-primary rounded-circle mx-auto d-flex align-items-center justify-content-center">
+                            <i class="bi bi-stars fs-1"></i>
+                        </div>
+                    </div>
+
+                    <form method="post" id="aiSetupForm">
+                        {% csrf_token %}
+
+                        <div class="mb-4">
+                            <label class="form-label fw-600 text-dark small"><i class="bi bi-briefcase me-2"></i>Quel poste visez-vous ?</label>
+                            {{ form.target_role }}
+                            <div class="form-text x-small mt-2">Ex: Développeur Fullstack, Chef de projet, Marketing Manager...</div>
+                        </div>
+
+                        <div class="mb-5">
+                            <label class="form-label fw-600 text-dark small"><i class="bi bi-graph-up-arrow me-2"></i>Niveau de difficulté</label>
+                            {{ form.difficulty }}
+                            <div class="form-text x-small mt-2">Le niveau influe sur la complexité et la répartie de l'IA.</div>
+                        </div>
+
+                        <button type="submit" class="liquid-btn btn-primary-pro w-100 py-3 shadow-sm">
+                            <span>Lancer la simulation <i class="bi bi-play-fill ms-2"></i></span>
+                        </button>
+                    </form>
+                </div>
+
+                <div class="card-footer bg-light border-0 p-4 text-center">
+                    <div class="d-flex align-items-center justify-content-center gap-4 text-muted x-small fw-bold text-uppercase ls-1">
+                        <span><i class="bi bi-mic-fill me-1"></i> Audio activé</span>
+                        <span><i class="bi bi-shield-check-fill me-1"></i> Analyse privée</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-4" data-aos="fade-up" data-aos-delay="200">
+                <p class="small text-muted">
+                    <i class="bi bi-info-circle me-1"></i> Installez-vous au calme pour une immersion totale.
+                </p>
+            </div>
+            
+        </div>
+    </div>
+</div>
+
+<button id="btnBackToTop" class="btn-back-to-top"><i class="bi bi-arrow-up"></i></button>
+
+<style>
+:root { --primary: #2563eb; --primary-dark: #1e40af; --light-bg: #f8fafc; --white: #ffffff; --text-dark: #0f172a; --border: #e2e8f0; --radius: 16px; }
+
+body { background-color: var(--light-bg); color: var(--text-dark); font-family: 'Inter', sans-serif; overflow-x: hidden; }
+h1, h5 { font-family: 'Outfit', sans-serif; }
+
+/* Loader Page */
+.page-loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 9999; display: flex; align-items: center; justify-content: center; transition: 0.6s; }
+.logo-placeholder { position: relative; width: 80px; height: 80px; margin: 0 auto; }
+.main-spinner { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 4px solid #f1f5f9; border-top: 4px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
+.spinner-icon { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 2rem; }
+.progress-bar-wrap { height: 4px; background: #f1f5f9; border-radius: 10px; overflow: hidden; margin-top: 15px; width: 200px; }
+.progress-bar-fill { height: 100%; width: 0%; background: var(--primary); animation: loadProgress 1.5s forwards; }
+@keyframes spin { 100% { transform: rotate(360deg); } }
+@keyframes loadProgress { 100% { width: 100%; } }
+
+/* AI Avatar Pulse */
+.ai-avatar-pulse { width: 80px; height: 80px; animation: softPulse 2s infinite; }
+@keyframes softPulse { 0% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.4); } 70% { box-shadow: 0 0 0 20px rgba(37, 99, 235, 0); } 100% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0); } }
+
+/* Cards & Inputs */
+.card-pro { background: var(--white); border-radius: 24px; border: 1px solid var(--border); }
+input[type="text"], select { 
+    width: 100%; border-radius: 12px; border: 1px solid var(--border); padding: 14px; font-size: 0.95rem; transition: 0.3s;
+}
+input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); outline: none; }
+
+/* Buttons & Utils */
+.liquid-btn { background: var(--primary); color: white; border: none; border-radius: 50px; font-weight: 700; text-transform: uppercase; transition: 0.3s; cursor: pointer; display: flex; align-items: center; justify-content: center; text-decoration: none; }
+.liquid-btn:hover { background: var(--primary-dark); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(37, 99, 235, 0.25); color: white; }
+
+.btn-back-to-top { position: fixed; bottom: 30px; right: 30px; width: 50px; height: 50px; background: var(--primary); color: white; border: none; border-radius: 50%; opacity: 0; visibility: hidden; transition: 0.3s; z-index: 1000; display: flex; align-items: center; justify-content: center; }
+.btn-back-to-top.show { opacity: 1; visibility: visible; }
+
+/* Background Shapes */
+.desktop-bg-animation { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; }
+.shape-blob { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.4; animation: float 10s infinite alternate; }
+.shape-1 { top: -10%; left: -10%; width: 600px; height: 600px; background: rgba(37, 99, 235, 0.15); }
+.shape-2 { bottom: -10%; right: -10%; width: 500px; height: 500px; background: rgba(14, 165, 233, 0.1); }
+@keyframes float { 0% { transform: translate(0,0); } 100% { transform: translate(40px, 40px); } }
+
+.ls-1 { letter-spacing: 1px; }
+.x-small { font-size: 0.7rem; }
+.fw-600 { font-weight: 600; }
+</style>
+
+<script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script>
+    window.addEventListener('load', () => {
+        const loader = document.getElementById('pageLoader');
+        setTimeout(() => {
+            loader.style.opacity = '0';
+            setTimeout(() => loader.style.visibility = 'hidden', 600);
+        }, 1000);
+    });
+
+    document.addEventListener("DOMContentLoaded", function () {
+        AOS.init({ duration: 800, once: true });
+
+        const btt = document.getElementById("btnBackToTop");
+        window.addEventListener("scroll", () => { btt.classList.toggle("show", window.scrollY > 400); });
+        btt.onclick = () => window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,415 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Plans & Abonnements – CampusHub Business{% endblock %}
+
+{% block content %}
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+
+<div id="pageLoader" class="page-loader">
+    <div class="loader-content">
+        <div class="logo-placeholder mb-4">
+            <div class="main-spinner"></div>
+            <i class="bi bi-gem spinner-icon text-primary"></i>
+        </div>
+        <div class="loader-text-wrap">
+            <h5 class="fw-bold text-dark mb-1">CampusHub Business</h5>
+            <div class="progress-bar-wrap">
+                <div class="progress-bar-fill"></div>
+            </div>
+            <small class="text-muted mt-2 d-block">Chargement des offres privilèges...</small>
+        </div>
+    </div>
+</div>
+
+<div class="desktop-bg-animation">
+    <div class="shape-blob shape-1"></div>
+    <div class="shape-blob shape-2"></div>
+</div>
+
+<div class="floating-icons-overlay">
+    <i class="bi bi-briefcase floater" style="left: 5%; animation-delay: 0s;"></i>
+    <i class="bi bi-graph-up-arrow floater" style="left: 25%; animation-delay: 4s;"></i>
+    <i class="bi bi-shield-check floater" style="left: 55%; animation-delay: 2s;"></i>
+    <i class="bi bi-megaphone floater" style="left: 85%; animation-delay: 6s;"></i>
+</div>
+
+<div class="container py-5 relative-z">
+
+    <div class="text-center mb-5 reveal-on-scroll">
+        <h1 class="fw-bold text-dark h2 mb-2">Propulsez vos recrutements</h1>
+        <p class="text-muted">Choisissez le plan adapté à la croissance de votre entreprise à l'IUT.</p>
+    </div>
+
+    {% if current_sub %}
+    <div class="row justify-content-center mb-5 reveal-on-scroll">
+        <div class="col-md-8">
+            <div class="current-plan-banner d-flex align-items-center justify-content-center p-3">
+                <div class="icon-box-sm bg-success bg-opacity-10 text-success rounded-circle me-3">
+                    <i class="bi bi-patch-check-fill"></i>
+                </div>
+                <div class="small">
+                    Abonnement actif : <strong class="text-dark">{{ current_sub.plan.name }}</strong>
+                    <span class="text-muted mx-2">|</span>
+                    Expire dans <span class="badge bg-success bg-opacity-10 text-success rounded-pill">{{ current_sub.days_remaining }} jours</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="row justify-content-center g-4">
+        {% for plan in plans %}
+        <div class="col-md-6 col-lg-4 reveal-on-scroll" data-delay="{{ forloop.counter|add:100 }}">
+            <div class="card-pricing {% if forloop.counter == 2 %}featured{% endif %}">
+
+                {% if forloop.counter == 2 %}
+                <div class="popular-badge">Plus Populaire</div>
+                {% endif %}
+
+                <div class="card-body p-4 p-xl-5">
+                    <div class="plan-header mb-4">
+                        <h4 class="fw-bold text-dark mb-1">{{ plan.name }}</h4>
+                        <p class="text-muted small mb-0">{{ plan.description|default:"Solution de recrutement standard." }}</p>
+                    </div>
+
+                    <div class="plan-price-box mb-4">
+                        <h2 class="fw-bold text-primary mb-0">{{ plan.price }} <span class="fs-6 text-muted fw-normal">XAF / mois</span></h2>
+                    </div>
+
+                    <hr class="opacity-10 mb-4">
+
+                    <ul class="features-list mb-5">
+                        <li>
+                            <i class="bi bi-check2-circle text-primary"></i>
+                            <span><strong>{{ plan.max_offers_monthly }}</strong> offres simultanées</span>
+                        </li>
+
+                        <li class="{% if not plan.has_premium_badge %}disabled{% endif %}">
+                            <i class="bi {% if plan.has_premium_badge %}bi-check2-circle text-primary{% else %}bi-x-circle text-muted{% endif %}"></i>
+                            <span>Badge Premium & Visibilité</span>
+                        </li>
+
+                        <li class="{% if not plan.priority_matching %}disabled{% endif %}">
+                            <i class="bi {% if plan.priority_matching %}bi-check2-circle text-primary{% else %}bi-x-circle text-muted{% endif %}"></i>
+                            <span>Matching Prioritaire</span>
+                        </li>
+
+                        <li class="{% if not plan.can_use_ai %}disabled{% endif %}">
+                            <i class="bi {% if plan.can_use_ai %}bi-check2-circle text-primary{% else %}bi-x-circle text-muted{% endif %}"></i>
+                            <span>IA Assistante Recrutement</span>
+                        </li>
+
+                        {% if plan.has_analytics %}
+                        <li>
+                            <i class="bi bi-check2-circle text-primary"></i>
+                            <span>Analytique et Statistiques</span>
+                        </li>
+                        {% endif %}
+                    </ul>
+
+                    <div class="mt-auto">
+                        {% if current_sub and current_sub.plan.id == plan.id %}
+                        <button class="btn-active-plan w-100">
+                            <i class="bi bi-check-lg me-2"></i>Plan Actuel
+                        </button>
+                        {% else %}
+                        <a href="{% url 'company_subscribe' plan.id %}" class="btn-liquid primary w-100 py-3">
+                            <span>Choisir ce plan</span>
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<div id="backToTop" class="back-to-top shadow-lg"><i class="bi bi-arrow-up"></i></div>
+
+<style>
+    /* === VARIABLES & BASE === */
+    :root {
+        --primary: #2563eb;
+        --primary-dark: #1e40af;
+        --light-bg: #f8fafc;
+        --white: #ffffff;
+        --text-dark: #0f172a;
+        --text-muted: #64748b;
+        --border: #e2e8f0;
+        --radius: 24px;
+    }
+
+    body {
+        background-color: var(--light-bg);
+        color: var(--text-dark);
+        font-family: 'Inter', sans-serif;
+    }
+
+    h1,
+    h2,
+    h4,
+    .plan-header h4 {
+        font-family: 'Outfit', sans-serif;
+    }
+
+    /* === CARTE PRICING === */
+    .card-pricing {
+        background: var(--white);
+        border-radius: var(--radius);
+        border: 1px solid var(--border);
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        position: relative;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .card-pricing:hover {
+        transform: translateY(-10px);
+        border-color: var(--primary);
+        box-shadow: 0 20px 40px rgba(37, 99, 235, 0.08);
+    }
+
+    .card-pricing.featured {
+        border: 2px solid var(--primary);
+        transform: scale(1.03);
+        z-index: 5;
+    }
+
+    .card-pricing.featured:hover {
+        transform: scale(1.05) translateY(-10px);
+    }
+
+    .popular-badge {
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: var(--primary);
+        color: white;
+        padding: 6px 16px;
+        border-radius: 50px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    /* === LISTE FEATURES === */
+    .features-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .features-list li {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 15px;
+        font-size: 0.9rem;
+        color: var(--text-dark);
+    }
+
+    .features-list li.disabled {
+        color: var(--text-muted);
+        opacity: 0.6;
+    }
+
+    .features-list li i {
+        font-size: 1.1rem;
+    }
+
+    /* === BANNER ACTIF === */
+    .current-plan-banner {
+        background: var(--white);
+        border: 1px solid var(--border);
+        border-radius: 50px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+    }
+
+    /* === BOUTONS === */
+    .btn-liquid {
+        position: relative;
+        display: inline-block;
+        border-radius: 50px;
+        overflow: hidden;
+        border: none;
+        cursor: pointer;
+        text-decoration: none;
+        font-weight: 700;
+        transition: 0.4s;
+        background: rgba(37, 99, 235, 0.08);
+        text-align: center;
+    }
+
+    .btn-liquid span {
+        position: relative;
+        z-index: 2;
+        color: var(--primary);
+        transition: 0.4s;
+    }
+
+    .btn-liquid::before {
+        content: '';
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: var(--primary);
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        z-index: 1;
+    }
+
+    .btn-liquid:hover::before {
+        top: 0;
+    }
+
+    .btn-liquid:hover span {
+        color: #fff;
+    }
+
+    .btn-active-plan {
+        background: #f1f5f9;
+        color: var(--text-muted);
+        border: 1px solid var(--border);
+        border-radius: 50px;
+        padding: 12px;
+        font-weight: 600;
+        cursor: default;
+        width: 100%;
+    }
+
+    /* === ANIMATIONS & BACKGROUND === */
+    .floating-icons-overlay {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 0;
+    }
+
+    .floater {
+        position: absolute;
+        bottom: -50px;
+        font-size: 1.5rem;
+        color: var(--primary);
+        opacity: 0.1;
+        animation: floatUp 15s linear infinite;
+    }
+
+    @keyframes floatUp {
+        0% {
+            transform: translateY(0) rotate(0deg);
+            opacity: 0;
+        }
+
+        20% {
+            opacity: 0.15;
+        }
+
+        80% {
+            opacity: 0.15;
+        }
+
+        100% {
+            transform: translateY(-110vh) rotate(360deg);
+            opacity: 0;
+        }
+    }
+
+    .desktop-bg-animation {
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+    }
+
+    .shape-blob {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(80px);
+        opacity: 0.3;
+    }
+
+    .shape-1 {
+        top: -10%;
+        left: -10%;
+        width: 500px;
+        height: 500px;
+        background: rgba(37, 99, 235, 0.1);
+    }
+
+    .shape-2 {
+        bottom: -10%;
+        right: -10%;
+        width: 400px;
+        height: 400px;
+        background: rgba(16, 185, 129, 0.1);
+    }
+
+    /* === LOADER === */
+    .page-loader {
+        position: fixed;
+        inset: 0;
+        background: #fff;
+        z-index: 10000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: 0.6s;
+    }
+
+    .main-spinner {
+        width: 80px;
+        height: 80px;
+        border: 4px solid #f1f5f9;
+        border-top: 4px solid var(--primary);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    .reveal-on-scroll {
+        animation: fadeInUp 0.8s ease-out forwards;
+        opacity: 0;
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+
+<script>
+    window.addEventListener('load', () => {
+        const loader = document.getElementById('pageLoader');
+        setTimeout(() => {
+            loader.style.opacity = '0';
+            setTimeout(() => loader.style.visibility = 'hidden', 600);
+        }, 1000);
+    });
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => { if (entry.isIntersecting) entry.target.style.opacity = "1"; });
+        });
+        document.querySelectorAll(".reveal-on-scroll").forEach(el => observer.observe(el));
+    });
+</script>
+
+{% endblock %}

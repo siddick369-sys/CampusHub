@@ -1,0 +1,225 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Déposer ma solution - CampusHub{% endblock %}
+
+{% block content %}
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+<div id="pageLoader" class="page-loader">
+    <div class="loader-content">
+        <div class="logo-placeholder mb-4">
+            <div class="main-spinner"></div>
+            <i class="bi bi-send-fill spinner-icon text-primary"></i>
+        </div>
+        <div class="loader-text-wrap">
+            <h5 class="fw-bold text-dark mb-1">CampusHub Candidature</h5>
+            <div class="progress-bar-wrap"><div class="progress-bar-fill"></div></div>
+            <small class="text-muted mt-2 d-block">Sécurisation du tunnel de dépôt...</small>
+        </div>
+    </div>
+</div>
+
+<div class="desktop-bg-animation">
+    <div class="shape-blob shape-1"></div>
+    <div class="shape-blob shape-2"></div>
+</div>
+
+<div class="container py-5 relative-z">
+
+    <div class="mb-5" data-aos="fade-down">
+        <a href="{% url 'detail_challenge' challenge.pk %}" class="btn btn-link text-muted text-decoration-none p-0 fw-600 mb-3">
+            <i class="bi bi-arrow-left me-2"></i>Retour au challenge
+        </a>
+        <div class="d-flex align-items-center gap-3 flex-wrap">
+            <h1 class="fw-bold text-dark mb-0">Déposer ma solution</h1>
+            <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-3 py-2 rounded-pill fw-600">
+                CANDIDATURE
+            </span>
+        </div>
+        <p class="text-muted mt-2">Challenge : <span class="fw-bold text-dark">{{ challenge.titre }}</span></p>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            
+            <div class="card-pro mb-4 p-3 shadow-sm">
+                <div class="stepper-wrapper">
+                    <div class="stepper-item active" id="step-1-indicator">
+                        <div class="step-counter">1</div>
+                        <div class="step-name">Votre Approche</div>
+                    </div>
+                    <div class="stepper-item" id="step-2-indicator">
+                        <div class="step-counter">2</div>
+                        <div class="step-name">Livrables</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="alert alert-warning border-0 rounded-4 p-3 mb-4 d-flex align-items-center" data-aos="fade-up">
+                <i class="bi bi-clock-history fs-4 me-3"></i>
+                <div>
+                    <span class="small d-block fw-bold text-uppercase ls-1">Temps restant</span>
+                    <span class="fw-600">Clôture le {{ challenge.date_limite|date:"d F Y" }}</span>
+                </div>
+            </div>
+
+            <form method="post" enctype="multipart/form-data" id="solutionForm">
+                {% csrf_token %}
+
+                {% if form.errors %}
+                    <div class="alert alert-danger border-0 rounded-4 p-4 mb-4">
+                        <h6 class="fw-bold"><i class="bi bi-exclamation-triangle me-2"></i>Erreurs de validation</h6>
+                        {{ form.errors }}
+                    </div>
+                {% endif %}
+
+                <div class="form-step active-step" id="step-1">
+                    <div class="card-pro p-4 p-md-5 shadow-sm">
+                        <h4 class="fw-bold text-dark mb-4"><i class="bi bi-chat-left-quote text-primary me-2"></i>Votre Stratégie</h4>
+                        <div class="form-group mb-0">
+                            <label class="form-label fw-600 small">Expliquez votre travail</label>
+                            {{ form.description_solution }}
+                            <div class="form-text mt-3 bg-light p-3 rounded-3 border">
+                                <i class="bi bi-info-circle me-1 text-primary"></i> 
+                                Résumez votre idée en quelques phrases pour donner envie à l'entreprise d'ouvrir vos fichiers.
+                            </div>
+                        </div>
+                        <div class="mt-5 text-end">
+                            <button type="button" class="liquid-btn px-5" onclick="nextStep(2)">Continuer <i class="bi bi-arrow-right ms-2"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-step" id="step-2">
+                    <div class="card-pro p-4 p-md-5 shadow-sm">
+                        <h4 class="fw-bold text-dark mb-4"><i class="bi bi-folder-symlink text-primary me-2"></i>Vos Fichiers</h4>
+                        
+                        <div class="mb-4">
+                            <label class="form-label fw-600 small">Fichier principal (Max 5 Mo)</label>
+                            <div class="upload-zone text-center p-4 border border-dashed rounded-4 bg-light">
+                                <i class="bi bi-cloud-arrow-up text-primary fs-2 mb-2 d-block"></i>
+                                {{ form.fichier_rendu }}
+                                <p class="text-muted x-small mt-2 mb-0">PDF, ZIP ou Word recommandés.</p>
+                            </div>
+                        </div>
+
+                        <div class="position-relative text-center my-5">
+                            <hr class="text-muted opacity-25">
+                            <span class="position-absolute top-50 start-50 translate-middle bg-white px-3 fw-bold text-muted x-small ls-2">OU</span>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-600 small">Lien externe (Drive, GitHub, Figma...)</label>
+                            {{ form.lien_externe }}
+                        </div>
+
+                        <div class="alert alert-info border-0 rounded-4 p-3 mb-5">
+                            <div class="d-flex">
+                                <i class="bi bi-lightbulb-fill fs-4 me-3 text-info"></i>
+                                <div class="small">
+                                    <p class="mb-1"><strong class="text-dark">Profils Créatifs :</strong> Google Drive, Dropbox ou Canva.</p>
+                                    <p class="mb-0"><strong class="text-dark">Profils Tech :</strong> Lien vers votre repository GitHub/GitLab.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <button type="button" class="btn btn-light rounded-pill px-4 border" onclick="prevStep(1)">Précédent</button>
+                            <button type="submit" class="liquid-btn btn-primary-pro px-5">
+                                <span>🚀 Envoyer ma solution</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<button id="btnBackToTop" class="btn-back-to-top"><i class="bi bi-arrow-up"></i></button>
+
+<style>
+:root { --primary: #2563eb; --primary-dark: #1e40af; --white: #ffffff; --text-dark: #0f172a; --border: #e2e8f0; --radius: 16px; }
+
+body { background-color: #f8fafc; font-family: 'Inter', sans-serif; overflow-x: hidden; }
+h1, h4 { font-family: 'Outfit', sans-serif; }
+
+/* Multi-step Logic */
+.form-step { display: none; }
+.form-step.active-step { display: block; animation: fadeInUp 0.5s ease forwards; }
+
+/* Stepper */
+.stepper-wrapper { display: flex; justify-content: space-between; position: relative; }
+.stepper-item { display: flex; flex-direction: column; align-items: center; flex: 1; position: relative; z-index: 1; }
+.step-counter { width: 35px; height: 35px; border-radius: 50%; background: #e2e8f0; color: #64748b; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-bottom: 5px; transition: 0.3s; }
+.stepper-item.active .step-counter { background: var(--primary); color: white; box-shadow: 0 0 10px rgba(37,99,235,0.4); }
+.step-name { font-size: 0.7rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 1px; }
+
+/* Cards & Inputs */
+.card-pro { background: var(--white); border-radius: var(--radius); border: 1px solid var(--border); box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+textarea, input[type="text"], input[type="url"], input[type="file"] { 
+    width: 100%; border-radius: 12px; border: 1px solid var(--border); padding: 14px; font-size: 0.95rem; transition: 0.3s;
+}
+textarea:focus, input:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(37,99,235,0.1); outline: none; }
+
+/* Custom Upload Zone */
+.upload-zone { border: 2px dashed #cbd5e1 !important; transition: 0.3s; }
+.upload-zone:hover { border-color: var(--primary) !important; background-color: #fff !important; }
+
+/* Buttons & Utils */
+.liquid-btn { background: var(--primary); color: white; border: none; border-radius: 50px; font-weight: 700; text-transform: uppercase; transition: 0.3s; cursor: pointer; }
+.liquid-btn:hover { background: var(--primary-dark); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(37,99,235,0.25); }
+
+/* Loader */
+.page-loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 9999; display: flex; align-items: center; justify-content: center; transition: 0.6s; }
+.main-spinner { width: 60px; height: 60px; border: 4px solid #f1f5f9; border-top: 4px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
+@keyframes spin { 100% { transform: rotate(360deg); } }
+.progress-bar-wrap { height: 4px; width: 200px; background: #f1f5f9; border-radius: 10px; margin-top: 15px; }
+.progress-bar-fill { height: 100%; width: 0%; background: var(--primary); animation: loadProgress 1.5s forwards; }
+@keyframes loadProgress { 100% { width: 100%; } }
+
+.btn-back-to-top { position: fixed; bottom: 30px; right: 30px; width: 50px; height: 50px; background: var(--primary); color: white; border: none; border-radius: 50%; opacity: 0; visibility: hidden; transition: 0.3s; z-index: 1000; display: flex; align-items: center; justify-content: center; }
+.btn-back-to-top.show { opacity: 1; visibility: visible; }
+
+.desktop-bg-animation { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; }
+.shape-blob { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.4; animation: float 10s infinite alternate; }
+.shape-1 { top: -10%; left: -10%; width: 600px; height: 600px; background: rgba(37, 99, 235, 0.1); }
+@keyframes float { 100% { transform: translate(40px, 40px); } }
+@keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+.ls-2 { letter-spacing: 2px; }
+.fw-600 { font-weight: 600; }
+</style>
+
+<script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script>
+window.addEventListener('load', () => {
+    const loader = document.getElementById('pageLoader');
+    setTimeout(() => { loader.style.opacity = '0'; setTimeout(() => loader.style.display='none', 600); }, 1000);
+});
+
+// Stepper Logic
+function nextStep(step) {
+    document.querySelectorAll('.form-step').forEach(s => s.classList.remove('active-step'));
+    document.getElementById('step-' + step).classList.add('active-step');
+    document.querySelectorAll('.stepper-item').forEach(i => i.classList.remove('active'));
+    for(let i=1; i<=step; i++) {
+        document.getElementById('step-' + i + '-indicator').classList.add('active');
+    }
+    window.scrollTo({top: 100, behavior: 'smooth'});
+}
+function prevStep(step) { nextStep(step); }
+
+document.addEventListener("DOMContentLoaded", function () {
+    AOS.init({ duration: 800, once: true });
+    
+    // Back to top
+    const btt = document.getElementById("btnBackToTop");
+    window.addEventListener("scroll", () => { btt.classList.toggle("show", window.scrollY > 400); });
+    btt.onclick = () => window.scrollTo({ top: 0, behavior: "smooth" });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container py-5" style="max-width: 650px;">
+    <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+        <div class="bg-primary p-4 text-center text-white">
+            <h3 class="font-outfit fw-bold mb-1">Noter votre expérience</h3>
+            <p class="small opacity-75 mb-0">Partagez votre retour sur <strong>{{ offer.company.username }}</strong></p>
+        </div>
+        
+        <div class="card-body p-4 p-md-5">
+            <form method="POST" id="reviewForm">
+                {% csrf_token %}
+                
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger rounded-4">
+                        {% for error in form.non_field_errors %}{{ error }}{% endfor %}
+                    </div>
+                {% endif %}
+                
+                <div class="text-center mb-4">
+                    <label class="form-label d-block small fw-bold text-muted text-uppercase mb-3">Quelle note donnez-vous ?</label>
+                    <div class="d-flex justify-content-center gap-2 fs-1 text-light-gray" id="star-rating">
+                        {% for i in "12345" %}
+                        <i class="bi bi-star star-btn {% if form.rating.value|add:0 >= forloop.counter %}bi-star-fill active{% endif %}" 
+                           data-value="{{ forloop.counter }}"></i>
+                        {% endfor %}
+                    </div>
+                    <input type="hidden" name="rating" id="rating-value" value="{{ form.rating.value|default:'' }}" required>
+                    {% if form.rating.errors %}
+                        <div class="text-danger small mt-2">{% for error in form.rating.errors %}{{ error }}{% endfor %}</div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label small fw-bold text-muted text-uppercase">Votre témoignage</label>
+                    <textarea name="comment" id="commentText" 
+                              class="form-control bg-light border-0 rounded-4 p-3 {% if form.comment.errors %}is-invalid{% endif %}" 
+                              rows="6" placeholder="Missions, ambiance, accompagnement... Soyez constructif !">{{ form.comment.value|default:'' }}</textarea>
+                    
+                    {% if form.comment.errors %}
+                        <div class="text-danger small mt-2 fw-bold">
+                            <i class="bi bi-exclamation-circle me-1"></i>
+                            {% for error in form.comment.errors %}{{ error }}{% endfor %}
+                        </div>
+                    {% endif %}
+                    <div id="validationMsg" class="form-text mt-2"></div>
+                </div>
+
+                <div class="alert alert-light border rounded-4 small text-muted mb-4">
+                    <i class="bi bi-info-circle me-2"></i> Votre avis sera vérifié par notre système. Évitez les propos injurieux ou les textes incohérents.
+                </div>
+
+                <button type="submit" id="submitBtn" class="btn btn-primary w-100 rounded-pill py-3 fw-bold transition-base">
+                    Publier mon avis
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .star-btn { cursor: pointer; transition: 0.2s; }
+    .star-btn.active { color: #ffc107; transform: scale(1.1); }
+    .text-light-gray { color: #dee2e6; }
+    .is-invalid { border: 1px solid #dc3545 !important; }
+</style>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const stars = document.querySelectorAll(".star-btn");
+    const ratingInput = document.getElementById("rating-value");
+    const commentInput = document.getElementById("commentText");
+    const submitBtn = document.getElementById("submitBtn");
+    const validationMsg = document.getElementById("validationMsg");
+
+    function updateStars(val) {
+        stars.forEach(s => {
+            const sVal = parseInt(s.dataset.value);
+            s.classList.toggle("active", sVal <= val);
+            s.classList.toggle("bi-star-fill", sVal <= val);
+            s.classList.toggle("bi-star", sVal > val);
+        });
+    }
+
+    // Initialisation au chargement (si erreur formulaire)
+    if (ratingInput.value) {
+        updateStars(parseInt(ratingInput.value));
+    }
+
+    stars.forEach(star => {
+        star.addEventListener("click", function() {
+            const val = this.dataset.value;
+            ratingInput.value = val;
+            updateStars(val);
+        });
+    });
+
+    commentInput.addEventListener("input", function() {
+        const val = this.value.trim();
+        // Regex identiques à Python pour cohérence
+        const gibberishRegex = /[^aeiouyáàâäéèêëíìîïóòôöúùûü\s]{5,}/i;
+        const repeatRegex = /(\b\w+\b)( \1){2,}/i;
+        const charRepeatRegex = /(.)\1{4,}/;
+        
+        let error = "";
+        if (gibberishRegex.test(val)) error = "Texte incohérent détecté.";
+        else if (repeatRegex.test(val)) error = "Répétitions excessives détectées.";
+        else if (charRepeatRegex.test(val)) error = "Caractères répétés trop souvent.";
+        else if (val.length > 0 && val.length < 15) error = "Avis trop court (min. 15 caractères).";
+
+        if (error) {
+            validationMsg.className = "form-text mt-2 text-danger";
+            validationMsg.innerText = error;
+            // On ne bloque pas forcément le bouton pour laisser le serveur valider aussi
+            // Mais on donne un retour visuel
+        } else {
+            validationMsg.className = "form-text mt-2 text-success";
+            validationMsg.innerText = val.length >= 15 ? "Commentaire valide." : "";
+        }
+    });
+});
+</script>
+{% endblock %}

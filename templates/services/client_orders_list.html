@@ -1,0 +1,257 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Mes Commandes{% endblock %}
+
+{% block content %}
+
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+
+<div id="pageLoader" class="loader-overlay">
+    <div class="loader-content">
+        <div class="spinner-rings">
+            <div></div><div></div>
+        </div>
+        <p class="loader-text">Chargement...</p>
+    </div>
+</div>
+
+<div class="desktop-bg-animation">
+    <div class="shape-blob shape-1"></div>
+    <div class="shape-blob shape-2"></div>
+</div>
+
+<div class="container py-5 relative-z">
+
+    <div class="row align-items-end mb-5 reveal-on-scroll">
+        <div class="col-lg-6">
+            <span class="badge-header">Espace Client</span>
+            <h1 class="display-5 fw-bold text-dark">Mes <span class="text-primary">Commandes</span></h1>
+            <p class="text-muted mb-0">Suivez vos achats et gérez vos services.</p>
+        </div>
+        
+        <div class="col-lg-6 mt-4 mt-lg-0">
+            <div class="search-bar-container">
+                <i class="bi bi-search search-icon"></i>
+                <input type="text" id="globalSearchInput" class="form-control search-input" placeholder="Rechercher (Prestataire, Service, Date...)">
+            </div>
+        </div>
+    </div>
+
+    <ul class="nav nav-pills custom-tabs mb-4 justify-content-center justify-content-lg-start reveal-on-scroll" id="ordersTab" role="tablist">
+        <li class="nav-item">
+            <button class="nav-link active" id="active-tab" data-bs-toggle="tab" data-bs-target="#active" type="button">
+                En cours <span class="badge bg-white text-primary ms-2 shadow-sm" id="badge-active">{{ active_orders.count }}</span>
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" id="completed-tab" data-bs-toggle="tab" data-bs-target="#completed" type="button">
+                Terminées <span class="badge bg-white text-secondary ms-2 shadow-sm" id="badge-completed">{{ completed_orders.count }}</span>
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" id="cancelled-tab" data-bs-toggle="tab" data-bs-target="#cancelled" type="button">
+                Annulées <span class="badge bg-white text-secondary ms-2 shadow-sm" id="badge-cancelled">{{ cancelled_orders.count }}</span>
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content reveal-on-scroll" id="ordersTabContent">
+        
+        <div class="tab-pane fade show active" id="active">
+            <div class="row g-4 paginated-list" id="list-active">
+                {% for order in active_orders %}
+                    <div class="col-md-6 col-lg-4 order-card-item" 
+                         data-date="{{ order.created_at|date:'Y-m-d' }}" 
+                         data-status="{{ order.status }}"
+                         data-search="{{ order.provider.username }} {{ order.service_title_snapshot }} {{ order.created_at|date:'d M Y' }}">
+                        {% include "services/includes/order_card_client.html" with order=order can_delete=False %}
+                    </div>
+                {% empty %}
+                    <div class="col-12 text-center py-5 no-result"><p class="text-muted">Aucune commande en cours.</p></div>
+                {% endfor %}
+            </div>
+            <div id="pagination-active" class="d-flex justify-content-center mt-4"></div>
+        </div>
+
+        <div class="tab-pane fade" id="completed">
+            <div class="row g-4 paginated-list" id="list-completed">
+                {% for order in completed_orders %}
+                    <div class="col-md-6 col-lg-4 order-card-item" 
+                         data-date="{{ order.completed_at|default:order.created_at|date:'Y-m-d' }}"
+                         data-status="completed"
+                         data-search="{{ order.provider.username }} {{ order.service_title_snapshot }} {{ order.created_at|date:'d M Y' }}">
+                        {% include "services/includes/order_card_client.html" with order=order can_delete=True %}
+                    </div>
+                {% empty %}
+                    <div class="col-12 text-center py-5 no-result"><p class="text-muted">Aucune commande terminée.</p></div>
+                {% endfor %}
+            </div>
+            <div id="pagination-completed" class="d-flex justify-content-center mt-4"></div>
+        </div>
+
+        <div class="tab-pane fade" id="cancelled">
+            <div class="row g-4 paginated-list" id="list-cancelled">
+                {% for order in cancelled_orders %}
+                    <div class="col-md-6 col-lg-4 order-card-item" 
+                         data-date="{{ order.cancelled_at|default:order.created_at|date:'Y-m-d' }}"
+                         data-status="cancelled"
+                         data-search="{{ order.provider.username }} {{ order.service_title_snapshot }} {{ order.created_at|date:'d M Y' }}">
+                        {% include "services/includes/order_card_client.html" with order=order can_delete=True %}
+                    </div>
+                {% empty %}
+                    <div class="col-12 text-center py-5 no-result"><p class="text-muted">Aucune commande annulée.</p></div>
+                {% endfor %}
+            </div>
+            <div id="pagination-cancelled" class="d-flex justify-content-center mt-4"></div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* ... (Garder le CSS précédent : Variables, Search Bar, Tabs, Loader) ... */
+/* Ajout spécifique pagination JS */
+.custom-pagination-btn {
+    width: 40px; height: 40px; border-radius: 50%; border: none; background: white; 
+    color: var(--text); font-weight: 600; margin: 0 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); transition: 0.3s;
+}
+.custom-pagination-btn:hover { background: #e2e8f0; color: var(--primary); }
+.custom-pagination-btn.active { background: var(--primary); color: white; box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3); }
+</style>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    
+    // --- 1. CONFIGURATION ---
+    const ITEMS_PER_PAGE = 6; 
+    const AUTO_DELETE_DAYS = 60; // Supprimer visuellement après 2 mois
+
+    // --- 2. FONCTION DE NETTOYAGE AUTO (Date > 2 mois) ---
+    function autoCleanupOldOrders() {
+        const today = new Date();
+        const cutoffDate = new Date();
+        cutoffDate.setDate(today.getDate() - AUTO_DELETE_DAYS);
+
+        document.querySelectorAll('.order-card-item').forEach(item => {
+            const status = item.getAttribute('data-status');
+            const dateStr = item.getAttribute('data-date');
+            
+            // On ne nettoie que les commandes TERMINÉES ou ANNULÉES
+            if (status === 'completed' || status === 'cancelled') {
+                if (dateStr) {
+                    const orderDate = new Date(dateStr);
+                    if (orderDate < cutoffDate) {
+                        // Suppression du DOM
+                        item.remove();
+                        // Note: Pour une vraie suppression BDD, il faudrait une requête AJAX ici.
+                        console.log("Commande masquée (trop ancienne) :", dateStr);
+                    }
+                }
+            }
+        });
+    }
+
+    // --- 3. MOTEUR DE PAGINATION ---
+    function setupPagination(listId, paginationId) {
+        const listContainer = document.getElementById(listId);
+        const paginationContainer = document.getElementById(paginationId);
+        if (!listContainer || !paginationContainer) return;
+
+        let currentPage = 1;
+        
+        function render() {
+            // Récupérer les items visibles (ceux qui ne sont pas filtrés par la recherche)
+            const allItems = Array.from(listContainer.querySelectorAll('.order-card-item'));
+            const visibleItems = allItems.filter(item => !item.classList.contains('filtered-out'));
+            
+            const totalPages = Math.ceil(visibleItems.length / ITEMS_PER_PAGE);
+
+            // Gestion de la page courante si on filtre et que le nombre de pages diminue
+            if (currentPage > totalPages) currentPage = 1;
+            if (totalPages === 0) currentPage = 1;
+
+            // Masquer tout le monde
+            allItems.forEach(item => item.style.display = 'none');
+
+            // Afficher la tranche courante
+            const start = (currentPage - 1) * ITEMS_PER_PAGE;
+            const end = start + ITEMS_PER_PAGE;
+            const itemsToShow = visibleItems.slice(start, end);
+
+            itemsToShow.forEach(item => {
+                item.style.display = 'block';
+                item.classList.add('animate__animated', 'animate__fadeIn');
+            });
+
+            // Générer les boutons
+            paginationContainer.innerHTML = '';
+            if (totalPages > 1) {
+                for (let i = 1; i <= totalPages; i++) {
+                    const btn = document.createElement('button');
+                    btn.innerText = i;
+                    btn.className = `custom-pagination-btn ${i === currentPage ? 'active' : ''}`;
+                    btn.addEventListener('click', () => {
+                        currentPage = i;
+                        render();
+                        listContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    });
+                    paginationContainer.appendChild(btn);
+                }
+            }
+            
+            // Mise à jour des compteurs badges (Optionnel)
+            const tabPane = listContainer.closest('.tab-pane');
+            const tabId = tabPane.id;
+            const badge = document.getElementById(`badge-${tabId}`);
+            if(badge) badge.innerText = visibleItems.length;
+        }
+
+        // Exposer la fonction render pour l'appel externe (recherche)
+        listContainer.dataset.renderFunc = render; 
+        
+        // Premier rendu
+        render();
+        
+        // Stocker la fonction de rendu sur l'élément pour pouvoir l'appeler depuis la recherche
+        listContainer.renderPagination = render;
+    }
+
+    // --- 4. MOTEUR DE RECHERCHE ---
+    const searchInput = document.getElementById('globalSearchInput');
+    
+    searchInput.addEventListener('keyup', function(e) {
+        const term = e.target.value.toLowerCase();
+        
+        document.querySelectorAll('.order-card-item').forEach(item => {
+            const searchData = item.getAttribute('data-search').toLowerCase();
+            if (searchData.includes(term)) {
+                item.classList.remove('filtered-out');
+            } else {
+                item.classList.add('filtered-out');
+            }
+        });
+
+        // Relancer la pagination sur tous les onglets
+        ['list-active', 'list-completed', 'list-cancelled'].forEach(id => {
+            const container = document.getElementById(id);
+            if (container && container.renderPagination) container.renderPagination();
+        });
+    });
+
+
+    // --- 5. INITIALISATION ---
+    const loader = document.getElementById("pageLoader");
+    if(loader) setTimeout(() => { loader.style.opacity = "0"; setTimeout(() => { loader.style.display = "none"; }, 500); }, 500);
+
+    // Lancer le nettoyage
+    autoCleanupOldOrders();
+
+    // Initialiser la pagination pour chaque onglet
+    setupPagination('list-active', 'pagination-active');
+    setupPagination('list-completed', 'pagination-completed');
+    setupPagination('list-cancelled', 'pagination-cancelled');
+});
+</script>
+
+{% endblock %}

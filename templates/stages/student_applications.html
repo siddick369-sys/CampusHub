@@ -1,0 +1,289 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Suivi de candidatures – CampusHub{% endblock %}
+
+{% block content %}
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+<link rel="stylesheet" href="https://unpkg.com/aos@2.3.4/dist/aos.css" />
+
+<style>
+/* === DESIGN SYSTEM PREMIUM === */
+:root {
+    --primary: #2563eb; --primary-light: rgba(37, 99, 235, 0.1);
+    --success: #10b981; --warning: #f59e0b; --danger: #ef4444; --info: #06b6d4;
+    --text-dark: #0f172a; --text-muted: #64748b; 
+    --border: #e2e8f0; --white: #ffffff; --bg-light: #f8fafc;
+}
+
+body { background-color: var(--bg-light); color: var(--text-dark); font-family: 'Inter', sans-serif; }
+h1, h2, h5, h6, .fw-600 { font-family: 'Outfit', sans-serif; }
+
+/* === LOADER THEMATIQUE (Envoi/Papier) === */
+.page-loader {
+    position: fixed; inset: 0; background: #fff; z-index: 10000;
+    display: flex; align-items: center; justify-content: center;
+    transition: opacity 0.6s ease;
+}
+.main-spinner {
+    width: 80px; height: 80px; border: 4px solid #f1f5f9; border-top: 4px solid var(--primary);
+    border-radius: 50%; animation: spin 1s linear infinite; position: relative;
+}
+.spinner-icon { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 2rem; color: var(--primary); }
+@keyframes spin { 100% { transform: rotate(360deg); } }
+
+/* === BLOBS DE FOND === */
+.desktop-bg-animation { position: fixed; inset: 0; z-index: -1; pointer-events: none; }
+.shape-blob { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.2; }
+.shape-1 { top: -10%; left: -10%; width: 500px; height: 500px; background: var(--primary); }
+.shape-2 { bottom: -10%; right: -10%; width: 400px; height: 400px; background: var(--info); }
+
+/* === CARTE CANDIDATURE PRO === */
+.app-card {
+    background: #fff; border: 1px solid var(--border); border-radius: 20px;
+    padding: 24px; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    height: 100%; display: flex; flex-direction: column; position: relative;
+}
+.app-card:hover {
+    transform: translateY(-5px); border-color: var(--primary);
+    box-shadow: 0 20px 40px rgba(37, 99, 235, 0.08);
+}
+
+/* Statuts Dynamiques */
+.status-badge {
+    position: absolute; top: 20px; right: 20px; padding: 5px 12px;
+    border-radius: 50px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+}
+.status-submitted { background: var(--primary-light); color: var(--primary); }
+.status-viewed { background: rgba(6, 182, 212, 0.1); color: var(--info); }
+.status-shortlisted { background: rgba(139, 92, 246, 0.1); color: #8b5cf6; }
+.status-accepted { background: rgba(16, 185, 129, 0.1); color: var(--success); }
+.status-rejected { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
+.status-withdrawn { background: #f1f5f9; color: var(--text-muted); }
+
+/* === FILTRES === */
+.filter-container { background: var(--white); border: 1px solid var(--border); border-radius: 100px; padding: 10px 25px; }
+
+/* === LIQUID BUTTONS === */
+.btn-liquid {
+    position: relative; display: inline-block; border-radius: 50px; overflow: hidden; 
+    border: none; cursor: pointer; text-decoration: none; font-weight: 700;
+    transition: 0.4s; background: var(--primary-light); text-align: center;
+}
+.btn-liquid span { position: relative; z-index: 2; color: var(--primary); transition: 0.4s; font-size: 0.8rem; }
+.btn-liquid::before {
+    content: ''; position: absolute; top: 100%; left: 0; width: 100%; height: 100%;
+    background: var(--primary); transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 1;
+}
+.btn-liquid:hover::before { top: 0; }
+.btn-liquid:hover span { color: #fff; }
+
+.btn-withdraw {
+    background: transparent; border: 1px solid #fee2e2; color: #ef4444;
+    border-radius: 50px; font-size: 0.75rem; font-weight: 600; transition: 0.3s;
+}
+.btn-withdraw:hover { background: #fef2f2; border-color: #ef4444; }
+
+/* === PAGINATION === */
+.page-btn {
+    width: 40px; height: 40px; border-radius: 12px; border: 1px solid var(--border);
+    background: #fff; color: var(--text-dark); font-weight: 600; transition: 0.3s;
+}
+.page-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+</style>
+
+<div id="pageLoader" class="page-loader">
+    <div class="text-center">
+        <div class="main-spinner"><i class="bi bi-send-check-fill spinner-icon"></i></div>
+        <p class="mt-3 small text-uppercase fw-600 text-muted" style="letter-spacing: 2px;">Mise à jour de vos suivis...</p>
+    </div>
+</div>
+
+<div class="desktop-bg-animation">
+    <div class="shape-blob shape-1"></div>
+    <div class="shape-blob shape-2"></div>
+</div>
+
+<div class="container py-5">
+    
+    <div class="row align-items-end mb-5 reveal-on-scroll">
+        <div class="col-lg-7">
+            <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill fw-600 mb-3">
+                <i class="bi bi-briefcase me-2"></i>Tableau de bord
+            </span>
+            <h1 class="fw-bold text-dark display-6 mb-2">Mes candidatures</h1>
+            <p class="text-muted mb-0">Suivez l'état d'avancement de vos postulations en temps réel.</p>
+        </div>
+        <div class="col-lg-5 text-lg-end mt-4 mt-lg-0">
+            <div class="d-inline-flex bg-white p-2 rounded-pill border shadow-sm">
+                <div class="px-3 border-end"><b class="text-primary">{{ applications|length }}</b> <small class="text-muted">Total</small></div>
+                <div class="px-3"><b class="text-success">{% if apps_count %}{{ apps_count }}{% else %}--{% endif %}</b> <small class="text-muted">Actives</small></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="filter-container mb-5 shadow-sm reveal-on-scroll">
+        <div class="row g-3 align-items-center">
+            <div class="col-lg-6">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text bg-transparent border-0 text-muted"><i class="bi bi-search"></i></span>
+                    <input type="text" id="filterSearch" class="form-control border-0 bg-transparent" placeholder="Rechercher une entreprise ou un poste...">
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <select id="filterStatus" class="form-select form-select-sm border-0 bg-transparent fw-600">
+                    <option value="">Tous les statuts</option>
+                    <option value="Soumise">Soumise</option>
+                    <option value="Consultée">Consultée</option>
+                    <option value="Retenue">Retenue</option>
+                    <option value="Acceptée">Acceptée</option>
+                    <option value="Refusée">Refusée</option>
+                </select>
+            </div>
+            <div class="col-lg-2 text-end">
+                <button id="resetFilters" class="btn btn-sm text-primary fw-bold" style="font-size: 0.7rem;">EFFACER</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="appsGrid" class="row g-4">
+        {% if applications %}
+            {% for app in applications %}
+            <div class="col-md-6 col-lg-4 app-item reveal-on-scroll" 
+                 data-title="{{ app.offer.title }}" 
+                 data-company="{{ app.offer.company_name_snapshot|default:app.offer.company.username }}"
+                 data-status="{{ app.get_status_display }}">
+                
+                <div class="app-card">
+                    <span class="status-badge 
+                        {% if app.status == 'submitted' %}status-submitted
+                        {% elif app.status == 'viewed' %}status-viewed
+                        {% elif app.status == 'shortlisted' %}status-shortlisted
+                        {% elif app.status == 'accepted' %}status-accepted
+                        {% elif app.status == 'rejected' %}status-rejected
+                        {% elif app.is_withdrawn %}status-withdrawn{% endif %}">
+                        {{ app.get_status_display }}
+                    </span>
+
+                    <div class="mb-4">
+                        <h6 class="fw-bold text-dark mb-1 pe-5">{{ app.offer.title }}</h6>
+                        <p class="text-muted small mb-0">{{ app.offer.company_name_snapshot|default:app.offer.company.username }}</p>
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="d-flex align-items-center text-muted small mb-2">
+                            <i class="bi bi-geo-alt me-2 text-primary"></i>
+                            {{ app.offer.location_city|default:"Cameroun" }}
+                        </div>
+                        <div class="d-flex align-items-center text-muted small">
+                            <i class="bi bi-calendar3 me-2 text-primary"></i>
+                            Envoyée le {{ app.created_at|date:"d M Y" }}
+                        </div>
+                    </div>
+
+                    {% if app.motivation_letter %}
+                    <div class="p-3 bg-light rounded-3 mb-4">
+                        <p class="x-small text-muted mb-0 italic">
+                            <i class="bi bi-quote me-1"></i>{{ app.motivation_letter|truncatechars:80 }}
+                        </p>
+                    </div>
+                    {% endif %}
+
+                    <div class="mt-auto pt-3 border-top d-flex align-items-center justify-content-between">
+                        <div>
+                            {% if app.can_review %}
+                                <a href="{% url 'submit_stage_review' app.id %}" class="btn-liquid px-3 py-2">
+                                    <span>Donner un avis</span>
+                                </a>
+                            {% endif %}
+                        </div>
+
+                        {% if not app.is_withdrawn and app.status in "submitted viewed shortlisted" %}
+                            <form method="post" action="{% url 'withdraw_application' app.pk %}" class="m-0">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-withdraw px-3 py-2">Retirer</button>
+                            </form>
+                        {% elif app.is_withdrawn %}
+                            <span class="text-danger x-small fw-600"><i class="bi bi-x-circle me-1"></i>Retirée</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12 text-center py-5">
+                <div class="bg-white p-5 rounded-4 border">
+                    <i class="bi bi-folder2-open display-1 text-light mb-4"></i>
+                    <h4 class="fw-bold">Aucune candidature</h4>
+                    <p class="text-muted">Il est temps de postuler à votre première offre !</p>
+                    <a href="{% url 'offer_list' %}" class="btn-liquid primary px-4 py-2 mt-2">
+                        <span>Explorer les offres</span>
+                    </a>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <div id="paginationControls" class="d-flex justify-content-center gap-2 mt-5"></div>
+
+</div>
+
+<script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+<script>
+// --- LOGIQUE JS ---
+const itemsPerPage = 6;
+let currentPage = 1;
+const allItems = Array.from(document.querySelectorAll('.app-item'));
+const grid = document.getElementById('appsGrid');
+const pagination = document.getElementById('paginationControls');
+
+const searchInp = document.getElementById('filterSearch');
+const statusInp = document.getElementById('filterStatus');
+const resetBtn = document.getElementById('resetFilters');
+
+function updateUI() {
+    const searchVal = searchInp.value.toLowerCase();
+    const statusVal = statusInp.value;
+
+    const filtered = allItems.filter(item => {
+        const matchesSearch = item.dataset.title.toLowerCase().includes(searchVal) || 
+                              item.dataset.company.toLowerCase().includes(searchVal);
+        const matchesStatus = !statusVal || item.dataset.status === statusVal;
+        return matchesSearch && matchesStatus;
+    });
+
+    const totalPages = Math.ceil(filtered.length / itemsPerPage);
+    if (currentPage > totalPages) currentPage = 1;
+
+    allItems.forEach(item => item.style.display = 'none');
+    
+    const start = (currentPage - 1) * itemsPerPage;
+    const end = start + itemsPerPage;
+    filtered.slice(start, end).forEach(item => item.style.display = 'block');
+
+    pagination.innerHTML = '';
+    if (totalPages > 1) {
+        for (let i = 1; i <= totalPages; i++) {
+            const b = document.createElement('button');
+            b.innerText = i;
+            b.className = `page-btn ${i === currentPage ? 'active' : ''}`;
+            b.onclick = () => { currentPage = i; updateUI(); window.scrollTo({top: 400, behavior: 'smooth'}); };
+            pagination.appendChild(b);
+        }
+    }
+}
+
+[searchInp, statusInp].forEach(el => el.addEventListener('input', () => { currentPage = 1; updateUI(); }));
+resetBtn.onclick = () => { searchInp.value = ''; statusInp.value = ''; updateUI(); };
+
+window.addEventListener('load', () => {
+    setTimeout(() => {
+        document.getElementById('pageLoader').style.opacity = '0';
+        setTimeout(() => document.getElementById('pageLoader').style.visibility = 'hidden', 600);
+    }, 800);
+    updateUI();
+});
+
+AOS.init({ duration: 800, once: true });
+</script>
+{% endblock %}

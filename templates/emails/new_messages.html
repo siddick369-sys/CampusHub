@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <title>Nouveau message sur CampusHub</title>
+</head>
+<body style="font-family: Arial, sans-serif; font-size: 14px; color: #222;">
+    <p>Bonjour {{ recipient.username }},</p>
+
+    <p>
+        Vous avez reçu un nouveau message de
+        <strong>{{ sender.username }}</strong>
+        à propos de l'offre
+        <strong>{{ conversation.application.offer.title }}</strong>.
+    </p>
+
+    <blockquote style="border-left: 3px solid #4e54c8; margin: 10px 0; padding: 8px 12px; background:#f5f7fb;">
+        {{ message.text|linebreaksbr }}
+    </blockquote>
+
+    <p>
+        Pour répondre, cliquez ici :
+        <a href="{{ base_url }}/stages/messages/{{ conversation.id }}/">
+            Ouvrir la conversation
+        </a>
+    </p>
+
+    <p>À bientôt sur CampusHub,<br>L'équipe CampusHub.</p>
+</body>
+</html>

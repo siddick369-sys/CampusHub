@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container py-5 text-center">
+    <div class="card shadow border-0 p-5 mx-auto" style="max-width: 600px; border-radius: 20px;">
+        <div class="mb-4">
+            <i class="bi bi-check-circle-fill text-success" style="font-size: 5rem;"></i>
+        </div>
+        <h2 class="fw-bold mb-3">Paiement Réussi !</h2>
+        <p class="text-muted mb-4">Votre transaction a été validée avec succès. Vous pouvez maintenant profiter de votre service.</p>
+        <a href="{% url 'accounts:profile' %}" class="liquid-btn px-4 py-2">Retour au profil</a>
+    </div>
+</div>
+{% endblock %}

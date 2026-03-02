@@ -1,0 +1,277 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Réserver : {{ service.title }}{% endblock %}
+
+{% block content %}
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+
+<div class="desktop-bg-animation">
+    <div class="shape-blob shape-1"></div>
+    <div class="shape-blob shape-2"></div>
+</div>
+
+<div class="container py-5 relative-z d-flex justify-content-center">
+    
+    <div class="card-pro w-100 reveal-on-scroll" style="max-width: 850px;">
+        
+        <div class="text-center mb-5">
+            <h2 class="fw-bold text-dark mb-1">Réservation</h2>
+            <div class="d-inline-flex align-items-center bg-light rounded-pill px-3 py-1 mt-2 border">
+                <span class="text-muted small me-2">Service :</span>
+                <span class="text-primary fw-600 small">{{ service.title }}</span>
+            </div>
+        </div>
+
+        <form method="post" id="bookingForm">
+            {% csrf_token %}
+
+            <div class="urgency-wrapper mb-5" id="urgencyBox">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-box-glow me-3">
+                            <i class="bi bi-lightning-charge-fill"></i>
+                        </div>
+                        <div>
+                            <h6 class="text-dark fw-bold mb-0">Mode Urgence</h6>
+                            <p class="text-muted small mb-0">Traitement prioritaire (+{{ service.urgent_extra_percent }}%)</p>
+                        </div>
+                    </div>
+                    
+                    <label class="switch">
+                        <input type="checkbox" id="id_is_urgent" name="is_urgent" value="1">
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+                <div class="urgency-details mt-3 pt-3 border-top border-danger border-opacity-10" style="display:none;">
+                     <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 small">
+                        <i class="bi bi-info-circle me-1"></i> Majoration appliquée
+                     </span>
+                     <span class="text-muted small ms-2">Limite : {{ service.urgent_max_per_day }} commandes/jour.</span>
+                </div>
+            </div>
+
+            <div class="mb-5">
+                <label class="section-title mb-3">
+                    <span class="step-number">1</span> Votre Besoin
+                </label>
+                <div class="input-group-custom">
+                    <span class="input-icon top"><i class="bi bi-file-text"></i></span>
+                    <textarea name="description_brief" rows="3" placeholder="Décrivez brièvement votre projet ou vos attentes spécifiques..." required></textarea>
+                </div>
+            </div>
+
+            <div class="mb-5">
+    <h5 class="mb-3">Choisir un créneau</h5>
+
+    <table class="table table-bordered align-middle">
+        <thead class="table-light">
+            <tr>
+                <th>Jour</th>
+                <th>Heure</th>
+                <th>Disponibilité</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for item in slots_with_availability %}
+                <tr>
+                    <!-- Jour -->
+                    <td>
+                        {{ item.slot.get_weekday_display }}
+                    </td>
+
+                    <!-- Heure -->
+                    <td>
+                        {{ item.slot.start_time|time:"H:i" }}
+                        -
+                        {{ item.slot.end_time|time:"H:i" }}
+                    </td>
+
+                    <!-- Disponibilité -->
+                    <td>
+                        {% if item.is_full %}
+                            <span class="badge bg-danger">
+                                Complet
+                            </span>
+                        {% elif item.remaining <= 2 %}
+                            <span class="badge bg-warning text-dark">
+                                {{ item.remaining }} place(s)
+                            </span>
+                        {% else %}
+                            <span class="badge bg-success">
+                                {{ item.remaining }} place(s)
+                            </span>
+                        {% endif %}
+                    </td>
+
+                    <!-- Choix -->
+                    <td class="text-center">
+                        <input type="radio"
+                               name="slot_id"
+                               value="{{ item.slot.id }}"
+                               {% if item.is_full %}disabled{% endif %}
+                               required>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="4" class="text-center text-muted">
+                        Aucun créneau disponible
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+            <input type="hidden" name="appointment_date" id="appointmentDateInput">
+
+            <div class="d-flex flex-column flex-md-row gap-3 pt-3 border-top">
+                <a href="{% url 'service_detail' service.slug %}" class="btn btn-outline-secondary rounded-pill px-4 py-3 fw-600 flex-grow-1 text-center">
+                    Annuler
+                </a>
+                <button type="submit" class="liquid-btn btn-primary-pro flex-grow-1 py-3 text-center">
+                    <span>Confirmer la réservation</span> <i class="bi bi-arrow-right ms-2"></i>
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+<style>
+/* Variables */
+:root {
+    --primary: #2563eb;
+    --primary-dark: #1e40af;
+    --danger: #ef4444;
+    --light-bg: #f8fafc;
+    --white: #ffffff;
+    --text-dark: #0f172a;
+    --text-muted: #64748b;
+    --border: #e2e8f0;
+    --radius: 20px;
+}
+
+body { background-color: var(--light-bg); color: var(--text-dark); font-family: 'Inter', sans-serif; overflow-x: hidden; }
+h2, h6 { font-family: 'Outfit', sans-serif; }
+
+/* CARD PRO */
+.card-pro { 
+    background: var(--white); border-radius: var(--radius); border: 1px solid var(--border); 
+    padding: 2.5rem; box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.05); 
+}
+
+/* SECTION TITLES */
+.section-title { font-family: 'Outfit', sans-serif; font-weight: 600; color: var(--text-dark); font-size: 1.1rem; display: flex; align-items: center; }
+.step-number { 
+    background: var(--primary); color: white; width: 28px; height: 28px; 
+    border-radius: 50%; display: flex; align-items: center; justify-content: center; 
+    font-size: 0.8rem; margin-right: 10px; font-weight: 700;
+}
+
+/* INPUTS */
+.input-group-custom { position: relative; }
+.input-icon { position: absolute; left: 16px; top: 14px; color: var(--text-muted); z-index: 2; }
+.input-icon.top { top: 16px; }
+textarea { width: 100%; background: var(--white); border: 1px solid var(--border); color: var(--text-dark); padding: 14px 14px 14px 45px; border-radius: 12px; font-family: 'Inter', sans-serif; transition: 0.3s; }
+textarea:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); }
+
+/* URGENCY SWITCH */
+.urgency-wrapper {
+    background: #fff5f5; border: 1px solid #fed7d7;
+    border-radius: 16px; padding: 1.5rem; transition: 0.3s;
+}
+.urgency-wrapper.active { background: #fef2f2; border-color: var(--danger); box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1); }
+.icon-box-glow {
+    width: 40px; height: 40px; background: #fee2e2; color: var(--danger);
+    border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;
+}
+
+/* The Switch */
+.switch { position: relative; display: inline-block; width: 50px; height: 28px; }
+.switch input { opacity: 0; width: 0; height: 0; }
+.slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #cbd5e1; transition: .4s; border-radius: 34px; }
+.slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+input:checked + .slider { background-color: var(--danger); }
+input:checked + .slider:before { transform: translateX(22px); }
+
+/* SLOTS GRID */
+.slots-grid-wrapper { display: flex; gap: 15px; overflow-x: auto; padding-bottom: 10px; }
+.day-column {
+    min-width: 140px; background: #f8fafc; border: 1px solid var(--border);
+    border-radius: 12px; padding: 10px; display: flex; flex-direction: column; align-items: center;
+}
+.day-header { text-align: center; margin-bottom: 15px; border-bottom: 1px solid var(--border); width: 100%; padding-bottom: 8px; }
+.day-name { display: block; font-size: 0.8rem; color: var(--text-muted); font-weight: 600; }
+.day-number { font-size: 1.2rem; font-weight: 700; color: var(--text-dark); font-family: 'Outfit', sans-serif; }
+
+.slots-list { display: flex; flex-direction: column; gap: 8px; width: 100%; }
+.slot-item { width: 100%; }
+.slot-item input { display: none; }
+
+.slot-label {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    background: var(--white); border: 1px solid var(--border);
+    border-radius: 8px; padding: 8px; cursor: pointer; transition: 0.2s; width: 100%;
+}
+.time-main { font-weight: 600; color: var(--text-dark); font-size: 0.9rem; }
+.time-end { font-size: 0.7rem; color: var(--text-muted); }
+
+/* Slot States */
+.slot-label:hover { background: #eff6ff; border-color: #bfdbfe; color: var(--primary); }
+.slot-item input:checked + .slot-label {
+    background: var(--primary); border-color: var(--primary); box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3);
+}
+.slot-item input:checked + .slot-label .time-main,
+.slot-item input:checked + .slot-label .time-end { color: white; }
+
+.no-slot { color: #94a3b8; font-size: 1.5rem; text-align: center; padding: 10px; }
+
+/* Buttons & Anim */
+.liquid-btn { position: relative; display: flex; justify-content: center; padding: 12px; border: none; border-radius: 50px; background: var(--primary); color: white; font-weight: 700; text-transform: uppercase; font-size: 0.9rem; transition: 0.3s; box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3); }
+.liquid-btn:hover { transform: translateY(-2px); background: var(--primary-dark); }
+
+.desktop-bg-animation { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; }
+.shape-blob { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.5; animation: float 10s infinite alternate; }
+.shape-1 { top: -10%; right: -10%; width: 600px; height: 600px; background: rgba(37, 99, 235, 0.1); }
+.shape-2 { bottom: -10%; left: -10%; width: 500px; height: 500px; background: rgba(239, 68, 68, 0.1); }
+@keyframes float { 0% { transform: translate(0,0); } 100% { transform: translate(30px, 30px); } }
+
+.reveal-on-scroll { animation: fadeInUp 0.6s ease-out; }
+@keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  // Date Handling
+  const radios = document.querySelectorAll('input[name="appointment_start"]');
+  const dateInput = document.getElementById("appointmentDateInput");
+  radios.forEach((r) => {
+    r.addEventListener("change", function () {
+      const d = this.dataset.date;
+      if (d && dateInput) dateInput.value = d;
+    });
+  });
+
+  // Urgency Visual Toggle
+  const urgentInput = document.getElementById("id_is_urgent");
+  const urgencyBox = document.getElementById("urgencyBox");
+  const details = urgencyBox.querySelector('.urgency-details');
+
+  if(urgentInput){
+      urgentInput.addEventListener('change', function() {
+          if(this.checked) {
+              urgencyBox.classList.add('active');
+              details.style.display = 'block';
+          } else {
+              urgencyBox.classList.remove('active');
+              details.style.display = 'none';
+          }
+      });
+  }
+});
+</script>
+{% endblock %}

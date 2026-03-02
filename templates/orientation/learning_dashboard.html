@@ -1,0 +1,299 @@
+<!-- templates/orientation/learning_progress.html -->
+{% extends 'base.html' %}
+
+{% block title %}Mon Progrès d'Apprentissage{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- En-tête -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1>📚 Mon Parcours d'Apprentissage</h1>
+                <div class="btn-group">
+                    <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#learningPlanModal">
+                        📝 Plan d'étude
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistiques -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body text-center">
+                    <h3>{{ stats.total_playlists }}</h3>
+                    <p class="mb-0">Playlists suivies</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                    <h3>{{ stats.completion_rate }}%</h3>
+                    <p class="mb-0">Taux de complétion</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-info text-white">
+                <div class="card-body text-center">
+                    <h3>{{ stats.total_time_hours }}h</h3>
+                    <p class="mb-0">Temps d'étude</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body text-center">
+                    <h3>{{ stats.skill_level }}</h3>
+                    <p class="mb-0">Niveau actuel</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Progression en cours -->
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">📖 Mes formations en cours</h5>
+                </div>
+                <div class="card-body">
+                    {% for progress in active_progress %}
+                    <div class="progress-item mb-4 p-3 border rounded">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h6 class="mb-0">{{ progress.playlist.title }}</h6>
+                            <span class="badge {% if progress.progress_percentage >= 90 %}bg-success{% elif progress.progress_percentage >= 50 %}bg-warning{% else %}bg-secondary{% endif %}">
+                                {{ progress.progress_percentage|floatformat:0 }}%
+                            </span>
+                        </div>
+                        
+                        <div class="progress mb-2" style="height: 8px;">
+                            <div class="progress-bar" 
+                                 style="width: {{ progress.progress_percentage }}%"
+                                 role="progressbar">
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">
+                                {{ progress.completed_videos }}/{{ progress.total_videos }} vidéos • 
+                                <span class="badge bg-light text-dark">{{ progress.playlist.get_difficulty_display }}</span>
+                            </small>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{{ progress.playlist.youtube_url }}" target="_blank" class="btn btn-primary btn-sm">
+                                    ▶ Continuer
+                                </a>
+                                <button class="btn btn-outline-secondary btn-sm" 
+                                        onclick="showPlaylistNotes({{ progress.playlist.id }})">
+                                    📝 Notes
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-video fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">Aucune formation en cours. Explorez les recommandations !</p>
+                        <a href="{% url 'orientation:recommendations' %}" class="btn btn-primary">
+                            Voir les recommandations
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Recommandations intelligentes -->
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">💡 Recommandations pour vous</h5>
+                </div>
+                <div class="card-body">
+                    {% for playlist in smart_recommendations %}
+                    <div class="recommendation-item mb-3 p-2 border rounded">
+                        <h6 class="mb-1">{{ playlist.title }}</h6>
+                        <p class="small text-muted mb-1">
+                            <i class="fas fa-user"></i> {{ playlist.channel_name }}
+                        </p>
+                        
+                        <div class="badges mb-2">
+                            <span class="badge bg-primary">{{ playlist.get_difficulty_display }}</span>
+                            <span class="badge bg-secondary">{{ playlist.estimated_hours }}h</span>
+                            {% if playlist.language == 'fr' %}
+                            <span class="badge bg-info">FR</span>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="d-flex justify-content-between align-items-center">
+                            <a href="{{ playlist.youtube_url }}" target="_blank" class="btn btn-success btn-sm">
+                                <i class="fas fa-play"></i> Démarrer
+                            </a>
+                            <button class="btn btn-outline-primary btn-sm" 
+                                    onclick="previewPlaylist({{ playlist.id }})">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="text-muted small">Complétez le test d'orientation pour des recommandations personnalisées.</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Statistiques avancées -->
+            <div class="card mt-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">📊 Activité récente</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Formations terminées (30j):</span>
+                        <strong>{{ stats.recent_activity }}</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>En cours:</span>
+                        <strong>{{ stats.active_playlists }}</strong>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span>Progression moyenne:</span>
+                        <strong>{{ stats.completion_rate }}%</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Plan d'étude -->
+<div class="modal fade" id="learningPlanModal">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">📚 Plan d'étude personnalisé</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="learningPlanContent">
+                    <p class="text-center text-muted">
+                        <i class="fas fa-spinner fa-spin"></i> Génération de votre plan d'étude...
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Notes -->
+<div class="modal fade" id="notesModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">📝 Notes personnelles</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <textarea id="notesTextarea" class="form-control" rows="6" placeholder="Ajoutez vos notes personnelles..."></textarea>
+                <input type="hidden" id="currentPlaylistId">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-primary" onclick="saveNotes()">Enregistrer</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function showPlaylistNotes(playlistId) {
+    $('#currentPlaylistId').val(playlistId);
+    // Ici, vous devriez charger les notes existantes via AJAX
+    $('#notesTextarea').val('');
+    $('#notesModal').modal('show');
+}
+
+function saveNotes() {
+    const playlistId = $('#currentPlaylistId').val();
+    const notes = $('#notesTextarea').val();
+    
+    // Envoyer les notes via AJAX
+    fetch("{% url 'orientation:api_save_playlist_note %}", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify({
+            playlist_id: playlistId,
+            notes: notes
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            $('#notesModal').modal('hide');
+            showToast('Notes enregistrées avec succès!', 'success');
+        }
+    });
+}
+
+function previewPlaylist(playlistId) {
+    // Ouvrir un modal d'aperçu de la playlist
+    window.open(`/orientation/playlists/${playlistId}/preview/`, 'preview', 'width=800,height=600');
+}
+
+// Générer le plan d'étude au chargement du modal
+$('#learningPlanModal').on('show.bs.modal', function() {
+    fetch("{% url 'orientation:api_generate_learning_plan %}")
+        .then(response => response.json())
+        .then(data => {
+            if (data.learning_plan) {
+                displayLearningPlan(data.learning_plan);
+            }
+        });
+});
+
+function displayLearningPlan(plan) {
+    let html = `
+        <h6>Plan pour: ${plan.track}</h6>
+        <p><strong>Durée:</strong> ${plan.duration_weeks} semaines • <strong>Temps/semaine:</strong> ${plan.weekly_hours}h</p>
+        <hr>
+    `;
+    
+    plan.phases.forEach(phase => {
+        html += `
+            <div class="phase mb-4">
+                <h6>Phase ${phase.phase}: ${phase.title}</h6>
+                <p class="text-muted">${phase.weeks} • ${phase.description}</p>
+                <div class="playlists">
+                    ${phase.playlists.map(playlist => `
+                        <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+                            <div>
+                                <strong>${playlist.title}</strong>
+                                <br>
+                                <small class="text-muted">${playlist.difficulty} • ${playlist.hours}h</small>
+                            </div>
+                            <a href="/orientation/playlists/${playlist.id}/" class="btn btn-sm btn-outline-primary">Voir</a>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+    });
+    
+    $('#learningPlanContent').html(html);
+}
+
+function showToast(message, type = 'info') {
+    // Implémentez votre système de toast ici
+    console.log(message, type);
+}
+</script>
+{% endblock %}

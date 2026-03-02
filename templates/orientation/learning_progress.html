@@ -1,0 +1,240 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+  <h1>Ma progression d'apprentissage</h1>
+
+  <!-- Stats globales -->
+  <div class="row my-3">
+    <div class="col-md-3">
+      <div class="card text-center">
+        <div class="card-body">
+          <h5>Total de playlists</h5>
+          <p class="h4">{{ stats.total_playlists }}</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card text-center">
+        <div class="card-body">
+          <h5>Playlists terminées</h5>
+          <p class="h4">{{ stats.completed_playlists }}</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card text-center">
+        <div class="card-body">
+          <h5>Taux de complétion</h5>
+          <p class="h4">{{ stats.completion_rate|floatformat:1 }}%</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card text-center">
+        <div class="card-body">
+          <h5>Temps total (h)</h5>
+          <p class="h4">{{ stats.total_time_hours }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bouton pour générer un plan -->
+  <div class="my-3">
+    <button id="btn-learning-plan" class="btn btn-primary">
+      Générer mon plan d'apprentissage
+    </button>
+  </div>
+
+  <div id="learning-plan-result" class="mt-3" style="display:none;">
+    <h3>Plan d'apprentissage suggéré</h3>
+    <pre id="learning-plan-json" class="bg-light p-3"></pre>
+  </div>
+
+  <hr>
+
+  <!-- Liste des playlists suivies -->
+  <h2 class="mt-4">Mes playlists</h2>
+
+  {% if progress_list %}
+    <div class="row">
+      {% for prog in progress_list %}
+        <div class="col-md-6 mb-3">
+          <div class="card">
+            <div class="card-body">
+              <h5>
+                <a href="{% url 'playlist_detail' prog.playlist.id %}">
+                  {{ prog.playlist.title }}
+                </a>
+              </h5>
+              <p class="mb-1">
+                Chaîne : {{ prog.playlist.channel_name }}
+              </p>
+              <p class="mb-1">
+                Avancement :
+                {{ prog.completed_videos }}/{{ prog.total_videos }}
+                ({{ prog.progress_percentage }} %)
+              </p>
+
+              <!-- Bouton pour ajouter du temps / progression -->
+              <button
+                class="btn btn-sm btn-outline-success btn-add-time"
+                data-playlist-id="{{ prog.playlist.id }}"
+              >
+                +10 minutes vues
+              </button>
+
+              <!-- Notes personnelles -->
+              <div class="mt-3">
+                <label for="notes-{{ prog.playlist.id }}">Mes notes :</label>
+                <textarea
+                  id="notes-{{ prog.playlist.id }}"
+                  class="form-control playlist-notes"
+                  data-playlist-id="{{ prog.playlist.id }}"
+                  rows="2"
+                >{{ prog.personal_notes }}</textarea>
+                <button
+                  class="btn btn-sm btn-primary mt-2 btn-save-notes"
+                  data-playlist-id="{{ prog.playlist.id }}"
+                >
+                  Sauvegarder mes notes
+                </button>
+              </div>
+
+              {% if prog.is_completed %}
+                <span class="badge bg-success mt-2">Terminée ✅</span>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p>Tu n'as pas encore commencé de playlist.</p>
+  {% endif %}
+
+  <hr>
+
+  <!-- Recommandations intelligentes -->
+  {% if smart_recommendations %}
+    <h2 class="mt-4">Recommandations pour toi</h2>
+    <div class="row">
+      {% for pl in smart_recommendations %}
+        <div class="col-md-4 mb-3">
+          <div class="card h-100">
+            {% if pl.thumbnail_url %}
+              <img src="{{ pl.thumbnail_url }}" class="card-img-top" alt="{{ pl.title }}">
+            {% endif %}
+            <div class="card-body">
+              <h5 class="card-title">{{ pl.title }}</h5>
+              <p class="card-text">{{ pl.channel_name }}</p>
+              <a href="{% url 'playlist_detail' pl.id %}" class="btn btn-sm btn-outline-primary">
+                Voir la playlist
+              </a>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+</div>
+
+<script>
+  // Récupération du token CSRF (si tu utilises le cookie csrftoken standard)
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+  const csrftoken = getCookie('csrftoken');
+
+  // Ajout de temps sur une playlist
+  document.querySelectorAll('.btn-add-time').forEach(btn => {
+    btn.addEventListener('click', function () {
+      const playlistId = this.dataset.playlistId;
+
+      fetch("{% url 'update_progress' %}", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Requested-With": "XMLHttpRequest",
+          "X-CSRFToken": csrftoken,
+        },
+        body: JSON.stringify({
+          playlist_id: playlistId,
+          completed_videos: 0,           // tu peux adapter pour envoyer un vrai nombre
+          time_spent_minutes: 10        // +10 minutes
+        }),
+      })
+      .then(resp => resp.json())
+      .then(data => {
+        if (data.status === "success") {
+          alert("Progression mise à jour !");
+          // Option simple : recharger la page
+          location.reload();
+        } else {
+          alert("Erreur: " + (data.message || "inconnue"));
+        }
+      });
+    });
+  });
+
+  // Sauvegarde des notes
+  document.querySelectorAll('.btn-save-notes').forEach(btn => {
+    btn.addEventListener('click', function () {
+      const playlistId = this.dataset.playlistId;
+      const textarea = document.querySelector(
+        '#notes-' + playlistId
+      );
+      const notes = textarea.value;
+
+      fetch("{% url 'api_save_playlist_note' %}", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Requested-With": "XMLHttpRequest",
+          "X-CSRFToken": csrftoken,
+        },
+        body: JSON.stringify({
+          playlist_id: playlistId,
+          notes: notes
+        }),
+      })
+      .then(resp => resp.json())
+      .then(data => {
+        if (data.status === "success") {
+          alert("Notes sauvegardées !");
+        } else {
+          alert("Erreur: " + (data.message || "inconnue"));
+        }
+      });
+    });
+  });
+
+  // Génération du plan d'apprentissage
+  document.getElementById('btn-learning-plan').addEventListener('click', function () {
+    fetch("{% url 'api_generate_learning_plan' %}", {
+      headers: {
+        "X-Requested-With": "XMLHttpRequest"
+      }
+    })
+    .then(resp => resp.json())
+    .then(data => {
+      const container = document.getElementById('learning-plan-result');
+      const pre = document.getElementById('learning-plan-json');
+      pre.textContent = JSON.stringify(data, null, 2);
+      container.style.display = "block";
+    });
+  });
+</script>
+{% endblock %}

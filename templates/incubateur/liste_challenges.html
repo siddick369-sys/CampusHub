@@ -1,0 +1,263 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Challenges Entreprises - CampusHub{% endblock %}
+
+{% block content %}
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+<div id="pageLoader" class="page-loader">
+    <div class="loader-content">
+        <div class="logo-placeholder mb-4">
+            <div class="main-spinner"></div>
+            <i class="bi bi-lightning-charge-fill spinner-icon text-primary"></i>
+        </div>
+        <div class="loader-text-wrap">
+            <h5 class="fw-bold text-dark mb-1">CampusHub Challenges</h5>
+            <div class="progress-bar-wrap"><div class="progress-bar-fill"></div></div>
+            <small class="text-muted mt-2 d-block">Recherche de nouvelles missions...</small>
+        </div>
+    </div>
+</div>
+
+<div class="desktop-bg-animation">
+    <div class="shape-blob shape-1"></div>
+    <div class="shape-blob shape-2"></div>
+</div>
+
+<div class="container py-5 relative-z">
+
+    <div class="text-center mb-5" data-aos="fade-down">
+        <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 rounded-pill px-3 py-2 mb-3">
+            <i class="bi bi-trophy me-2"></i>Opportunités Réelles
+        </span>
+        <h1 class="fw-bold text-dark mb-2">⚡ Challenges Entreprises</h1>
+        <p class="text-muted">Relevez des défis, gagnez des récompenses et faites-vous repérer par les recruteurs.</p>
+        
+        <div class="mt-4">
+            <a href="{% url 'mes_alertes' %}" class="btn btn-outline-primary rounded-pill px-4 fw-600">
+                <i class="bi bi-bell-fill me-2"></i>Gérer mes alertes
+            </a>
+        </div>
+    </div>
+
+    <div class="card-pro mb-5" data-aos="fade-up">
+        <div class="card-body p-4">
+            <form method="GET" action="{% url 'liste_challenges' %}" class="row g-3" id="filterForm">
+                <div class="col-lg-4 col-md-6">
+                    <label class="form-label fw-600 text-dark small"><i class="bi bi-search me-2"></i>Mots-clés / Titre</label>
+                    <input type="text" name="q" class="form-control pro-input" placeholder="Ex: App Mobile, Marketing..." value="{{ query }}">
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <label class="form-label fw-600 text-dark small"><i class="bi bi-building me-2"></i>Entreprise</label>
+                    <input type="text" name="company" class="form-control pro-input" placeholder="Nom de la boîte..." value="{{ request.GET.company }}">
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <label class="form-label fw-600 text-dark small"><i class="bi bi-gift me-2"></i>Récompense</label>
+                    <select name="reward_type" class="form-select pro-input">
+                        <option value="">Tous les types</option>
+                        <option value="cash">Financière (Cash)</option>
+                        <option value="internship">Stage / Emploi</option>
+                        <option value="prize">Lots matériels</option>
+                    </select>
+                </div>
+                <div class="col-lg-2 col-md-6 d-flex align-items-end">
+                    <button type="submit" class="liquid-btn btn-primary-pro w-100">
+                        <span>Filtrer</span>
+                    </button>
+                </div>
+                <div class="col-12 border-top pt-3 mt-3 d-flex justify-content-between align-items-center">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" name="urgency" id="urgencyCheck" {% if request.GET.urgency %}checked{% endif %}>
+                        <label class="form-check-label small fw-600 text-muted" for="urgencyCheck">🔥 Urgences (Fin proche)</label>
+                    </div>
+                    <a href="{% url 'liste_challenges' %}" class="text-decoration-none small text-primary fw-600">
+                        <i class="bi bi-arrow-counterclockwise"></i> Réinitialiser
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% if challenges %}
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h5 class="fw-bold text-dark mb-0"><i class="bi bi-grid-3x3-gap me-2 text-primary"></i>Missions disponibles (<span id="total-count">{{ challenges|length }}</span>)</h5>
+            <div id="pagination-info" class="text-muted small fw-600"></div>
+        </div>
+
+        <div class="row g-4" id="challenges-wrapper">
+            {% for challenge in challenges %}
+            <div class="col-lg-4 col-md-6 challenge-item-card">
+                <div class="card-pro h-100 challenge-card-hover" data-aos="zoom-in" data-aos-delay="{{ forloop.counter0 }}00">
+                    <div class="position-relative overflow-hidden" style="height: 180px; border-top-left-radius: 16px; border-top-right-radius: 16px;">
+                        {% if challenge.image_illustration %}
+                            <img src="{{ challenge.image_illustration.url }}" class="w-100 h-100 object-fit-cover transition-img" alt="Challenge">
+                        {% else %}
+                            <div class="w-100 h-100 bg-light d-flex align-items-center justify-content-center">
+                                <i class="bi bi-image text-muted opacity-25 fs-1"></i>
+                            </div>
+                        {% endif %}
+                        <div class="position-absolute top-0 start-0 p-3">
+                            <span class="badge bg-white text-primary shadow-sm border px-3 py-2 rounded-pill fw-600">
+                                <i class="bi bi-building me-1"></i> {{ challenge.entreprise.company_name|default:"Anonyme" }}
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="card-body p-4 d-flex flex-column">
+                        <h5 class="fw-bold text-dark mb-3">{{ challenge.titre }}</h5>
+                        
+                        <div class="d-flex align-items-center mb-2">
+                            <div class="icon-box-xs bg-warning bg-opacity-10 text-warning rounded-circle me-2 d-flex align-items-center justify-content-center">
+                                <i class="bi bi-trophy-fill small"></i>
+                            </div>
+                            <span class="small fw-600 text-muted">{{ challenge.recompense|truncatechars:40 }}</span>
+                        </div>
+
+                        <div class="d-flex align-items-center mb-4">
+                            <div class="icon-box-xs bg-danger bg-opacity-10 text-danger rounded-circle me-2 d-flex align-items-center justify-content-center">
+                                <i class="bi bi-clock-history small"></i>
+                            </div>
+                            <span class="small fw-600 text-muted">Expire le {{ challenge.date_limite|date:"d M Y" }}</span>
+                        </div>
+                        
+                        <div class="mt-auto d-flex gap-2">
+                            <a href="{% url 'detail_challenge' challenge.pk %}" class="btn btn-outline-primary rounded-pill fw-600 w-100 btn-sm py-2">
+                                Détails
+                            </a>
+                            <a href="{% url 'soumettre_solution' challenge.pk %}" class="btn btn-primary rounded-pill fw-600 w-100 btn-sm py-2 shadow-sm">
+                                Participer
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="d-flex justify-content-center mt-5">
+            <nav id="pagination-controls-nav">
+                <ul class="pagination pagination-custom" id="pagination-controls"></ul>
+            </nav>
+        </div>
+    {% else %}
+        <div class="card-pro p-5 text-center" data-aos="fade-up">
+            <i class="bi bi-clipboard-x fs-1 text-muted opacity-25 mb-3"></i>
+            <h5 class="fw-bold text-dark">Aucun challenge trouvé</h5>
+            <p class="text-muted">Essayez d'ajuster vos critères ou revenez plus tard.</p>
+            <a href="{% url 'liste_challenges' %}" class="btn btn-primary rounded-pill px-4 mt-2">Réinitialiser la recherche</a>
+        </div>
+    {% endif %}
+</div>
+
+<button id="btnBackToTop" class="btn-back-to-top"><i class="bi bi-arrow-up"></i></button>
+
+<style>
+:root { --primary: #2563eb; --primary-dark: #1e40af; --light-bg: #f8fafc; --white: #ffffff; --text-dark: #0f172a; --text-muted: #64748b; --border: #e2e8f0; --radius: 16px; }
+
+body { background-color: var(--light-bg); color: var(--text-dark); font-family: 'Inter', sans-serif; overflow-x: hidden; }
+h1, h5 { font-family: 'Outfit', sans-serif; }
+
+/* Loader Page */
+.page-loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 9999; display: flex; align-items: center; justify-content: center; transition: opacity 0.6s ease; }
+.loader-content { width: 300px; text-align: center; }
+.logo-placeholder { position: relative; width: 80px; height: 80px; margin: 0 auto; }
+.main-spinner { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 4px solid #f1f5f9; border-top: 4px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
+.spinner-icon { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 2rem; }
+.progress-bar-wrap { height: 4px; background: #f1f5f9; border-radius: 10px; overflow: hidden; margin-top: 15px; }
+.progress-bar-fill { height: 100%; width: 0%; background: var(--primary); animation: loadProgress 1.5s forwards; }
+@keyframes spin { 100% { transform: rotate(360deg); } }
+@keyframes loadProgress { 100% { width: 100%; } }
+
+/* Card Pro & Inputs */
+.card-pro { background: var(--white); border-radius: var(--radius); border: 1px solid var(--border); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
+.pro-input { border-radius: 10px; border: 1px solid var(--border); padding: 12px 15px; font-size: 0.9rem; }
+.pro-input:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); outline: none; }
+
+/* Challenge Card Styling */
+.challenge-card-hover { transition: 0.3s; }
+.challenge-card-hover:hover { transform: translateY(-8px); box-shadow: 0 20px 40px -10px rgba(0,0,0,0.1); border-color: var(--primary); }
+.transition-img { transition: 0.5s transform ease; }
+.challenge-card-hover:hover .transition-img { transform: scale(1.1); }
+.object-fit-cover { object-fit: cover; }
+.icon-box-xs { width: 28px; height: 28px; flex-shrink: 0; }
+
+/* Pagination */
+.pagination-custom { gap: 8px; list-style: none; padding: 0; display: flex; }
+.pagination-custom .page-item .page-link { border: 1px solid var(--border); color: var(--text-muted); border-radius: 10px; padding: 10px 18px; font-weight: 600; text-decoration: none; transition: 0.3s; background: white; }
+.pagination-custom .page-item.active .page-link { background: var(--primary); border-color: var(--primary); color: white; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3); }
+
+/* Buttons & Shapes */
+.liquid-btn { background: var(--primary); color: white; border: none; border-radius: 50px; font-weight: 700; text-transform: uppercase; padding: 12px 24px; transition: 0.3s; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.liquid-btn:hover { background: var(--primary-dark); transform: translateY(-2px); box-shadow: 0 5px 15px rgba(37, 99, 235, 0.3); }
+.btn-back-to-top { position: fixed; bottom: 30px; right: 30px; width: 50px; height: 50px; background: var(--primary); color: white; border: none; border-radius: 50%; opacity: 0; visibility: hidden; transition: 0.3s; z-index: 1000; display: flex; align-items: center; justify-content: center; }
+.btn-back-to-top.show { opacity: 1; visibility: visible; }
+
+.desktop-bg-animation { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; }
+.shape-blob { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.4; animation: float 10s infinite alternate; }
+.shape-1 { top: -10%; left: -10%; width: 600px; height: 600px; background: rgba(37, 99, 235, 0.15); }
+.shape-2 { bottom: -10%; right: -10%; width: 500px; height: 500px; background: rgba(16, 185, 129, 0.1); }
+@keyframes float { 0% { transform: translate(0,0); } 100% { transform: translate(40px, 40px); } }
+
+.fw-600 { font-weight: 600; }
+</style>
+
+<script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script>
+    // Loader Logic
+    window.addEventListener('load', () => {
+        const loader = document.getElementById('pageLoader');
+        setTimeout(() => {
+            loader.style.opacity = '0';
+            setTimeout(() => loader.style.visibility = 'hidden', 600);
+        }, 1000);
+    });
+
+    document.addEventListener("DOMContentLoaded", function () {
+        AOS.init({ duration: 800, once: true });
+
+        // Pagination JS (6 par page)
+        const itemsPerPage = 6;
+        const wrapper = document.getElementById('challenges-wrapper');
+        const paginationControls = document.getElementById('pagination-controls');
+        const paginationInfo = document.getElementById('pagination-info');
+        
+        if (wrapper) {
+            const items = Array.from(wrapper.getElementsByClassName('challenge-item-card'));
+            const totalPages = Math.ceil(items.length / itemsPerPage);
+            let currentPage = 1;
+
+            function displayPage(page) {
+                currentPage = page;
+                const start = (page - 1) * itemsPerPage;
+                const end = start + itemsPerPage;
+                items.forEach((item, index) => {
+                    item.style.display = (index >= start && index < end) ? 'block' : 'none';
+                });
+                updateControls();
+                if(paginationInfo) paginationInfo.innerText = `Affichage de ${start + 1}-${Math.min(end, items.length)} sur ${items.length}`;
+                if(page > 1) window.scrollTo({ top: wrapper.offsetTop - 150, behavior: 'smooth' });
+            }
+
+            function updateControls() {
+                paginationControls.innerHTML = '';
+                for (let i = 1; i <= totalPages; i++) {
+                    const li = document.createElement('li');
+                    li.className = `page-item ${currentPage === i ? 'active' : ''}`;
+                    li.innerHTML = `<a class="page-link" href="javascript:void(0)">${i}</a>`;
+                    li.onclick = () => displayPage(i);
+                    paginationControls.appendChild(li);
+                }
+            }
+            if (items.length > 0) displayPage(1);
+        }
+
+        // Back to top
+        const btt = document.getElementById("btnBackToTop");
+        window.addEventListener("scroll", () => { btt.classList.toggle("show", window.scrollY > 400); });
+        btt.onclick = () => window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+</script>
+{% endblock %}

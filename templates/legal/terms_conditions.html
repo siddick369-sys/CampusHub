@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Conditions Générales{% endblock %}
+
+{% block content %}
+<style>
+    /* ... (Garder le CSS de la bordure 3D de la réponse précédente) ... */
+    /* Ajoutons juste le style pour l'image intérieure */
+    .cgu-header {
+        text-align: center; margin-bottom: 2rem; border-bottom: 1px solid #333; padding-bottom: 2rem;
+    }
+    .contract-icon {
+        width: 80px; height: 80px; margin-bottom: 1rem;
+        filter: drop-shadow(0 0 10px #00f7ff);
+    }
+</style>
+
+<div class="legal-wrapper" style="background:#08080a; min-height:100vh; padding:4rem 1rem;">
+    <div class="cyber-panel" style="position: relative; background: #12121a; padding: 3rem; margin: 0 auto; max-width: 900px; border: 2px solid #333; box-shadow: 10px 10px 0px #000, 10px 10px 0px 2px #00f7ff; overflow: hidden;">
+        
+        <div style="position: absolute; top:0; left:0; width:100%; height:2px; background: linear-gradient(90deg, transparent, #00f7ff, transparent); animation: scanTop 4s infinite;"></div>
+
+        <div class="cgu-header">
+            <img src="https://cdn-icons-png.flaticon.com/512/9631/9631247.png" class="contract-icon" alt="Contrat">
+            <h1 class="legal-title" style="font-family:'Orbitron'; color:#fff;">Conditions Générales</h1>
+            <p class="text-info">Veuillez lire attentivement avant d'accéder au réseau.</p>
+        </div>
+
+        <div class="legal-section mb-4">
+            <div class="d-flex align-items-start gap-3">
+                <img src="https://cdn-icons-png.flaticon.com/512/11502/11502426.png" width="50" style="filter: invert(1);">
+                <div>
+                    <h2 class="h5 text-info text-uppercase">1. Acceptation</h2>
+                    <p class="text-white-50">L'accès à la plateforme implique l'acceptation sans réserve de ces conditions. Tout utilisateur contrevenant aux règles sera banni.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="legal-section mb-4">
+            <div class="d-flex align-items-start gap-3">
+                <img src="https://cdn-icons-png.flaticon.com/512/10463/10463283.png" width="50" style="filter: invert(1);">
+                <div>
+                    <h2 class="h5 text-info text-uppercase">2. Trust Score</h2>
+                    <p class="text-white-50">Votre réputation est calculée algorithmiquement. Un score inférieur à 20/100 entraîne une exclusion automatique des services vendeurs.</p>
+                </div>
+            </div>
+        </div>
+
+        </div>
+</div>
+{% endblock %}

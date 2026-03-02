@@ -1,0 +1,308 @@
+{% extends "base.html" %}
+{% block title %}Recommandations IA – CampusHub{% endblock %}
+{% load static %}
+
+{% block content %}
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+<link rel="stylesheet" href="https://unpkg.com/aos@2.3.4/dist/aos.css" />
+
+<style>
+/* === DESIGN SYSTEM CAMPUSHUB PREMIUM === */
+:root {
+    --primary: #2563eb; --primary-light: rgba(37, 99, 235, 0.1);
+    --accent: #06b6d4; --success: #10b981;
+    --text-dark: #0f172a; --text-muted: #64748b; 
+    --border: #e2e8f0; --white: #ffffff; --bg-light: #f8fafc;
+}
+
+body { background-color: var(--bg-light); color: var(--text-dark); font-family: 'Inter', sans-serif; overflow-x: hidden; }
+h1, h2, h3, h5, .fw-600 { font-family: 'Outfit', sans-serif; }
+
+/* === LOADER THEMATIQUE (Matching IA) === */
+.page-loader {
+    position: fixed; inset: 0; background: #fff; z-index: 10000;
+    display: flex; align-items: center; justify-content: center;
+    transition: opacity 0.6s ease;
+}
+.main-spinner {
+    width: 80px; height: 80px; border: 4px solid #f1f5f9; border-top: 4px solid var(--primary);
+    border-radius: 50%; animation: spin 1s linear infinite; position: relative;
+}
+.spinner-icon { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 2rem; color: var(--primary); }
+@keyframes spin { 100% { transform: rotate(360deg); } }
+
+/* === BANNER & BLOTS === */
+.desktop-bg-animation { position: fixed; inset: 0; z-index: -1; pointer-events: none; }
+.shape-blob { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.25; }
+.shape-1 { top: -10%; left: -10%; width: 500px; height: 500px; background: var(--primary-light); }
+.shape-2 { bottom: -10%; right: -10%; width: 400px; height: 400px; background: rgba(34, 211, 238, 0.15); }
+
+/* === CARTE PRO === */
+.card-pro { background: var(--white); border: 1px solid var(--border); border-radius: 20px; transition: 0.3s ease; }
+.offer-card-pro { 
+    height: 100%; display: flex; flex-direction: column; position: relative; 
+    overflow: hidden; padding: 24px; border: 1px solid var(--border); border-radius: 20px; background: #fff;
+}
+.offer-card-pro:hover {
+    transform: translateY(-5px); border-color: var(--primary);
+    box-shadow: 0 20px 40px rgba(37, 99, 235, 0.08);
+}
+
+.score-badge {
+    position: absolute; top: 0; right: 0; background: var(--success); color: white;
+    padding: 6px 16px; border-bottom-left-radius: 15px; font-size: 0.75rem; font-weight: 700;
+}
+
+/* === FILTRES === */
+.filter-container { background: var(--white); border: 1px solid var(--border); border-radius: 100px; padding: 10px 25px; }
+@media (max-width: 992px) { .filter-container { border-radius: 20px; padding: 20px; } }
+
+/* === LIQUID BUTTONS === */
+.btn-liquid {
+    position: relative; display: inline-block; border-radius: 50px; overflow: hidden; 
+    border: none; cursor: pointer; text-decoration: none; font-weight: 700;
+    transition: 0.4s; background: var(--primary-light); text-align: center;
+}
+.btn-liquid span { position: relative; z-index: 2; color: var(--primary); transition: 0.4s; font-size: 0.9rem; }
+.btn-liquid::before {
+    content: ''; position: absolute; top: 100%; left: 0; width: 100%; height: 100%;
+    background: var(--primary); transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 1;
+}
+.btn-liquid:hover::before { top: 0; }
+.btn-liquid:hover span { color: #fff; }
+
+/* === PAGINATION === */
+.page-btn {
+    width: 40px; height: 40px; border-radius: 12px; border: 1px solid var(--border);
+    background: #fff; color: var(--text-dark); font-weight: 600; transition: 0.3s;
+}
+.page-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+.back-to-top {
+    position: fixed; bottom: 30px; right: 30px; width: 50px; height: 50px;
+    background: var(--primary); color: white; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; opacity: 0; visibility: hidden; transition: 0.4s; z-index: 1000;
+}
+.back-to-top.show { opacity: 1; visibility: visible; }
+.reveal-on-scroll { transition: all 0.8s ease-out; }
+</style>
+
+<div id="pageLoader" class="page-loader">
+    <div class="text-center">
+        <div class="main-spinner"><i class="bi bi-lightning-charge-fill spinner-icon"></i></div>
+        <p class="mt-3 small text-uppercase fw-600 text-primary" style="letter-spacing: 2px;">Analyse de votre profil...</p>
+    </div>
+</div>
+
+<div class="desktop-bg-animation">
+    <div class="shape-blob shape-1"></div>
+    <div class="shape-blob shape-2"></div>
+</div>
+
+<div class="container py-5">
+    
+    <div class="row align-items-end mb-5 reveal-on-scroll">
+        <div class="col-lg-7">
+            <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill fw-600 mb-3">
+                <i class="bi bi-cpu me-2"></i>Smart Matching Enabled
+            </span>
+            <h1 class="fw-bold text-dark display-6 mb-2">Offres recommandées</h1>
+            <p class="text-muted mb-0">Nous avons analysé vos compétences pour dénicher ces opportunités.</p>
+        </div>
+        <div class="col-lg-5 text-lg-end mt-4 mt-lg-0">
+            <a href="{% url 'offer_list' %}" class="btn btn-outline-secondary rounded-pill px-4 fw-600">
+                <i class="bi bi-grid-3x3-gap me-2"></i>Toutes les offres
+            </a>
+        </div>
+    </div>
+
+    <div class="card-pro p-4 mb-5 border-0 shadow-sm reveal-on-scroll" style="border-left: 6px solid var(--primary) !important;">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center">
+            <div>
+                {% if last_orientation_result %}
+                    <h6 class="fw-bold text-dark mb-1"><i class="bi bi-check2-circle text-success me-2"></i>Test d'orientation complété</h6>
+                    <p class="text-muted small mb-0">Basé sur vos résultats du {{ last_orientation_result.created_at|date:"d/M/Y" }}.</p>
+                {% else %}
+                    <h6 class="fw-bold text-dark mb-1">Boostez votre matching</h6>
+                    <p class="text-muted small mb-0">Passez le test d'orientation pour affiner ces résultats.</p>
+                {% endif %}
+            </div>
+            <a href="{% url 'orientation_test' %}" class="btn btn-primary rounded-pill px-4 fw-600 btn-sm mt-3 mt-md-0">
+                {% if last_orientation_result %}Repasser le test{% else %}Lancer le test{% endif %}
+            </a>
+        </div>
+    </div>
+
+    <div class="filter-container mb-5 shadow-sm reveal-on-scroll">
+        <div class="row g-3 align-items-center">
+            <div class="col-lg-4">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text bg-transparent border-0 text-muted"><i class="bi bi-search"></i></span>
+                    <input type="text" id="filterSearch" class="form-control border-0 bg-transparent" placeholder="Rechercher un poste ou une ville...">
+                </div>
+            </div>
+            <div class="col-lg-3">
+                <select id="filterContract" class="form-select form-select-sm border-0 bg-transparent fw-600">
+                    <option value="">Tous les contrats</option>
+                    <option value="Stage">Stage</option>
+                    <option value="Alternance">Alternance</option>
+                    <option value="CDI">CDI / CDD</option>
+                </select>
+            </div>
+            <div class="col-lg-3">
+                <select id="filterLocation" class="form-select form-select-sm border-0 bg-transparent fw-600">
+                    <option value="">Tous les modes</option>
+                    <option value="Présentiel">Présentiel</option>
+                    <option value="Hybride">Hybride</option>
+                    <option value="Télétravail">Télétravail</option>
+                </select>
+            </div>
+            <div class="col-lg-2 text-end">
+                <button id="resetFilters" class="btn btn-sm text-primary fw-bold text-uppercase" style="font-size: 0.7rem; letter-spacing: 1px;">
+                    Effacer
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="offersGrid" class="row g-4">
+        {% if recommendations %}
+            {% for offer, score in recommendations %}
+            <div class="col-md-6 col-lg-4 offer-item reveal-on-scroll" 
+                 data-title="{{ offer.title }}" 
+                 data-company="{{ offer.company_name_snapshot|default:offer.company.username }}"
+                 data-contract="{{ offer.get_contract_type_display }}"
+                 data-location="{{ offer.get_location_type_display }}"
+                 data-city="{{ offer.location_city|default:'' }}">
+                
+                <div class="offer-card-pro">
+                    {% if score > 0 %}
+                        <div class="score-badge">MATCH {{ score }}%</div>
+                    {% endif %}
+
+                    <div class="mb-3">
+                        <h6 class="fw-bold text-dark mb-1 text-truncate">{{ offer.title }}</h6>
+                        <p class="text-primary small fw-600 mb-0">{{ offer.company_name_snapshot|default:offer.company.username }}</p>
+                    </div>
+
+                    <div class="d-flex flex-wrap gap-2 mb-4">
+                        <span class="badge bg-light text-muted border fw-normal x-small"><i class="bi bi-geo-alt me-1"></i>{{ offer.location_city|default:"Cameroun" }}</span>
+                        <span class="badge bg-light text-muted border fw-normal x-small"><i class="bi bi-briefcase me-1"></i>{{ offer.get_contract_type_display }}</span>
+                    </div>
+
+                    <p class="text-muted small lh-base mb-4 flex-grow-1">
+                        {{ offer.description|truncatechars:100 }}
+                    </p>
+
+                    <div class="d-flex justify-content-between align-items-center mt-auto pt-3 border-top">
+                        <div class="text-muted" style="font-size: 0.7rem;">
+                            <i class="bi bi-people me-1"></i>{{ offer.applications_count }} candidats
+                        </div>
+                        <a href="{% url 'offer_detail' offer.slug %}" class="btn-liquid primary px-4 py-2">
+                            <span>Détails</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12 text-center py-5">
+                <div class="card-pro p-5 border-0">
+                    <i class="bi bi-search-heart display-4 text-light mb-3"></i>
+                    <h5 class="fw-bold">Aucune recommandation pour le moment</h5>
+                    <p class="text-muted">Élargissez vos critères ou complétez votre profil étudiant.</p>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <div id="paginationControls" class="d-flex justify-content-center gap-2 mt-5"></div>
+
+</div>
+
+<div id="backToTop" class="back-to-top shadow-lg"><i class="bi bi-arrow-up"></i></div>
+
+<script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+<script>
+// --- LOGIQUE DE FILTRAGE & PAGINATION ---
+const itemsPerPage = 6;
+let currentPage = 1;
+const allItems = Array.from(document.querySelectorAll('.offer-item'));
+const grid = document.getElementById('offersGrid');
+const pagination = document.getElementById('paginationControls');
+
+// Inputs
+const searchInp = document.getElementById('filterSearch');
+const contractInp = document.getElementById('filterContract');
+const locationInp = document.getElementById('filterLocation');
+const resetBtn = document.getElementById('resetFilters');
+
+function updateUI() {
+    const searchVal = searchInp.value.toLowerCase();
+    const contractVal = contractInp.value;
+    const locationVal = locationInp.value;
+
+    // 1. Filtrer
+    const filtered = allItems.filter(item => {
+        const matchesSearch = item.dataset.title.toLowerCase().includes(searchVal) || 
+                              item.dataset.company.toLowerCase().includes(searchVal) ||
+                              item.dataset.city.toLowerCase().includes(searchVal);
+        const matchesContract = !contractVal || item.dataset.contract === contractVal;
+        const matchesLocation = !locationVal || item.dataset.location === locationVal;
+        return matchesSearch && matchesContract && matchesLocation;
+    });
+
+    // 2. Paginer
+    const totalPages = Math.ceil(filtered.length / itemsPerPage);
+    if (currentPage > totalPages) currentPage = 1;
+
+    allItems.forEach(item => item.style.display = 'none');
+    
+    const start = (currentPage - 1) * itemsPerPage;
+    const end = start + itemsPerPage;
+    const toShow = filtered.slice(start, end);
+    
+    toShow.forEach(item => {
+        item.style.display = 'block';
+        item.style.opacity = '1';
+    });
+
+    // 3. Boutons Pagination
+    pagination.innerHTML = '';
+    if (totalPages > 1) {
+        for (let i = 1; i <= totalPages; i++) {
+            const b = document.createElement('button');
+            b.innerText = i;
+            b.className = `page-btn ${i === currentPage ? 'active' : ''}`;
+            b.onclick = () => { currentPage = i; updateUI(); window.scrollTo({top: 400, behavior: 'smooth'}); };
+            pagination.appendChild(b);
+        }
+    }
+}
+
+// Events
+[searchInp, contractInp, locationInp].forEach(el => el.addEventListener('input', () => { currentPage = 1; updateUI(); }));
+resetBtn.onclick = () => { searchInp.value = ''; contractInp.value = ''; locationInp.value = ''; updateUI(); };
+
+// INITIALISATION
+window.addEventListener('load', () => {
+    setTimeout(() => {
+        document.getElementById('pageLoader').style.opacity = '0';
+        setTimeout(() => document.getElementById('pageLoader').style.visibility = 'hidden', 600);
+    }, 800);
+    updateUI();
+});
+
+// Utilities
+const btt = document.getElementById('backToTop');
+window.onscroll = () => {
+    if (window.scrollY > 400) btt.classList.add('show');
+    else btt.classList.remove('show');
+};
+btt.onclick = () => window.scrollTo({top: 0, behavior: 'smooth'});
+
+AOS.init({ duration: 800, once: true });
+</script>
+{% endblock %}

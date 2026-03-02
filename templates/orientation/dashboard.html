@@ -1,0 +1,308 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Centre d'Orientation{% endblock %}
+
+{% block content %}
+
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+
+<div class="desktop-bg-animation">
+    <div class="shape-blob shape-1"></div>
+    <div class="shape-blob shape-2"></div>
+</div>
+
+<div class="container py-5 relative-z">
+
+    <div class="text-center mb-5 reveal-on-scroll">
+        <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 rounded-pill px-3 py-2 mb-3">
+            <i class="bi bi-compass me-2"></i>Orientation Hub
+        </span>
+        <h1 class="fw-bold text-dark mb-2">Centre d'Orientation</h1>
+        <p class="text-muted">
+            Bonjour <strong class="text-dark">{{ user.profile.full_name|default:user.username }}</strong>.
+            Définissons ensemble votre avenir académique et professionnel.
+        </p>
+    </div>
+
+    <div class="row g-4 mb-5">
+        <div class="col-md-4 reveal-on-scroll" data-delay="100">
+            <a href="{% url 'ai_orientation_test' %}" class="card-action h-100 text-decoration-none">
+                <div class="card-body p-4 text-center">
+                    <div class="icon-box-lg bg-primary-subtle text-primary mb-3 mx-auto">
+                        <i class="bi bi-lightning-charge-fill"></i>
+                    </div>
+                    <h5 class="fw-bold text-dark mb-2">Orientation IA (Beta)</h5>
+                    <p class="text-muted small mb-0">Discutez avec notre IA pour découvrir votre voie idéale de manière dynamique.</p>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-4 reveal-on-scroll" data-delay="200">
+            <a href="{% url 'track_list' %}" class="card-action h-100 text-decoration-none">
+                <div class="card-body p-4 text-center">
+                    <div class="icon-box-lg bg-danger-subtle text-danger mb-3 mx-auto">
+                        <i class="bi bi-grid-3x3-gap-fill"></i>
+                    </div>
+                    <h5 class="fw-bold text-dark mb-2">Explorer les Filières</h5>
+                    <p class="text-muted small mb-0">Naviguez dans notre base de données complète de carrières et formations.</p>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-4 reveal-on-scroll" data-delay="300">
+            <a href="{% url 'orientation_history' %}" class="card-action h-100 text-decoration-none">
+                <div class="card-body p-4 text-center">
+                    <div class="icon-box-lg bg-warning-subtle text-warning mb-3 mx-auto">
+                        <i class="bi bi-clock-history"></i>
+                    </div>
+                    <h5 class="fw-bold text-dark mb-2">Mon Historique</h5>
+                    <p class="text-muted small mb-0">Retrouvez vos anciens résultats et suivez votre progression dans le temps.</p>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    {% if last_result %}
+    <div class="card-pro reveal-on-scroll">
+        <div class="card-header bg-white border-bottom p-4 d-flex flex-column flex-md-row justify-content-between align-items-center">
+            <div class="d-flex align-items-center mb-3 mb-md-0">
+                <div class="icon-box-sm bg-success-subtle text-success me-3">
+                    <i class="bi bi-check-circle-fill"></i>
+                </div>
+                <div>
+                    <h5 class="fw-bold text-dark mb-0">Dernière Analyse</h5>
+                    <span class="text-muted small">Effectuée le {{ last_result.created_at|date:"d/m/Y à H:i" }}</span>
+                </div>
+            </div>
+            <a href="{% url 'orientation_result_detail' last_result.id %}" class="liquid-btn btn-primary-pro px-4 py-2 text-decoration-none">
+                <span>Accéder au Rapport</span> <i class="bi bi-arrow-right ms-2"></i>
+            </a>
+        </div>
+
+        <div class="card-body p-4">
+            <div class="row">
+                <div class="col-lg-8">
+                    <h6 class="text-uppercase text-muted small fw-bold mb-4 ls-1">Top Filières Identifiées</h6>
+
+                    {% for track, score in last_result.get_sorted_tracks|slice:":3" %}
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="fw-600 text-dark">{{ track.name }}</span>
+                            <span class="badge bg-light text-primary border">{{ score }} pts</span>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-primary" role="progressbar" style="width: calc({{ score }} * 5%);" aria-valuenow="{{ score }}" aria-valuemin="0" aria-valuemax="20"></div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div class="col-lg-4 border-start border-light d-none d-lg-block ps-4">
+                    <div class="bg-light p-3 rounded-3 h-100 d-flex flex-column justify-content-center text-center">
+                        <i class="bi bi-info-circle text-primary fs-3 mb-2"></i>
+                        <p class="text-muted small mb-0">
+                            Ce résultat est basé sur vos réponses au test IA. Consultez le rapport complet pour voir les débouchés, les écoles recommandées et les conseils personnalisés.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="card-pro text-center p-5 reveal-on-scroll">
+        <div class="icon-box-xl bg-light text-muted mx-auto mb-3 rounded-circle d-flex align-items-center justify-content-center" style="width:80px; height:80px; font-size:2rem;">
+            <i class="bi bi-bar-chart-line"></i>
+        </div>
+        <h4 class="fw-bold text-dark">Aucune donnée d'orientation</h4>
+        <p class="text-muted mb-4">
+            Vous n'avez pas encore passé de test. C'est la première étape pour obtenir des recommandations personnalisées.
+        </p>
+        <a href="{% url 'ai_orientation_test' %}" class="liquid-btn btn-primary-pro d-inline-flex px-5">
+            <span>Commencer le test IA</span>
+        </a>
+    </div>
+    {% endif %}
+
+</div>
+
+<style>
+    /* Variables */
+    :root {
+        --primary: #2563eb;
+        --primary-dark: #1e40af;
+        --light-bg: #f8fafc;
+        --white: #ffffff;
+        --text-dark: #0f172a;
+        --text-muted: #64748b;
+        --border: #e2e8f0;
+        --radius: 20px;
+    }
+
+    body {
+        background-color: var(--light-bg);
+        color: var(--text-dark);
+        font-family: 'Inter', sans-serif;
+    }
+
+    h1,
+    h4,
+    h5 {
+        font-family: 'Outfit', sans-serif;
+    }
+
+    /* Cards Action */
+    .card-action {
+        display: block;
+        background: var(--white);
+        border-radius: var(--radius);
+        border: 1px solid var(--border);
+        transition: 0.3s;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    }
+
+    .card-action:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        border-color: #bfdbfe;
+    }
+
+    .icon-box-lg {
+        width: 60px;
+        height: 60px;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+
+    /* Card Pro (Result & Empty) */
+    .card-pro {
+        background: var(--white);
+        border-radius: var(--radius);
+        border: 1px solid var(--border);
+        box-shadow: 0 10px 40px -5px rgba(0, 0, 0, 0.05);
+        overflow: hidden;
+    }
+
+    .icon-box-sm {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+    }
+
+    /* Progress Bar */
+    .progress {
+        background-color: #f1f5f9;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    .progress-bar {
+        border-radius: 10px;
+        transition: width 1s ease-in-out;
+    }
+
+    /* Button Liquid */
+    .liquid-btn {
+        position: relative;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 12px 24px;
+        border: none;
+        border-radius: 50px;
+        background: var(--primary);
+        color: white;
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        transition: 0.3s;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+    }
+
+    .liquid-btn:hover {
+        transform: translateY(-2px);
+        background: var(--primary-dark);
+        color: white;
+    }
+
+    /* Animation */
+    .desktop-bg-animation {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+        pointer-events: none;
+    }
+
+    .shape-blob {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(80px);
+        opacity: 0.5;
+        animation: float 10s infinite alternate;
+    }
+
+    .shape-1 {
+        top: -10%;
+        left: -10%;
+        width: 500px;
+        height: 500px;
+        background: rgba(37, 99, 235, 0.1);
+    }
+
+    .shape-2 {
+        bottom: -10%;
+        right: -10%;
+        width: 400px;
+        height: 400px;
+        background: rgba(16, 185, 129, 0.1);
+    }
+
+    @keyframes float {
+        0% {
+            transform: translate(0, 0);
+        }
+
+        100% {
+            transform: translate(30px, 30px);
+        }
+    }
+
+    .reveal-on-scroll {
+        animation: fadeInUp 0.6s ease-out;
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => { if (entry.isIntersecting) entry.target.style.animationPlayState = "running"; });
+        });
+        document.querySelectorAll(".reveal-on-scroll").forEach(el => observer.observe(el));
+    });
+</script>
+
+{% endblock %}

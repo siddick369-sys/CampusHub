@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}404 - Signal Perdu{% endblock %}
+
+{% block content %}
+<style>
+    .error-container {
+        min-height: 80vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        position: relative;
+        z-index: 2;
+    }
+    
+    .error-code {
+        font-family: 'Orbitron', sans-serif;
+        font-size: 8rem;
+        font-weight: 900;
+        color: #fff;
+        text-shadow: 4px 4px 0px #ff0055;
+        position: relative;
+        animation: glitch 1s infinite;
+    }
+
+    .error-message {
+        font-family: 'Rajdhani', sans-serif;
+        font-size: 1.5rem;
+        color: #00f7ff;
+        margin-bottom: 2rem;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+    }
+
+    @keyframes glitch {
+        0% { transform: translate(0); }
+        20% { transform: translate(-2px, 2px); }
+        40% { transform: translate(-2px, -2px); }
+        60% { transform: translate(2px, 2px); }
+        80% { transform: translate(2px, -2px); }
+        100% { transform: translate(0); }
+    }
+
+    .btn-reboot {
+        border: 1px solid #00f7ff;
+        color: #00f7ff;
+        background: transparent;
+        padding: 15px 40px;
+        font-family: 'Orbitron', sans-serif;
+        font-weight: bold;
+        text-decoration: none;
+        transition: 0.3s;
+        box-shadow: 0 0 15px rgba(0, 247, 255, 0.2);
+    }
+    .btn-reboot:hover {
+        background: #00f7ff;
+        color: #000;
+        box-shadow: 0 0 30px rgba(0, 247, 255, 0.6);
+    }
+</style>
+
+<div class="error-container">
+    <div class="error-code">404</div>
+    <div class="error-message">
+        <i class="bi bi-wifi-off me-2"></i> Signal Perdu<br>
+        <span class="text-muted fs-6">La ressource demandée n'existe pas dans ce secteur.</span>
+    </div>
+    
+    <a href="/" class="btn-reboot">
+        <i class="bi bi-power me-2"></i> REBOOT SYSTEM (ACCUEIL)
+    </a>
+</div>
+{% endblock %}

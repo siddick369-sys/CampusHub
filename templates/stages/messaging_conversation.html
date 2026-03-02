@@ -1,0 +1,754 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Messagerie – CampusHub{% endblock %}
+
+{% block content %}
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+
+<style>
+    /* === DESIGN SYSTEM CAMPUSHUB (PREMIUM GLASSMORPISM) === */
+    :root {
+        --primary: #2563eb;
+        --primary-gradient: linear-gradient(135deg, #2563eb, #3b82f6);
+        --primary-soft: rgba(37, 99, 235, 0.08);
+        --secondary: #64748b;
+        --bg-body: #f1f5f9;
+        --card-bg: rgba(255, 255, 255, 0.95);
+        --text-main: #0f172a;
+        --text-muted: #64748b;
+        --border-color: rgba(226, 232, 240, 0.8);
+        --glass-blur: blur(12px);
+        --shadow-premium: 0 20px 50px rgba(0, 0, 0, 0.1);
+    }
+
+    body {
+        background: radial-gradient(circle at top left, #f8fafc, #f1f5f9);
+        color: var(--text-main);
+        font-family: 'Inter', sans-serif;
+        scroll-behavior: smooth;
+        min-height: 100vh;
+    }
+
+    h5,
+    .font-outfit {
+        font-family: 'Outfit', sans-serif;
+        font-weight: 700;
+    }
+
+    /* === PREMIUM LOADER === */
+    #loader-wrapper {
+        position: fixed;
+        inset: 0;
+        background: #fff;
+        z-index: 10000;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .loader-icon {
+        font-size: 4rem;
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation: pulseIcon 2s ease-in-out infinite;
+    }
+
+    .shadow-premium-sm {
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    }
+
+    /* === BACK TO TOP === */
+    #backToTop {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        width: 50px;
+        height: 50px;
+        background: var(--primary-gradient);
+        color: white;
+        border-radius: 50%;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 10px 20px rgba(37, 99, 235, 0.3);
+        cursor: pointer;
+        z-index: 999;
+        border: none;
+        transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    #backToTop:hover {
+        transform: translateY(-8px) scale(1.1);
+        box-shadow: 0 15px 30px rgba(37, 99, 235, 0.4);
+    }
+
+    /* === CHAT CONTAINER === */
+    .chat-container {
+        max-width: 1350px;
+        margin: 2rem auto;
+        background: var(--card-bg);
+        backdrop-filter: var(--glass-blur);
+        border-radius: 24px;
+        border: 1px solid var(--border-color);
+        box-shadow: var(--shadow-premium);
+        display: flex;
+        flex-direction: column;
+        height: 85vh;
+        overflow: hidden;
+        animation: slideUp 0.6s ease-out;
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* === HEADER === */
+    .chat-header {
+        padding: 20px 30px;
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(10px);
+        border-bottom: 1px solid var(--border-color);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    /* === AVATAR & STATUS === */
+    .avatar-status {
+        position: relative;
+        width: 52px;
+        height: 52px;
+        transition: 0.3s;
+    }
+
+    .avatar-status:hover {
+        transform: scale(1.05);
+    }
+
+    .avatar-status img {
+        border: 2px solid var(--primary-soft);
+    }
+
+    .status-indicator {
+        position: absolute;
+        bottom: 3px;
+        right: 3px;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        border: 3px solid #fff;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .online {
+        background: #22c55e;
+        box-shadow: 0 0 10px rgba(34, 197, 94, 0.5);
+    }
+
+    .offline {
+        background: #94a3b8;
+    }
+
+    /* === CHAT BODY === */
+    .chat-body {
+        flex: 1;
+        overflow-y: auto;
+        padding: 30px;
+        background: #f8fafc;
+        background-image:
+            radial-gradient(circle at 2px 2px, rgba(0, 0, 0, 0.01) 1px, transparent 0);
+        background-size: 24px 24px;
+    }
+
+    /* === MESSAGES === */
+    .message-wrapper {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 24px;
+        max-width: 75%;
+        animation: fadeInMsg 0.4s ease-out forwards;
+        opacity: 0;
+    }
+
+    @keyframes fadeInMsg {
+        to {
+            opacity: 1;
+            transform: none;
+        }
+
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+    }
+
+    .message-wrapper.me {
+        align-self: flex-end;
+        align-items: flex-end;
+    }
+
+    .message-wrapper.them {
+        align-self: flex-start;
+        align-items: flex-start;
+    }
+
+    .message-bubble {
+        padding: 14px 20px;
+        border-radius: 20px;
+        position: relative;
+        font-size: 0.98rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+        line-height: 1.6;
+        transition: 0.2s;
+    }
+
+    .message-bubble:hover {
+        transform: scale(1.01);
+    }
+
+    .message-wrapper.me .message-bubble {
+        background: var(--primary-gradient);
+        color: #fff;
+        border-bottom-right-radius: 4px;
+        box-shadow: 0 8px 20px rgba(37, 99, 235, 0.15);
+    }
+
+    .message-wrapper.them .message-bubble {
+        background: #fff;
+        color: var(--text-main);
+        border-bottom-left-radius: 4px;
+        border: 1px solid var(--border-color);
+    }
+
+    .message-deleted {
+        font-style: italic;
+        opacity: 0.6;
+        background: #f1f5f9 !important;
+        border: 1px dashed var(--secondary) !important;
+        color: var(--secondary) !important;
+    }
+
+    .hover-scale {
+        transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .hover-scale:hover {
+        transform: scale(1.05);
+    }
+</style>
+
+<div id="loader-wrapper">
+    <div class="loader-icon"><i class="bi bi-chat-quote-fill"></i></div>
+    <div class="hub-spinner"></div>
+    <p class="mt-3 small fw-bold text-muted">Sécurisation de la connexion...</p>
+</div>
+
+<button id="backToTop" title="Revenir en haut">
+    <i class="bi bi-arrow-up"></i>
+</button>
+
+<div class="container py-4">
+    <div class="chat-container">
+
+        <div class="chat-header px-4 py-3">
+            <div class="d-flex align-items-center gap-3">
+                <a href="{% url 'messaging_inbox' %}" class="btn btn-icon-sm btn-light rounded-circle shadow-sm d-lg-none" title="Retour">
+                    <i class="bi bi-chevron-left"></i>
+                </a>
+
+                <div class="avatar-status shadow-premium-sm">
+                    {% if other_profile and other_profile.avatar %}
+                    <img src="{{ other_profile.avatar.url }}" class="rounded-circle w-100 h-100 shadow-sm" style="object-fit: cover; border: 2px solid #fff;">
+                    {% else %}
+                    <img src="{% static 'img/avatar-default.png' %}" class="rounded-circle w-100 h-100 shadow-sm" style="object-fit: cover; border: 2px solid #fff;">
+                    {% endif %}
+                    <span id="statusDot" class="status-indicator {% if other_profile and other_profile.is_chat_available_now %}online{% else %}offline{% endif %}"></span>
+                </div>
+
+                <div>
+                    <h6 class="mb-0 fw-bold font-outfit">
+                        {% if user == conversation.student %}
+                        {{ conversation.company.profile.company_name|default:conversation.company.username }}
+                        {% else %}
+                        {{ conversation.student.profile.full_name|default:conversation.student.username }}
+                        {% endif %}
+                    </h6>
+                    <small class="text-muted" id="chatOtherStatusText" style="font-size: 0.75rem;">
+                        {% if other_profile and other_profile.is_chat_available_now %}En ligne{% else %}Hors ligne{% endif %}
+                        · Candidature : {{ conversation.application.offer.title|truncatechars:25 }}
+                    </small>
+                </div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <form method="post" action="{% url 'messaging_archive' conversation.id %}" class="m-0">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-outline-light text-secondary border shadow-sm" title="Archiver">
+                        <i class="bi bi-archive"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div class="px-3 py-2 border-bottom bg-white">
+            <div class="input-group input-group-sm bg-light rounded-pill px-2">
+                <span class="input-group-text bg-transparent border-0 text-muted"><i class="bi bi-search"></i></span>
+                <input type="text" id="msgSearch" class="form-control bg-transparent border-0" placeholder="Rechercher dans la conversation...">
+                <div id="msgLoader" class="spinner-border spinner-border-sm text-primary align-self-center me-2" style="display: none;"></div>
+            </div>
+            <div class="d-flex gap-3 justify-content-center mt-2">
+                <a href="#" class="text-danger small font-outfit text-decoration-none d-flex align-items-center gap-1 hover-scale" data-bs-toggle="modal" data-bs-target="#blockUserModal">
+                    <i class="bi bi-slash-circle"></i> Bloquer l'utilisateur
+                </a>
+                <a href="#" class="text-secondary small font-outfit text-decoration-none d-flex align-items-center gap-1 hover-scale" data-bs-toggle="modal" data-bs-target="#reportModal">
+                    <i class="bi bi-exclamation-triangle"></i> Signaler un abus
+                </a>
+            </div>
+        </div>
+
+        <div id="chatBody" class="chat-body d-flex flex-column">
+            {% for msg in messages_list %}
+
+            {% if msg.msg_type == "system" %}
+            <div class="align-self-center my-3">
+                <span class="badge bg-light text-muted border px-3 py-2 rounded-pill shadow-sm" style="font-size: 0.75rem;">
+                    <i class="bi bi-info-circle me-1"></i> {{ msg.text }}
+                </span>
+            </div>
+
+            {% else %}
+            <div class="message-wrapper {% if msg.sender == user %}me{% else %}them{% endif %} message-item" data-text="{{ msg.text|lower }}">
+                <div class="message-bubble {% if msg.is_deleted %}message-deleted{% endif %}">
+
+                    {% if msg.sender == user and not msg.is_deleted %}
+                    <div class="dropdown float-end ms-2">
+                        <button class="btn btn-link btn-sm p-0 text-white-50" type="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-chevron-down"></i>
+                        </button>
+                        <ul class="dropdown-menu shadow-sm">
+                            <li><button class="dropdown-item btn-edit-message" data-url="{% url 'message_edit' msg.id %}" data-text="{{ msg.text|escapejs }}"><i class="bi bi-pencil me-2"></i>Modifier</button></li>
+                            <li>
+                                <form method="post" action="{% url 'message_delete' msg.id %}" class="m-0">
+                                    {% csrf_token %}
+                                    <button type="submit" class="dropdown-item text-danger"><i class="bi bi-trash me-2"></i>Supprimer pour tous</button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
+                    {% endif %}
+
+                    <div class="message-content">
+                        {% if msg.is_deleted %}
+                        <i class="bi bi-slash-circle me-1"></i> Ce message a été supprimé.
+                        {% else %}
+                        {{ msg.display_text|linebreaksbr }}
+
+                        {% if msg.attachment %}
+                        <div class="mt-2 pt-2 border-top border-white-50">
+                            {% if msg.attachment_mime|default:''|slice:":5" == "image" %}
+                            <a href="{{ msg.attachment.url }}" target="_blank">
+                                <img src="{{ msg.attachment.url }}" class="img-fluid rounded shadow-sm" style="max-height: 200px;">
+                            </a>
+                            {% else %}
+                            <a href="{{ msg.attachment.url }}" target="_blank" class="d-flex align-items-center gap-2 text-decoration-none {% if msg.sender == user %}text-white{% else %}text-primary{% endif %}">
+                                <i class="bi bi-file-earmark-arrow-down fs-4"></i>
+                                <span class="small">{{ msg.attachment.name|truncatechars:20 }}</span>
+                            </a>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                        {% endif %}
+                    </div>
+
+                    <div class="d-flex align-items-center justify-content-end gap-1 mt-1" style="font-size: 0.65rem; opacity: 0.8;">
+                        <span>{{ msg.created_at|date:"H:i" }}</span>
+                        {% if msg.sender == user and not msg.is_deleted %}
+                        <i class="bi {% if msg.is_read %}bi-check2-all text-info{% else %}bi-check2{% endif %}"></i>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            {% empty %}
+            <div class="text-center my-auto py-5">
+                <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                    <i class="bi bi-chat-heart text-primary fs-1"></i>
+                </div>
+                <p class="text-muted">Démarrez une conversation professionnelle dès maintenant.</p>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="chat-footer bg-white border-top px-4 py-3">
+
+            {% if user == conversation.company and quick_replies and user.profile.role != "provider" %}
+            <div class="mb-3 d-flex flex-wrap gap-2">
+                <div class="dropdown">
+                    <button class="btn btn-sm btn-outline-primary rounded-pill dropdown-toggle px-3" style="font-size: 0.8rem; font-weight: 600;" type="button" id="quickReplyDropdown" data-bs-toggle="dropdown">
+                        <i class="bi bi-lightning-charge-fill me-1"></i> Réponses rapides
+                    </button>
+                    <ul class="dropdown-menu shadow-lg border-0 rounded-4 p-2" style="max-height: 250px; overflow-y: auto; width: 250px;">
+                        {% for qr in quick_replies %}
+                        <li><button class="dropdown-item quick-reply-btn py-2 rounded-3" type="button" data-text="{{ qr.text|escapejs }}">{{ qr.label }}</button></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            {% endif %}
+
+            <form id="chatForm" class="d-flex align-items-center gap-3" method="post" action="{% url 'messaging_conversation' conversation.id %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="hidden" name="force_send" id="forceSendInput" value="0">
+
+                <label class="btn btn-light rounded-circle flex-shrink-0 d-flex align-items-center justify-content-center shadow-sm" style="width: 48px; height: 48px; border: 1px solid var(--border-color); transition: 0.3s;" title="Ajouter un fichier">
+                    <i class="bi bi-plus-lg text-primary fs-5"></i>
+                    <input type="file" name="attachment" id="chatAttachment" class="d-none">
+                </label>
+
+                <div class="flex-grow-1 position-relative">
+                    <textarea name="text" id="chatInput" rows="3" class="form-control border-0 bg-light rounded-4 px-4 py-3" placeholder="Votre message..." style="resize: none; transition: 0.3s; font-size: 1rem;"></textarea>
+                    <div id="typingIndicator" class="position-absolute start-0" style="bottom: -22px; font-size: 0.7rem; color: var(--primary); font-weight: 600;"></div>
+                </div>
+
+                <button type="submit" id="sendButton" class="btn btn-primary rounded-pill flex-shrink-0 fw-bold d-flex align-items-center justify-content-center shadow-premium-sm" style="width: 48px; height: 48px; background: var(--primary-gradient); border: none; transition: 0.4s;">
+                    <i class="bi bi-send-fill fs-5"></i>
+                </button>
+            </form>
+
+            <div id="attachmentInfo" class="small text-muted mt-3 ps-5 fw-medium" style="font-size: 0.75rem;"></div>
+            <div id="chatError" class="text-danger small mt-1 ps-5"></div>
+        </div>
+    </div>
+</div>
+<style>
+    /* Style spécifique pour les modaux SaaS White */
+    .modal-campus {
+        border-radius: 20px;
+        border: none;
+        overflow: hidden;
+    }
+
+    .modal-campus .modal-header {
+        border-bottom: 1px solid #f1f5f9;
+        background: #fff;
+        padding: 1.5rem;
+    }
+
+    .modal-campus .modal-title {
+        font-family: 'Outfit', sans-serif;
+        font-weight: 700;
+        color: var(--text-main);
+    }
+
+    .modal-campus .modal-body {
+        padding: 1.5rem;
+    }
+
+    .modal-campus .modal-footer {
+        border-top: 1px solid #f1f5f9;
+        padding: 1rem 1.5rem;
+    }
+
+    .modal-campus .form-control {
+        border-radius: 12px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+    }
+
+    /* Modal Alerte Sensible (Style spécial) */
+    #customSensitiveModal {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 10000;
+        background: rgba(15, 23, 42, 0.4);
+        backdrop-filter: blur(8px);
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+
+    .sensitive-box {
+        background: white;
+        border-radius: 24px;
+        max-width: 450px;
+        width: 100%;
+        padding: 30px;
+        text-align: center;
+        border: 1px solid var(--border-color);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    }
+</style>
+
+<div class="modal fade" id="blockUserModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content modal-campus shadow-lg">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-slash-circle text-danger me-2"></i>Bloquer cet utilisateur</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-small">Voulez-vous vraiment bloquer ce contact ? Les échanges seront interrompus immédiatement.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Annuler</button>
+                <form method="post" action="{% url 'conversation_block' conversation.id %}" class="m-0">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger rounded-pill px-4">Confirmer le blocage</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="reportModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content modal-campus shadow-lg">
+            <form method="post" action="{% url 'conversation_report' conversation.id %}">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-exclamation-triangle text-warning me-2"></i>Signaler un abus</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <label class="form-label small fw-bold text-small">Motif du signalement</label>
+                    <textarea name="reason" rows="4" class="form-control" placeholder="Expliquez brièvement le problème..." required></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Fermer</button>
+                    <button type="submit" class="btn btn-warning text-white rounded-pill px-4">Envoyer le signalement</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="editMessageModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content modal-campus shadow-lg">
+            <form method="post" id="editMessageForm">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-pencil-square text-primary me-2"></i>Modifier le message</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <textarea name="text" id="editMessageText" rows="4" class="form-control"></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4">Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div id="customSensitiveModal">
+    <div class="sensitive-box">
+        <div class="bg-primary-soft rounded-circle d-inline-flex align-items-center justify-content-center mb-4" style="width: 70px; height: 70px;">
+            <i class="bi bi-shield-lock-fill text-primary fs-2"></i>
+        </div>
+        <h4 class="fw-bold font-outfit mb-3">Attention : Données sensibles</h4>
+        <p class="text-small small">Vous vous apprêtez à envoyer des coordonnées personnelles (email, téléphone ou réseau social). Pour votre sécurité, CampusHub recommande de rester sur la plateforme.</p>
+        <div class="d-flex flex-column gap-2 mt-4">
+            <button id="modalConfirmBtn" class="btn btn-primary rounded-pill py-2 fw-bold">Continuer l'envoi</button>
+            <button id="modalCancelBtn" class="btn btn-light rounded-pill py-2">Annuler</button>
+        </div>
+    </div>
+</div>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // 1. GESTION DU LOADER ET SCROLL
+        const loader = document.getElementById("loader-wrapper");
+        const chatBody = document.getElementById("chatBody");
+        const backToTop = document.getElementById("backToTop");
+
+        function scrollToBottom() {
+            if (chatBody) {
+                chatBody.scrollTop = chatBody.scrollHeight;
+            }
+        }
+
+        // Masquer le loader après chargement
+        window.addEventListener("load", () => {
+            setTimeout(() => {
+                if (loader) loader.style.opacity = "0";
+                setTimeout(() => { if (loader) loader.style.display = "none"; }, 500);
+                scrollToBottom();
+            }, 800);
+        });
+
+        // Bouton Retour en haut
+        chatBody.addEventListener("scroll", () => {
+            if (chatBody.scrollTop > 300) {
+                backToTop.style.display = "flex";
+            } else {
+                backToTop.style.display = "none";
+            }
+        });
+
+        backToTop.addEventListener("click", () => {
+            chatBody.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        // 2. RECHERCHE DE MESSAGES (Local)
+        const msgSearch = document.getElementById("msgSearch");
+        const msgLoader = document.getElementById("msgLoader");
+        const messageItems = document.querySelectorAll(".message-item");
+
+        if (msgSearch) {
+            msgSearch.addEventListener("input", function () {
+                const query = this.value.toLowerCase().trim();
+                msgLoader.style.display = "inline-block";
+
+                setTimeout(() => {
+                    messageItems.forEach(item => {
+                        const text = item.getAttribute("data-text") || "";
+                        item.style.display = text.includes(query) ? "flex" : "none";
+                    });
+                    msgLoader.style.display = "none";
+                }, 300);
+            });
+        }
+
+        // 3. DÉTECTION INFOS SENSIBLES (LOGIQUE WHATSAPP/SÉCURITÉ)
+        const chatForm = document.getElementById("chatForm");
+        const chatInput = document.getElementById("chatInput");
+        const sensitiveModal = document.getElementById("customSensitiveModal");
+        const confirmBtn = document.getElementById("modalConfirmBtn");
+        const cancelBtn = document.getElementById("modalCancelBtn");
+        const forceSendInput = document.getElementById("forceSendInput");
+
+        function containsSensitive(text) {
+            const patterns = [
+                /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/, // Email
+                /(\+?\d[\s\-\.]?){8,}/, // Téléphone
+                /(whatsapp|facebook|instagram|snapchat|linkedin|wa\.me|t\.me)/i // Réseaux
+            ];
+            return patterns.some(pattern => pattern.test(text));
+        }
+        if (chatForm) {
+            chatForm.addEventListener("submit", function (e) {
+                const text = chatInput.value.trim();
+                const attachment = document.getElementById("chatAttachment").files.length > 0;
+
+                // 1. VERIFICATION SI VIDE (Ni texte, ni image)
+                if (text === "" && !attachment) {
+                    e.preventDefault();
+                    return false; // On ne fait rien si tout est vide
+                }
+
+                // 2. LOGIQUE INFOS SENSIBLES (Seulement s'il y a du texte)
+                if (text !== "" && forceSendInput.value === "0" && containsSensitive(text)) {
+                    e.preventDefault();
+                    sensitiveModal.style.display = "flex";
+                    return false;
+                }
+
+                // 3. ENVOI (Texte seul, Image seule, ou les deux)
+                const sendBtn = document.getElementById("sendButton");
+                sendBtn.disabled = true;
+                sendBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+                return true;
+            });
+        }
+
+
+        if (cancelBtn) {
+            cancelBtn.addEventListener("click", () => {
+                sensitiveModal.style.display = "none";
+            });
+        }
+
+        if (confirmBtn) {
+            confirmBtn.addEventListener("click", () => {
+                forceSendInput.value = "1";
+                sensitiveModal.style.display = "none";
+                chatForm.submit();
+            });
+        }
+
+        // 4. ÉDITION DE MESSAGE (Hydratation du modal)
+        const editButtons = document.querySelectorAll(".btn-edit-message");
+        const editForm = document.getElementById("editMessageForm");
+        const editTextarea = document.getElementById("editMessageText");
+
+        editButtons.forEach(btn => {
+            btn.addEventListener("click", function () {
+                const url = this.dataset.url;
+                const text = this.dataset.text;
+                editForm.action = url;
+                editTextarea.value = text;
+                new bootstrap.Modal(document.getElementById('editMessageModal')).show();
+            });
+        });
+        // 5. RÉPONSES RAPIDES (CORRIGÉ)
+        const quickButtons = document.querySelectorAll(".quick-reply-btn");
+        quickButtons.forEach(btn => {
+            btn.addEventListener("click", function () {
+                // Récupère le texte brut
+                let rawText = this.dataset.text;
+
+                // Traduction des codes Unicode courants en texte lisible
+                let cleanText = rawText
+                    .replace(/\\u000A/g, '\n') // Sauts de ligne
+                    .replace(/\\u0027/g, "'")  // Apostrophes
+                    .replace(/\\u002D/g, "-")  // Tirets
+                    .replace(/\\n/g, '\n');    // Backslash n classique
+
+                // Insertion dans le textarea
+                const chatInput = document.getElementById("chatInput");
+
+                // Si le champ n'est pas vide, on ajoute un saut de ligne avant la réponse rapide
+                if (chatInput.value.trim() !== "") {
+                    chatInput.value += "\n\n" + cleanText;
+                } else {
+                    chatInput.value = cleanText;
+                }
+
+                // Ajuster la hauteur du textarea après insertion
+                chatInput.style.height = 'auto';
+                chatInput.style.height = (chatInput.scrollHeight) + 'px';
+                chatInput.focus();
+            });
+        });
+
+        // 6. STATUT EN TEMPS RÉEL (PING)
+        const otherId = "{{ other.id }}";
+        const statusDot = document.getElementById("statusDot");
+        const statusText = document.getElementById("chatOtherStatusText");
+
+        async function updateStatus() {
+            try {
+                const res = await fetch("{% url 'chat_status' 0 %}".replace("/0/", "/" + otherId + "/"));
+                const data = await res.json();
+                if (data.ok) {
+                    statusDot.className = `status-indicator ${data.online ? 'online' : 'offline'}`;
+                    statusText.innerText = data.online ? "En ligne" : "Hors ligne";
+                }
+            } catch (e) { console.log("Status update failed"); }
+        }
+
+        setInterval(updateStatus, 15000); // Toutes les 15 secondes
+
+        // Auto-resize textarea
+        chatInput.addEventListener('input', function () {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+        });
+    });
+</script>
+
+{% endblock %}

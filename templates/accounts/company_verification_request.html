@@ -1,0 +1,210 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Vérifier mon entreprise - CampusHub{% endblock %}
+
+{% block content %}
+
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+
+<div id="pageLoader" class="page-loader">
+    <div class="loader-content">
+        <div class="logo-placeholder mb-4">
+            <div class="main-spinner"></div>
+            <i class="bi bi-shield-check spinner-icon text-primary"></i>
+        </div>
+        <div class="loader-text-wrap">
+            <h5 class="fw-bold text-dark mb-1">CampusHub Sécurité</h5>
+            <div class="progress-bar-wrap"><div class="progress-bar-fill"></div></div>
+            <small class="text-muted mt-2 d-block">Vérification de l'intégrité...</small>
+        </div>
+    </div>
+</div>
+
+<div class="desktop-bg-animation">
+    <div class="shape-blob shape-1"></div>
+    <div class="shape-blob shape-2"></div>
+</div>
+
+<div class="container py-5 relative-z">
+
+    <div class="text-center mb-5 reveal-on-scroll">
+        <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 rounded-pill px-3 py-2 mb-3">
+            <i class="bi bi-patch-check me-2"></i>Certification de confiance
+        </span>
+        <h1 class="fw-bold text-dark mb-2">Vérification Entreprise</h1>
+        <p class="text-muted">Obtenez le badge de vérification pour gagner en crédibilité auprès des talents.</p>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-7">
+            
+            <div class="reveal-on-scroll" data-delay="100">
+                {% if profile.company_verified %}
+                    <div class="card-pro mb-4 border-success border-opacity-25 shadow-sm">
+                        <div class="card-body p-4 text-center">
+                            <div class="icon-box-lg bg-success text-white rounded-circle mx-auto mb-3 shadow-sm">
+                                <i class="bi bi-patch-check-fill fs-2"></i>
+                            </div>
+                            <h4 class="fw-bold text-dark mb-1">Établissement Vérifié</h4>
+                            <p class="text-muted mb-0">Votre entreprise bénéficie d'une visibilité prioritaire sur la plateforme.</p>
+                        </div>
+                    </div>
+                {% elif existing_request %}
+                    <div class="card-pro mb-4 border-primary border-opacity-25 shadow-sm">
+                        <div class="card-body p-4">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="icon-box-sm bg-primary bg-opacity-10 text-primary rounded-circle me-3">
+                                    <i class="bi bi-hourglass-split"></i>
+                                </div>
+                                <div>
+                                    <h6 class="fw-bold text-dark mb-0">Demande en cours d'analyse</h6>
+                                    <span class="text-muted small">ID demande : #VH-{{ existing_request.id }}</span>
+                                </div>
+                                <span class="ms-auto badge {% if existing_request.status == 'rejected' %}bg-danger{% else %}bg-primary{% endif %} rounded-pill px-3">
+                                    {{ existing_request.get_status_display }}
+                                </span>
+                            </div>
+
+                            {% if existing_request.status == "rejected" %}
+                                <div class="bg-danger bg-opacity-10 text-danger p-3 rounded-3 border-start border-danger border-4">
+                                    <h6 class="fw-bold mb-1"><i class="bi bi-exclamation-triangle-fill me-2"></i>Motif du refus</h6>
+                                    <p class="small mb-0">{{ existing_request.admin_comment|default:"Document non conforme ou illisible." }}</p>
+                                </div>
+                                <p class="mt-3 small text-muted">Vous pouvez soumettre un nouveau justificatif ci-dessous pour corriger votre profil.</p>
+                            {% else %}
+                                <p class="text-muted small mb-0">Nos équipes étudient votre dossier. Vous recevrez une notification par email sous 24h ouvrées.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+
+            {% if not profile.company_verified %}
+            <div class="card-pro reveal-on-scroll" data-delay="200">
+                <div class="card-header bg-white border-bottom p-4">
+                    <h5 class="fw-bold text-dark mb-0">
+                        <i class="bi bi-file-earmark-text me-2 text-primary"></i>Justificatif d'activité
+                    </h5>
+                </div>
+                <div class="card-body p-4 p-md-5">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="mb-4">
+                            <label class="form-label fw-600 text-dark">Document officiel <span class="text-danger">*</span></label>
+                            <div class="upload-zone text-center p-5 border border-dashed rounded-4 bg-light mb-2">
+                                <i class="bi bi-cloud-arrow-up text-primary fs-1 mb-3 d-block"></i>
+                                <div class="d-flex justify-content-center">
+                                    {{ form.document }}
+                                </div>
+                                <p class="text-muted small mt-3 mb-0">Kbis, Statuts, RCCM ou Carte Professionnelle (PDF, JPG, PNG)</p>
+                            </div>
+                            {% for error in form.document.errors %}
+                                <div class="text-danger small mt-1"><i class="bi bi-x-circle me-1"></i>{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-600 text-dark">Note additionnelle (Optionnel)</label>
+                            {{ form.message }}
+                            <small class="text-muted">Précisez toute information utile pour faciliter l'analyse de votre dossier.</small>
+                            {% for error in form.message.errors %}
+                                <div class="text-danger small mt-1">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <button type="submit" class="liquid-btn btn-primary-pro w-100 py-3 shadow-sm">
+                            <span>Soumettre mon dossier</span>
+                        </button>
+                    </form>
+                </div>
+                <div class="card-footer bg-light p-4 text-center border-top">
+                    <div class="d-flex align-items-center justify-content-center gap-4 text-muted x-small fw-bold text-uppercase ls-1">
+                        <span><i class="bi bi-lock-fill me-1"></i>Cryptage SSL</span>
+                        <span><i class="bi bi-shield-lock-fill me-1"></i>Confidentialité RGPD</span>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+</div>
+
+<button id="btnBackToTop" class="btn-back-to-top"><i class="bi bi-arrow-up"></i></button>
+
+<style>
+:root { --primary: #2563eb; --primary-dark: #1e40af; --light-bg: #f8fafc; --white: #ffffff; --text-dark: #0f172a; --text-muted: #64748b; --border: #e2e8f0; --radius: 16px; }
+
+body { background-color: var(--light-bg); color: var(--text-dark); font-family: 'Inter', sans-serif; }
+h1, h4, h5, h6 { font-family: 'Outfit', sans-serif; }
+
+/* Loader Styles */
+.page-loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 9999; display: flex; align-items: center; justify-content: center; transition: opacity 0.6s ease; }
+.loader-content { width: 300px; text-align: center; }
+.logo-placeholder { position: relative; width: 80px; height: 80px; margin: 0 auto; }
+.main-spinner { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 4px solid #f1f5f9; border-top: 4px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
+.spinner-icon { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 2rem; }
+.progress-bar-wrap { height: 4px; background: #f1f5f9; border-radius: 10px; overflow: hidden; margin-top: 15px; }
+.progress-bar-fill { height: 100%; width: 0%; background: var(--primary); animation: loadProgress 1.5s forwards; }
+@keyframes spin { 100% { transform: rotate(360deg); } }
+@keyframes loadProgress { 100% { width: 100%; } }
+
+/* Card Pro & Inputs */
+.card-pro { background: var(--white); border-radius: var(--radius); border: 1px solid var(--border); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); overflow: hidden; }
+input[type="text"], input[type="file"], textarea { 
+    border-radius: 10px; border: 1px solid var(--border); padding: 12px 15px; font-size: 0.95rem; width: 100%; transition: 0.3s; 
+}
+input:focus, textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); outline: none; }
+
+/* Icon Boxes */
+.icon-box-lg { width: 70px; height: 70px; display: flex; align-items: center; justify-content: center; }
+.icon-box-sm { width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; }
+
+/* Button & Utils */
+.liquid-btn { background: var(--primary); color: white; border: none; border-radius: 50px; font-weight: 700; text-transform: uppercase; transition: 0.3s; cursor: pointer; }
+.liquid-btn:hover { background: var(--primary-dark); transform: translateY(-2px); box-shadow: 0 5px 15px rgba(37, 99, 235, 0.3); }
+.fw-600 { font-weight: 600; }
+.ls-1 { letter-spacing: 1px; }
+.x-small { font-size: 0.7rem; }
+
+/* Upload Zone */
+.upload-zone { transition: 0.3s; border-color: #cbd5e1 !important; }
+.upload-zone:hover { border-color: var(--primary) !important; background-color: #fff !important; }
+
+/* Back to Top */
+.btn-back-to-top { position: fixed; bottom: 30px; right: 30px; width: 50px; height: 50px; background: var(--primary); color: white; border: none; border-radius: 50%; opacity: 0; visibility: hidden; transition: 0.3s; z-index: 1000; display: flex; align-items: center; justify-content: center; }
+.btn-back-to-top.show { opacity: 1; visibility: visible; }
+
+/* Background shapes */
+.desktop-bg-animation { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; }
+.shape-blob { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.4; animation: float 10s infinite alternate; }
+.shape-1 { top: -10%; left: -10%; width: 600px; height: 600px; background: rgba(37, 99, 235, 0.15); }
+.shape-2 { bottom: -10%; right: -10%; width: 500px; height: 500px; background: rgba(16, 185, 129, 0.1); }
+@keyframes float { 0% { transform: translate(0,0); } 100% { transform: translate(40px, 40px); } }
+
+.reveal-on-scroll { animation: fadeInUp 0.6s ease-out; }
+@keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+
+<script>
+window.addEventListener('load', () => {
+    const loader = document.getElementById('pageLoader');
+    setTimeout(() => { loader.style.opacity = '0'; setTimeout(() => loader.style.visibility = 'hidden', 600); }, 1000);
+});
+
+document.addEventListener("DOMContentLoaded", function () {
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => { if(entry.isIntersecting) entry.target.style.animationPlayState = "running"; });
+    });
+    document.querySelectorAll(".reveal-on-scroll").forEach(el => observer.observe(el));
+
+    const btt = document.getElementById("btnBackToTop");
+    window.addEventListener("scroll", () => { btt.classList.toggle("show", window.scrollY > 400); });
+    btt.onclick = () => window.scrollTo({ top: 0, behavior: "smooth" });
+});
+</script>
+
+{% endblock %}

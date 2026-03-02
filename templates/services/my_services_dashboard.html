@@ -1,0 +1,231 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Mes Services{% endblock %}
+
+{% block content %}
+
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+
+<div id="pageLoader" class="loader-overlay">
+    <div class="loader-content">
+        <div class="spinner-rings">
+            <div></div><div></div>
+        </div>
+        <p class="loader-text">Chargement de vos offres...</p>
+    </div>
+</div>
+
+<div class="desktop-bg-animation">
+    <div class="shape-blob shape-1"></div>
+    <div class="shape-blob shape-2"></div>
+</div>
+
+<div class="container py-5 relative-z">
+
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-5 reveal-on-scroll">
+        <div class="text-center text-md-start mb-4 mb-md-0">
+            <span class="badge-header">Espace Prestataire</span>
+            <h1 class="display-5 fw-bold text-dark">Gérer mes <span class="text-primary">Services</span></h1>
+        </div>
+        
+        <div class="d-flex gap-3 align-items-center flex-column flex-md-row">
+            <div class="search-bar-container">
+                <i class="bi bi-search search-icon"></i>
+                <input type="text" id="serviceSearchInput" class="form-control search-input" placeholder="Filtrer mes services...">
+            </div>
+            <a href="{% url 'service_create' %}" class="liquid-btn btn-primary-pro text-decoration-none shadow-lg">
+                <span><i class="bi bi-plus-lg me-2"></i>Nouveau</span>
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-4" id="servicesList">
+        {% for service in services %}
+            <div class="col-md-6 col-lg-4 service-item" data-search="{{ service.title }} {{ service.get_category_display }} {{ service.get_status_display }}">
+                <article class="card-pro h-100 d-flex flex-column overflow-hidden service-card-hover">
+                    
+                    <div class="position-relative" style="height: 160px;">
+                        {% if service.media.first and service.media.first.image %}
+                            <img src="{{ service.media.first.image.url }}" class="w-100 h-100 object-fit-cover" alt="{{ service.title }}">
+                        {% else %}
+                            <img src="https://source.unsplash.com/random/400x300/?business,work" class="w-100 h-100 object-fit-cover" alt="{{ service.title }}">
+                        {% endif %}
+                        <div class="image-overlay-gradient"></div>
+                        
+                        <div class="position-absolute top-0 end-0 m-3">
+                            {% if service.status == 'active' %}
+                                <span class="badge bg-success text-white shadow-sm">Actif</span>
+                            {% elif service.status == 'draft' %}
+                                <span class="badge bg-secondary text-white shadow-sm">Brouillon</span>
+                            {% else %}
+                                <span class="badge bg-warning text-dark shadow-sm">{{ service.get_status_display }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="p-4 flex-grow-1 d-flex flex-column">
+                        <h5 class="fw-bold text-dark mb-2 text-truncate">{{ service.title }}</h5>
+                        <div class="d-flex gap-3 mb-4 text-muted small">
+                            <div><i class="bi bi-cart-fill text-primary"></i> {{ service.completed_orders_count }} Ventes</div>
+                            <div><i class="bi bi-star-fill text-warning"></i> {{ service.average_rating|floatformat:1 }}</div>
+                        </div>
+
+                        <div class="mt-auto pt-3 border-top border-light d-flex justify-content-between">
+                            <a href="{% url 'service_detail' service.slug %}" class="btn btn-sm btn-outline-secondary rounded-pill fw-600"><i class="bi bi-eye"></i> Voir</a>
+                            <a href="{% url 'service_edit' service.slug %}" class="btn btn-sm btn-primary rounded-pill fw-600 px-3"><i class="bi bi-pencil-square me-1"></i> Modifier</a>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        {% empty %}
+            <div class="col-12 text-center py-5">
+                <p class="text-muted">Aucun service trouvé.</p>
+            </div>
+        {% endfor %}
+    </div>
+
+    <div id="pagination-controls" class="d-flex justify-content-center mt-5"></div>
+
+</div>
+
+<style>
+/* --- VARIABLES & BASE --- */
+:root {
+    --primary: #2563eb;
+    --primary-dark: #1e40af;
+    --light: #f8fafc;
+    --text: #334155;
+    --border: #e2e8f0; /* Couleur de la bordure */
+    --radius: 16px;
+}
+body { background: var(--light); color: var(--text); font-family: 'Inter', sans-serif; }
+h1, h5 { font-family: 'Outfit', sans-serif; }
+
+/* --- CARD PRO (C'est ici que la bordure est définie) --- */
+.card-pro {
+    background: white;
+    border-radius: var(--radius);
+    border: 1px solid #cbd5e1; /* Bordure légèrement plus foncée pour être visible */
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); /* Ombre pour détacher du fond */
+    transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;
+}
+.service-card-hover:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    border-color: #bfdbfe; /* Bordure bleue au survol */
+}
+.image-overlay-gradient {
+    position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.4), transparent);
+}
+
+/* --- SEARCH BAR --- */
+.search-bar-container { position: relative; width: 100%; max-width: 300px; }
+.search-input {
+    padding: 12px 12px 12px 45px; border-radius: 50px; border: 1px solid var(--border);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.02); transition: 0.3s;
+}
+.search-input:focus { border-color: var(--primary); box-shadow: 0 4px 15px rgba(37, 99, 235, 0.1); }
+.search-icon { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: var(--primary); }
+
+/* --- BUTTONS & BADGES --- */
+.liquid-btn {
+    position: relative; display: inline-flex; justify-content: center; align-items: center;
+    padding: 12px 28px; font-weight: 700; border-radius: 50px; overflow: hidden;
+    transition: all 0.4s ease; cursor: pointer; border: none; z-index: 1; text-decoration: none;
+    background: var(--primary); color: white;
+}
+.liquid-btn:hover::before { width: 100%; }
+.liquid-btn::before { content: ''; position: absolute; top: 0; left: 0; width: 0; height: 100%; background: var(--primary-dark); z-index: -1; transition: width 0.4s ease; }
+
+.badge-header { background: #eff6ff; color: var(--primary); padding: 6px 14px; border-radius: 30px; font-size: 0.85rem; font-weight: 600; text-transform: uppercase; margin-bottom: 15px; display: inline-block; }
+
+/* --- PAGINATION --- */
+.custom-pagination-btn {
+    width: 40px; height: 40px; border-radius: 50%; border: none; background: white; 
+    color: var(--text); font-weight: 600; margin: 0 5px; 
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05); transition: 0.3s;
+    border: 1px solid var(--border); /* Bordure aussi pour la pagination */
+}
+.custom-pagination-btn:hover { background: #e2e8f0; color: var(--primary); }
+.custom-pagination-btn.active { background: var(--primary); color: white; box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3); border-color: var(--primary); }
+
+/* --- LOADER & ANIMATION --- */
+.loader-overlay { position: fixed; inset: 0; background: white; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: opacity 0.6s ease; }
+.spinner-rings { position: relative; width: 50px; height: 50px; }
+.spinner-rings div { position: absolute; width: 100%; height: 100%; border: 4px solid var(--primary); border-radius: 50%; animation: spin 1s infinite; border-color: var(--primary) transparent transparent transparent; }
+.spinner-rings div:nth-child(1) { animation-delay: -0.45s; }
+.spinner-rings div:nth-child(2) { animation-delay: -0.3s; }
+.spinner-rings div:nth-child(3) { animation-delay: -0.15s; }
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+.loader-text { margin-top: 15px; font-weight: 600; color: var(--primary); font-size: 0.85rem; animation: pulse 1.5s infinite; }
+@keyframes pulse { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
+
+.desktop-bg-animation { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; }
+.shape-blob { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.5; animation: blobFloat 20s infinite ease-in-out alternate; }
+.shape-1 { top: -10%; left: -5%; width: 500px; height: 500px; background: rgba(37, 99, 235, 0.15); }
+.shape-2 { bottom: 10%; right: -5%; width: 400px; height: 400px; background: rgba(59, 130, 246, 0.1); }
+@keyframes blobFloat { 0% { transform: translate(0, 0); } 100% { transform: translate(30px, -30px); } }
+.reveal-on-scroll { opacity: 0; transform: translateY(20px); animation: fadeInUp 0.6s forwards; }
+@keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
+</style>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const ITEMS_PER_PAGE = 6;
+    const listContainer = document.getElementById('servicesList');
+    const paginationContainer = document.getElementById('pagination-controls');
+    const searchInput = document.getElementById('serviceSearchInput');
+    let currentPage = 1;
+
+    function render() {
+        const allItems = Array.from(listContainer.querySelectorAll('.service-item'));
+        const visibleItems = allItems.filter(item => !item.classList.contains('filtered-out'));
+        const totalPages = Math.ceil(visibleItems.length / ITEMS_PER_PAGE);
+
+        if (currentPage > totalPages) currentPage = 1;
+        if (totalPages === 0) currentPage = 1;
+
+        allItems.forEach(item => item.style.display = 'none');
+
+        const start = (currentPage - 1) * ITEMS_PER_PAGE;
+        const end = start + ITEMS_PER_PAGE;
+        visibleItems.slice(start, end).forEach(item => {
+            item.style.display = 'block';
+            item.classList.add('animate__animated', 'animate__fadeIn');
+        });
+
+        paginationContainer.innerHTML = '';
+        if (totalPages > 1) {
+            for (let i = 1; i <= totalPages; i++) {
+                const btn = document.createElement('button');
+                btn.innerText = i;
+                btn.className = `custom-pagination-btn ${i === currentPage ? 'active' : ''}`;
+                btn.addEventListener('click', () => {
+                    currentPage = i;
+                    render();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                });
+                paginationContainer.appendChild(btn);
+            }
+        }
+    }
+
+    searchInput.addEventListener('keyup', (e) => {
+        const term = e.target.value.toLowerCase();
+        document.querySelectorAll('.service-item').forEach(item => {
+            const data = item.getAttribute('data-search').toLowerCase();
+            if (data.includes(term)) item.classList.remove('filtered-out');
+            else item.classList.add('filtered-out');
+        });
+        render();
+    });
+
+    const loader = document.getElementById("pageLoader");
+    if(loader) setTimeout(() => { loader.style.opacity = "0"; setTimeout(() => { loader.style.display = "none"; }, 500); }, 500);
+    
+    render();
+});
+</script>
+{% endblock %}

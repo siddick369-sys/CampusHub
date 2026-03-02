@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <title>CV - {{ profile.full_name|default:user.get_full_name|default:user.username }}</title>
+    <style>
+        /* Configuration de la page PDF */
+        @page {
+            size: a4;
+            margin: 1.5cm;
+        }
+
+        body {
+            font-family: DejaVu Sans, Arial, sans-serif;
+            font-size: 11px;
+            color: #1e293b;
+            line-height: 1.5;
+        }
+
+        /* Couleurs et Typographie */
+        .text-primary {
+            color: #2563eb;
+        }
+
+        .text-muted {
+            color: #64748b;
+        }
+
+        .fw-bold {
+            font-weight: bold;
+        }
+
+        /* Header */
+        .header-table {
+            width: 100%;
+            border-bottom: 2px solid #2563eb;
+            padding-bottom: 15px;
+        }
+
+        .name {
+            font-size: 24px;
+            font-weight: bold;
+            color: #0f172a;
+            text-transform: uppercase;
+        }
+
+        .contact-info {
+            text-align: right;
+            font-size: 10px;
+            color: #475569;
+        }
+
+        /* Sections */
+        .section {
+            margin-top: 20px;
+        }
+
+        .section-title {
+            font-size: 13px;
+            font-weight: bold;
+            color: #2563eb;
+            background-color: #f1f5f9;
+            padding: 5px 10px;
+            border-left: 4px solid #2563eb;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        .content-box {
+            padding-left: 10px;
+            margin-bottom: 10px;
+        }
+
+        /* Listes */
+        ul {
+            margin-top: 5px;
+            padding-left: 20px;
+        }
+
+        li {
+            margin-bottom: 5px;
+        }
+
+        /* Tableaux de contenu (plus stable que les divs pour xhtml2pdf) */
+        .info-table {
+            width: 100%;
+        }
+
+        .info-label {
+            width: 30%;
+            font-weight: bold;
+            color: #475569;
+        }
+
+        .info-value {
+            width: 70%;
+        }
+
+        .item-title {
+            font-weight: bold;
+            font-size: 11px;
+            color: #0f172a;
+        }
+
+        .item-subtitle {
+            color: #2563eb;
+            font-size: 10px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+    <table class="header-table">
+        <tr>
+            <td>
+                <div class="name">{{ profile.full_name|default:user.get_full_name|default:user.username }}</div>
+                <div class="text-primary fw-bold" style="font-size: 14px; margin-top: 5px;">
+                    {{ profile.student_field|default:"Étudiant" }}
+                </div>
+            </td>
+            <td class="contact-info">
+                {% if profile.phone %}{{ profile.phone }}{% endif %}<br>
+                {{ user.email }}<br>
+                {% if profile.city %}{{ profile.city }}{% endif %}{% if profile.country %}, {{ profile.country }}{% endif %}
+            </td>
+        </tr>
+    </table>
+
+    {% if profile.bio %}
+    <div class="section">
+        <div class="section-title">Profil Professionnel</div>
+        <div class="content-box">
+            <p style="text-align: justify;">{{ profile.bio }}</p>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="section">
+        <div class="section-title">Parcours Académique</div>
+        <div class="content-box">
+            <table class="info-table">
+                <tr>
+                    <td class="info-label">Établissement :</td>
+                    <td class="info-value">{{ profile.student_school|default:"IUT de Ngaoundéré" }}</td>
+                </tr>
+                <tr>
+                    <td class="info-label">Niveau d'études :</td>
+                    <td class="info-value">{{ profile.get_student_level_display|default:"Niveau 2" }}</td>
+                </tr>
+                {% if profile.student_field %}
+                <tr>
+                    <td class="info-label">Spécialité :</td>
+                    <td class="info-value">{{ profile.student_field }}</td>
+                </tr>
+                {% endif %}
+            </table>
+        </div>
+    </div>
+
+    {% if last_orientation %}
+    <div class="section">
+        <div class="section-title">Expertises & Filières Conseillées</div>
+        <div class="content-box">
+            <p class="text-muted" style="font-size: 9px; margin-bottom: 8px;">
+                Analyse issue du test d'orientation CampusHub réalisé le {{ last_orientation.created_at|date:"d/m/Y" }}.
+            </p>
+            {% for track in last_orientation.suggested_tracks.all %}
+            <div style="margin-bottom: 8px;">
+                <div class="item-title">{{ track.name }}</div>
+                {% if track.main_skills %}
+                <div class="text-muted" style="font-size: 10px;">
+                    <span class="text-primary fw-bold">Compétences :</span> {{ track.main_skills }}
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="section">
+        <div class="section-title">Compétences & Expertise</div>
+        <div class="content-box">
+            <ul>
+                {% if last_orientation %}
+                {% for track in last_orientation.suggested_tracks.all %}
+                {% if track.main_skills %}
+                <li><strong>{{ track.name }} :</strong> {{ track.main_skills }}</li>
+                {% endif %}
+                {% endfor %}
+                {% elif profile.student_field %}
+                <li><strong>Domaine principal :</strong> {{ profile.student_field }}</li>
+                {% else %}
+                <li>Compétences en cours d'acquisition.</li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Expériences & Projets</div>
+        <div class="content-box">
+            {% if applications %}
+            {% for app in applications %}
+            <div style="margin-bottom: 10px; border-bottom: 1px solid #f1f5f9; padding-bottom: 5px;">
+                <table style="width: 100%;">
+                    <tr>
+                        <td class="item-title">{{ app.offer.title }}</td>
+                        <td style="text-align: right;" class="text-muted">{{ app.created_at|date:"M Y" }}</td>
+                    </tr>
+                </table>
+                <div class="item-subtitle">{{ app.offer.company.username|upper }}</div>
+                <div class="text-muted" style="font-size: 9px;">Statut du dossier : {{ app.get_status_display }}</div>
+            </div>
+            {% endfor %}
+            {% else %}
+            <p class="text-muted">En recherche active d'opportunités de stage et projets professionnels.</p>
+            {% endif %}
+        </div>
+
+</body>
+
+</html>

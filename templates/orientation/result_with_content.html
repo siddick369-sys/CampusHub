@@ -1,0 +1,254 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Résultats & Recommandations{% endblock %}
+
+{% block content %}
+
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+
+<div class="desktop-bg-animation">
+    <div class="shape-blob shape-1"></div>
+    <div class="shape-blob shape-2"></div>
+</div>
+
+<div class="container py-5 relative-z">
+
+    <div class="mb-5 reveal-on-scroll">
+        <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 rounded-pill px-3 py-2 mb-3">
+            <i class="bi bi-graph-up-arrow me-2"></i>Analyse Terminée
+        </span>
+        <h1 class="fw-bold text-dark mb-2">Vos Résultats d'Orientation</h1>
+        <p class="text-muted">Découvrez votre profil et explorez les contenus sélectionnés pour vous.</p>
+    </div>
+
+    <div class="row g-4">
+        
+        <div class="col-lg-4 reveal-on-scroll" data-delay="100">
+            <div class="card-pro sticky-lg-top" style="top: 20px; z-index: 1;">
+                <div class="card-header bg-white border-bottom p-4">
+                    <h5 class="fw-bold text-dark mb-0">
+                        <i class="bi bi-pie-chart-fill me-2 text-primary"></i>Filières Recommandées
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    {% if tracks_with_scores %}
+                        <div class="d-flex flex-column gap-4">
+                            {% for track, score in tracks_with_scores %}
+                            <div>
+                                <div class="d-flex justify-content-between align-items-end mb-2">
+                                    <span class="fw-600 text-dark">{{ track.name }}</span>
+                                    <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-10">{{ score }} pts</span>
+                                </div>
+                                <div class="progress" style="height: 8px;">
+                                    <div class="progress-bar bg-primary" role="progressbar" style="width: {{ score }}%" aria-valuenow="{{ score }}" aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-3 text-muted">
+                            <i class="bi bi-clipboard-x mb-2 d-block fs-4"></i>
+                            <span class="small">Aucun résultat disponible.</span>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer bg-light p-3 text-center border-top">
+                    <small class="text-muted">Basé sur vos réponses au test.</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8 reveal-on-scroll" data-delay="200">
+            
+            <div class="d-flex align-items-center mb-4">
+                <div class="icon-box-sm bg-danger-subtle text-danger me-3 rounded-circle d-flex align-items-center justify-content-center" style="width:40px; height:40px;">
+                    <i class="bi bi-collection-play-fill"></i>
+                </div>
+                <h4 class="fw-bold text-dark mb-0">Contenus pour explorer</h4>
+            </div>
+
+            <div class="row g-4">
+                {% for playlist in youtube_playlists %}
+                <div class="col-md-6">
+                    <div class="video-card h-100">
+                        <div class="video-thumbnail">
+                            {% if playlist.thumbnail_url %}
+                                <img src="{{ playlist.thumbnail_url }}" alt="{{ playlist.title }}">
+                            {% else %}
+                                <div class="placeholder-img">
+                                    <i class="bi bi-youtube fs-1 text-danger opacity-50"></i>
+                                </div>
+                            {% endif %}
+                            
+                            <a href="#" class="play-overlay" data-bs-toggle="modal" data-bs-target="#previewModal{{ playlist.id }}">
+                                <div class="play-btn">
+                                    <i class="bi bi-play-fill"></i>
+                                </div>
+                            </a>
+                            
+                            <div class="video-badges">
+                                <span class="badge bg-dark bg-opacity-75 backdrop-blur">{{ playlist.display_duration }}</span>
+                            </div>
+                        </div>
+
+                        <div class="video-body d-flex flex-column h-100">
+                            <div class="mb-2 d-flex flex-wrap gap-1">
+                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle x-small">{{ playlist.get_difficulty_display }}</span>
+                                {% for track in playlist.tracks.all|slice:":2" %}
+                                    <span class="badge bg-light text-muted border x-small">{{ track.short_name }}</span>
+                                {% endfor %}
+                            </div>
+
+                            <h6 class="fw-bold text-dark mb-1 line-clamp-2">{{ playlist.title }}</h6>
+                            <p class="text-muted x-small mb-2">{{ playlist.channel_name }}</p>
+
+                            {% if playlist.description %}
+                                <p class="text-muted small line-clamp-2 mb-3 flex-grow-1">
+                                    {{ playlist.description }}
+                                </p>
+                            {% endif %}
+                            
+                            <div class="d-flex gap-2 mt-auto pt-3 border-top border-light">
+                                <a href="{{ playlist.youtube_url }}" target="_blank" class="btn btn-outline-danger btn-sm flex-grow-1 rounded-pill fw-600">
+                                    <i class="bi bi-youtube me-1"></i> Voir
+                                </a>
+                                <button type="button" class="btn btn-light btn-sm flex-grow-1 rounded-pill fw-600 text-dark border" 
+                                        data-bs-toggle="modal" data-bs-target="#previewModal{{ playlist.id }}">
+                                    <i class="bi bi-eye me-1"></i> Aperçu
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal fade" id="previewModal{{ playlist.id }}" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-lg modal-dialog-centered">
+                        <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                            <div class="modal-header border-bottom-0 position-absolute w-100 z-1" style="background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent); pointer-events: none;">
+                                <h6 class="modal-title text-white fw-600 ps-2">{{ playlist.title|truncatechars:50 }}</h6>
+                                <button type="button" class="btn-close btn-close-white pe-4" data-bs-dismiss="modal" style="pointer-events: auto;"></button>
+                            </div>
+                            <div class="modal-body p-0 bg-black">
+                                <div class="ratio ratio-16x9">
+                                    <iframe src="{{ playlist.get_embed_url }}" title="YouTube video" allowfullscreen></iframe>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {% empty %}
+                <div class="col-12">
+                    <div class="card-pro text-center p-5">
+                        <div class="icon-box-xl bg-light text-muted mx-auto mb-3 rounded-circle d-flex align-items-center justify-content-center" style="width:80px; height:80px; font-size:2rem;">
+                            <i class="bi bi-collection-play"></i>
+                        </div>
+                        <h5 class="fw-bold text-dark">Catalogue en cours d'enrichissement</h5>
+                        <p class="text-muted mb-0">Aucune playlist recommandée pour le moment.</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+<style>
+/* Variables */
+:root {
+    --primary: #2563eb; --primary-dark: #1e40af; --light-bg: #f8fafc; 
+    --white: #ffffff; --text-dark: #0f172a; --text-muted: #64748b; 
+    --border: #e2e8f0; --radius: 16px;
+}
+
+body { background-color: var(--light-bg); color: var(--text-dark); font-family: 'Inter', sans-serif; }
+h1, h4, h5 { font-family: 'Outfit', sans-serif; }
+
+/* Utils */
+.fw-600 { font-weight: 600; }
+.x-small { font-size: 0.75rem; }
+.line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+/* Card Pro (Results) */
+.card-pro { 
+    background: var(--white); border-radius: var(--radius); border: 1px solid var(--border); 
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); overflow: hidden;
+}
+
+/* Video Card */
+.video-card {
+    background: var(--white); border: 1px solid var(--border); border-radius: var(--radius);
+    overflow: hidden; transition: 0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.02); display: flex; flex-direction: column;
+}
+.video-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0,0,0,0.1); border-color: #bfdbfe; }
+
+.video-thumbnail { position: relative; aspect-ratio: 16/9; overflow: hidden; background: #000; }
+.video-thumbnail img { width: 100%; height: 100%; object-fit: cover; transition: 0.5s; opacity: 0.95; }
+.video-card:hover .video-thumbnail img { transform: scale(1.05); opacity: 0.8; }
+
+.play-overlay {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(0,0,0,0.2); opacity: 0; transition: 0.3s; text-decoration: none; z-index: 2;
+}
+.video-card:hover .play-overlay { opacity: 1; }
+
+.play-btn {
+    width: 50px; height: 50px; background: rgba(255, 255, 255, 0.9);
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-size: 1.5rem; color: #dc3545; box-shadow: 0 0 20px rgba(0,0,0,0.3);
+    transform: scale(0.8); transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.video-card:hover .play-btn { transform: scale(1); }
+
+.video-badges { position: absolute; bottom: 8px; right: 8px; z-index: 2; display: flex; gap: 5px; }
+.backdrop-blur { backdrop-filter: blur(4px); }
+
+.video-body { padding: 1.25rem; }
+.placeholder-img { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #f1f5f9; }
+
+/* Progress Bar */
+.progress { background-color: #f1f5f9; border-radius: 10px; overflow: hidden; }
+.progress-bar { border-radius: 10px; transition: width 1s ease-in-out; }
+
+/* Modal Customization */
+.modal-content { border: none; }
+.btn-close-white { filter: invert(1) grayscale(100%) brightness(200%); }
+
+/* Animation Background */
+.desktop-bg-animation { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; }
+.shape-blob { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.5; animation: float 10s infinite alternate; }
+.shape-1 { top: -10%; left: -10%; width: 500px; height: 500px; background: rgba(37, 99, 235, 0.1); }
+.shape-2 { bottom: -10%; right: -10%; width: 400px; height: 400px; background: rgba(16, 185, 129, 0.1); }
+@keyframes float { 0% { transform: translate(0,0); } 100% { transform: translate(30px, 30px); } }
+
+.reveal-on-scroll { animation: fadeInUp 0.6s ease-out; }
+@keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => { if(entry.isIntersecting) entry.target.style.animationPlayState = "running"; });
+    });
+    document.querySelectorAll(".reveal-on-scroll").forEach(el => observer.observe(el));
+    
+    // Stop video when modal closes
+    const modals = document.querySelectorAll('.modal');
+    modals.forEach(modal => {
+        modal.addEventListener('hidden.bs.modal', function () {
+            const iframe = this.querySelector('iframe');
+            if(iframe) {
+                const src = iframe.src;
+                iframe.src = src; // Reset source stops video
+            }
+        });
+    });
+});
+</script>
+
+{% endblock %}

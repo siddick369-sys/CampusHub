@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Supprimer le document – CampusHub{% endblock %}
+
+{% block content %}
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+<link rel="stylesheet" href="https://unpkg.com/aos@2.3.4/dist/aos.css" />
+
+<style>
+/* === DESIGN SYSTEM PREMIUM === */
+:root {
+    --primary: #2563eb;
+    --danger: #ef4444;
+    --danger-light: #fef2f2;
+    --text-dark: #0f172a;
+    --text-muted: #64748b; 
+    --border: #e2e8f0;
+    --bg-light: #f8fafc;
+}
+
+body { 
+    background-color: var(--bg-light); 
+    color: var(--text-dark); 
+    font-family: 'Inter', sans-serif; 
+}
+
+h1, h2, h5, .fw-600 { font-family: 'Outfit', sans-serif; }
+
+/* === BLOBS DE FOND (Très subtils pour la suppression) === */
+.desktop-bg-animation { position: fixed; inset: 0; z-index: -1; pointer-events: none; }
+.shape-blob { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.1; }
+.shape-1 { top: -10%; left: -10%; width: 500px; height: 500px; background: var(--danger); }
+.shape-2 { bottom: -10%; right: -10%; width: 400px; height: 400px; background: var(--primary); }
+
+/* === CARTE DE SUPPRESSION === */
+.delete-card {
+    background: #ffffff;
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 40px;
+    max-width: 550px;
+    margin: 60px auto;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.04);
+}
+
+/* Icône Danger Douce */
+.icon-container {
+    width: 80px; height: 80px;
+    background-color: var(--danger-light);
+    color: var(--danger);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 25px;
+    font-size: 2rem;
+}
+
+/* Info Document */
+.doc-info-box {
+    background: var(--bg-light);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+    margin: 25px 0;
+}
+
+/* === BOUTONS === */
+.btn-confirm-delete {
+    background: var(--danger);
+    color: white;
+    border: none;
+    border-radius: 50px;
+    padding: 12px 30px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.btn-confirm-delete:hover {
+    background: #dc2626;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(239, 68, 68, 0.2);
+    color: white;
+}
+
+.btn-cancel {
+    background: transparent;
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+    border-radius: 50px;
+    padding: 12px 30px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: 0.3s;
+}
+.btn-cancel:hover {
+    background: #fff;
+    border-color: var(--text-dark);
+    color: var(--text-dark);
+}
+
+.warning-text {
+    color: var(--danger);
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+</style>
+
+<div class="desktop-bg-animation">
+    <div class="shape-blob shape-1"></div>
+    <div class="shape-blob shape-2"></div>
+</div>
+
+<div class="container">
+    <div class="delete-card text-center reveal-on-scroll" data-aos="zoom-in">
+        <div class="icon-container">
+            <i class="bi bi-trash3"></i>
+        </div>
+
+        <h2 class="fw-bold text-dark mb-2">Supprimer le document ?</h2>
+        <p class="text-muted small px-lg-4">
+            Vous êtes sur le point de retirer définitivement ce fichier de votre espace CampusHub.
+        </p>
+
+        <div class="doc-info-box text-start">
+            <div class="d-flex align-items-center">
+                <div class="bg-white p-2 rounded-3 border me-3">
+                    <i class="bi bi-file-earmark-pdf fs-4 text-primary"></i>
+                </div>
+                <div class="overflow-hidden">
+                    <h6 class="mb-0 text-dark fw-bold text-truncate">{{ doc.title|default:doc.file.name }}</h6>
+                    <small class="text-muted">Ajouté le {{ doc.created_at|date:"d F Y" }}</small>
+                </div>
+            </div>
+        </div>
+
+        <p class="warning-text mb-4">
+            <i class="bi bi-exclamation-triangle-fill me-1"></i> 
+            Cette action est irréversible.
+        </p>
+
+        <form method="post" class="d-flex flex-column flex-sm-row gap-3 justify-content-center">
+            {% csrf_token %}
+            <a href="{% url 'student_documents_list' %}" class="btn btn-cancel order-2 order-sm-1">
+                Annuler
+            </a>
+            <button type="submit" class="btn btn-confirm-delete order-1 order-sm-2">
+                Confirmer la suppression
+            </button>
+        </form>
+    </div>
+</div>
+
+<script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+<script>
+    // Initialisation AOS pour l'effet d'entrée
+    AOS.init({ duration: 800, once: true });
+</script>
+{% endblock %}

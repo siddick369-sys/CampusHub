@@ -1,0 +1,460 @@
+/* ===============================
+   RESET SIMPLE
+================================== */
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+    background: #020617;
+    line-height: 1.5;
+}
+
+
+/* ===============================
+   LAYOUT GLOBAL
+================================== */
+
+.ch-header {
+    background: rgba(15, 23, 42, 0.96);
+    border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    backdrop-filter: blur(16px);
+}
+
+.ch-header-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0.65rem 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.ch-logo {
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    font-size: 1.1rem;
+    text-transform: uppercase;
+    color: #e5e7eb;
+    text-decoration: none;
+}
+
+.ch-nav {
+    display: flex;
+    gap: 0.9rem;
+    align-items: center;
+    font-size: 0.9rem;
+}
+
+.ch-nav a {
+    color: #cbd5f5;
+    text-decoration: none;
+    padding: 0.35rem 0.6rem;
+    border-radius: 999px;
+    transition: background 0.2s ease, color 0.2s ease, transform 0.1s ease;
+}
+
+.ch-nav a:hover {
+    background: rgba(51, 65, 85, 0.7);
+    color: #ffffff;
+    transform: translateY(-1px);
+}
+
+.ch-link-btn {
+    border: none;
+    background: transparent;
+    color: #cbd5f5;
+    cursor: pointer;
+    font: inherit;
+    padding: 0.35rem 0.6rem;
+    border-radius: 999px;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.ch-link-btn:hover {
+    background: rgba(51, 65, 85, 0.7);
+    color: #ffffff;
+}
+
+
+/* MAIN & FOOTER */
+
+.ch-main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 1.25rem;
+    padding-bottom: 2.5rem;
+}
+
+.ch-footer {
+    border-top: 1px solid rgba(148, 163, 184, 0.2);
+    text-align: center;
+    padding: 1rem;
+    color: #94a3b8;
+    font-size: 0.8rem;
+}
+
+
+/* ===============================
+   HERO / SECTIONS
+================================== */
+
+.ch-hero {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2.5rem;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.ch-hero-text {
+    flex: 1 1 320px;
+}
+
+.ch-hero h1 {
+    font-size: 2.2rem;
+    margin-bottom: 0.5rem;
+    color: #f9fafb;
+}
+
+.ch-hero p {
+    color: #cbd5f5;
+    max-width: 480px;
+    font-size: 0.98rem;
+}
+
+.ch-hero-actions {
+    margin-top: 1.3rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.ch-section {
+    margin-top: 1.5rem;
+    margin-bottom: 1.75rem;
+}
+
+.ch-section h1 {
+    font-size: 1.5rem;
+    margin-bottom: 0.25rem;
+}
+
+.ch-section-header {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 1rem;
+    align-items: center;
+}
+
+
+/* ===============================
+   BOUTONS
+================================== */
+
+.ch-btn {
+    border-radius: 999px;
+    border: none;
+    padding: 0.55rem 1.15rem;
+    font-size: 0.9rem;
+    cursor: pointer;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    transition: transform 0.1s ease, box-shadow 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+
+.ch-btn-primary {
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    color: #020617;
+    box-shadow: 0 8px 22px rgba(22, 163, 74, 0.35);
+}
+
+.ch-btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 28px rgba(22, 163, 74, 0.45);
+}
+
+.ch-btn-ghost {
+    background: transparent;
+    color: #e5e7eb;
+    border: 1px solid rgba(148, 163, 184, 0.4);
+}
+
+.ch-btn-ghost:hover {
+    background: rgba(15, 23, 42, 0.8);
+}
+
+
+/* ===============================
+   CARTES & LISTES
+================================== */
+
+.ch-card {
+    background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.16), transparent) rgba(15, 23, 42, 0.96);
+    border-radius: 18px;
+    padding: 1rem 1.1rem;
+    border: 1px solid rgba(148, 163, 184, 0.25);
+    box-shadow: 0 14px 40px rgba(15, 23, 42, 0.75);
+    margin-bottom: 1rem;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+.ch-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(96, 165, 250, 0.8);
+    box-shadow: 0 20px 50px rgba(15, 23, 42, 0.95);
+}
+
+.ch-list {
+    margin-top: 0.8rem;
+}
+
+.ch-muted {
+    color: #9ca3af;
+    font-size: 0.85rem;
+}
+
+
+/* Dashboard grid */
+
+.ch-dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.1rem;
+    margin-top: 1rem;
+}
+
+
+/* ===============================
+   FORMULAIRES
+================================== */
+
+.ch-form-section h1 {
+    margin-bottom: 0.75rem;
+}
+
+.ch-form {
+    max-width: 600px;
+    margin-top: 0.75rem;
+}
+
+.ch-form p {
+    margin: 0 0 0.8rem;
+}
+
+.ch-form label {
+    display: block;
+    margin-bottom: 0.3rem;
+    font-size: 0.88rem;
+    color: #e5e7eb;
+}
+
+.ch-form input[type="text"],
+.ch-form input[type="email"],
+.ch-form input[type="password"],
+.ch-form input[type="number"],
+.ch-form input[type="date"],
+.ch-form input[type="file"],
+.ch-form select,
+.ch-form textarea {
+    width: 100%;
+    padding: 0.45rem 0.55rem;
+    border-radius: 10px;
+    border: 1px solid rgba(148, 163, 184, 0.5);
+    background: rgba(15, 23, 42, 0.9);
+    color: #e5e7eb;
+    font-size: 0.9rem;
+    outline: none;
+    transition: border 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+
+.ch-form textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+.ch-form input:focus,
+.ch-form select:focus,
+.ch-form textarea:focus {
+    border-color: #38bdf8;
+    box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.6);
+    background: rgba(15, 23, 42, 1);
+}
+
+.ch-inline-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.ch-inline-form input[type="text"],
+.ch-inline-form select {
+    flex: 1 1 160px;
+}
+
+
+/* ===============================
+   PROFIL
+================================== */
+
+.ch-profile-header {
+    display: flex;
+    gap: 1.2rem;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.ch-avatar-lg {
+    width: 72px;
+    height: 72px;
+    border-radius: 999px;
+    overflow: hidden;
+    flex-shrink: 0;
+    border: 2px solid rgba(96, 165, 250, 0.8);
+    box-shadow: 0 0 0 3px rgba(15, 23, 42, 1);
+    background: radial-gradient(circle, #1e293b, #020617);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ch-avatar-lg img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.ch-avatar-placeholder {
+    color: #e5e7eb;
+    font-weight: 700;
+    font-size: 1.6rem;
+}
+
+.ch-profile-content section {
+    margin-bottom: 1.1rem;
+}
+
+.ch-profile-content h2 {
+    font-size: 1.1rem;
+    margin-bottom: 0.3rem;
+}
+
+
+/* ===============================
+   MESSAGES (CHAT)
+================================== */
+
+.ch-messages-list {
+    background: rgba(15, 23, 42, 0.9);
+    border-radius: 14px;
+    padding: 0.8rem 0.9rem;
+    border: 1px solid rgba(148, 163, 184, 0.4);
+    max-height: 420px;
+    overflow-y: auto;
+    margin-bottom: 0.9rem;
+}
+
+.ch-message {
+    margin-bottom: 0.7rem;
+    padding: 0.4rem 0.6rem;
+    border-radius: 10px;
+    max-width: 80%;
+}
+
+.ch-message.me {
+    margin-left: auto;
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    color: #020617;
+}
+
+.ch-message.other {
+    background: rgba(15, 23, 42, 0.9);
+    border: 1px solid rgba(148, 163, 184, 0.4);
+}
+
+.ch-message-author {
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-bottom: 0.18rem;
+}
+
+.ch-message-content {
+    font-size: 0.9rem;
+    margin: 0.1rem 0;
+}
+
+.ch-message small {
+    font-size: 0.72rem;
+    opacity: 0.8;
+}
+
+.ch-message-form textarea {
+    margin-bottom: 0.5rem;
+}
+
+
+/* ===============================
+   LIENS & TEXTES
+================================== */
+
+.ch-link {
+    color: #38bdf8;
+    text-decoration: none;
+    font-size: 0.88rem;
+}
+
+.ch-link:hover {
+    text-decoration: underline;
+}
+
+
+/* ===============================
+   RESPONSIVE
+================================== */
+
+@media (max-width: 768px) {
+    .ch-header-inner {
+        flex-wrap: wrap;
+        gap: 0.6rem;
+    }
+    .ch-nav {
+        width: 100%;
+        justify-content: flex-start;
+        flex-wrap: wrap;
+    }
+    .ch-main {
+        padding: 1rem;
+    }
+    .ch-hero {
+        flex-direction: column;
+    }
+    .ch-profile-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .ch-messages-list {
+        max-height: 320px;
+    }
+}
+
+body {
+    background-color: #0f172a;
+}

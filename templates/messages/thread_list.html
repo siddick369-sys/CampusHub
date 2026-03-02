@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Mes conversations{% endblock %}
+
+{% block content %}
+<section class="ch-section">
+    <h1>Mes conversations</h1>
+
+    <div class="ch-list">
+        {% for thread in threads %}
+            <article class="ch-card">
+                <h2>Conversation #{{ thread.id }}</h2>
+                <p class="ch-muted">
+                    Participants :
+                    {% for p in thread.participants.all %}
+                        {{ p.full_name }}{% if not forloop.last %}, {% endif %}
+                    {% endfor %}
+                </p>
+                <small>Dernière activité : {{ thread.updated_at|date:"d/m/Y H:i" }}</small><br>
+                <a href="{% url 'thread_detail' thread.pk %}" class="ch-link">Ouvrir</a>
+            </article>
+        {% empty %}
+            <p>Aucune conversation pour le moment.</p>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

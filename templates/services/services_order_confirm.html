@@ -1,0 +1,220 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Commander : {{ service.title }}{% endblock %}
+
+{% block block_css %}
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+    /* --- CONFIGURATION GLOBALE --- */
+    body {
+        background-color: #050505;
+        font-family: 'Poppins', sans-serif;
+        color: #ffffff;
+        min-height: 100vh;
+        overflow-x: hidden;
+    }
+
+    /* --- FOND ANIMÉ FLUIDE --- */
+    .background-anim {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
+        background: linear-gradient(135deg, #020024, #090979, #2b003b);
+        background-size: 400% 400%;
+        animation: gradientBG 15s ease infinite;
+    }
+    @keyframes gradientBG {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+
+    /* --- CADRE NÉON --- */
+    .neon-wrapper {
+        position: relative;
+        width: 100%;
+        max-width: 600px;
+        padding: 3px;
+        margin: 40px auto;
+    }
+
+    .neon-box {
+        background-color: rgba(18, 18, 18, 0.9);
+        padding: 2.5rem;
+        border-radius: 12px;
+        position: relative;
+        z-index: 2;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(10px);
+    }
+
+    /* Lignes décoratives */
+    .line { position: absolute; z-index: 1; border-radius: 4px; }
+    .line-top { top: -2px; left: -2px; width: 60%; height: 4px; background: linear-gradient(90deg, transparent, #00f7ff); box-shadow: 0 0 15px #00f7ff; }
+    .line-left { top: -2px; left: -2px; width: 4px; height: 50%; background: linear-gradient(180deg, transparent, #00f7ff); box-shadow: 0 0 15px #00f7ff; }
+    .line-bottom { bottom: -2px; right: -2px; width: 60%; height: 4px; background: linear-gradient(270deg, transparent, #ff0055); box-shadow: 0 0 15px #ff0055; }
+    .line-right { bottom: -2px; right: -2px; width: 4px; height: 50%; background: linear-gradient(0deg, transparent, #ff0055); box-shadow: 0 0 15px #ff0055; }
+
+    /* --- TYPOGRAPHIE --- */
+    .page-title {
+        text-align: center;
+        text-transform: uppercase;
+        font-weight: 700;
+        letter-spacing: 2px;
+        margin-bottom: 2rem;
+        color: #fff;
+        text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+    }
+    .service-highlight { color: #00f7ff; }
+
+    /* --- INFO CARD (HOLO) --- */
+    .holo-card {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    .holo-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
+        padding-bottom: 8px;
+    }
+    .holo-item:last-child { border-bottom: none; padding-bottom: 0; }
+    
+    .holo-label { font-size: 0.85rem; color: rgba(255, 255, 255, 0.6); text-transform: uppercase; }
+    .holo-value { font-weight: 600; color: #fff; }
+
+    /* --- FORMULAIRE --- */
+    .form-label {
+        color: #00f7ff;
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+    }
+
+    .neon-box input, .neon-box textarea {
+        width: 100%;
+        background-color: rgba(255, 255, 255, 0.05) !important;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: #ffffff !important;
+        border-radius: 8px;
+        padding: 0.8rem;
+        font-weight: 300;
+        transition: 0.3s;
+        outline: none;
+    }
+
+    .neon-box input:focus, .neon-box textarea:focus {
+        border-color: #00f7ff;
+        background-color: rgba(0, 247, 255, 0.05) !important;
+        box-shadow: 0 0 15px rgba(0, 247, 255, 0.2);
+        transform: translateY(-2px);
+    }
+
+    .form-text { color: rgba(255, 255, 255, 0.4) !important; font-size: 0.8rem; margin-top: 5px; }
+    .text-danger { color: #ff0055 !important; margin-top: 5px; font-size: 0.85rem; }
+
+    /* --- BOUTONS --- */
+    .btn-neon-confirm {
+        width: 100%;
+        background: linear-gradient(45deg, #00f7ff, #008cff);
+        color: #000;
+        border: none;
+        padding: 1rem;
+        border-radius: 50px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        transition: 0.3s;
+        margin-top: 2rem;
+        box-shadow: 0 0 15px rgba(0, 247, 255, 0.3);
+    }
+    .btn-neon-confirm:hover {
+        box-shadow: 0 0 25px rgba(0, 247, 255, 0.6);
+        transform: scale(1.02);
+    }
+
+    .btn-neon-cancel {
+        display: block; width: 100%; text-align: center; margin-top: 1rem;
+        color: rgba(255,255,255,0.5); text-decoration: none; transition: 0.3s;
+    }
+    .btn-neon-cancel:hover { color: #fff; }
+
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="background-anim"></div>
+
+<div class="d-flex justify-content-center align-items-center w-100" style="min-height: 90vh;">
+    
+    <div class="neon-wrapper">
+        <span class="line line-top"></span>
+        <span class="line line-left"></span>
+        <span class="line line-bottom"></span>
+        <span class="line line-right"></span>
+
+        <div class="neon-box">
+            
+            <h3 class="page-title">
+                Nouvelle Commande
+            </h3>
+            <p class="text-center text-white-50 mb-4">{{ service.title }}</p>
+
+            <div class="holo-card">
+                <div class="holo-item">
+                    <span class="holo-label"><i class="bi bi-person-circle me-2"></i>Prestataire</span>
+                    <span class="holo-value service-highlight">{{ service.provider.username }}</span>
+                </div>
+                <div class="holo-item">
+                    <span class="holo-label"><i class="bi bi-coin me-2"></i>Fourchette</span>
+                    <span class="holo-value">{{ service.price_min }} – {{ service.price_max }} {{ service.currency }}</span>
+                </div>
+                <div class="holo-item">
+                    <span class="holo-label"><i class="bi bi-hourglass-split me-2"></i>Délai estimé</span>
+                    <span class="holo-value">{{ service.delivery_time_min_days }} – {{ service.delivery_time_max_days }} jours</span>
+                </div>
+            </div>
+
+            <form method="post">
+                {% csrf_token %}
+
+                <div class="mb-4">
+                    <label class="form-label">Prix proposé ({{ service.currency }})</label>
+                    {{ form.agreed_price }}
+                    <small class="form-text">
+                        {{ form.agreed_price.help_text|default:"Proposez un montant dans la fourchette indiquée." }}
+                    </small>
+                    {% if form.agreed_price.errors %}
+                        <div class="text-danger">{{ form.agreed_price.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label">Brief / Description</label>
+                    {{ form.description_brief }}
+                    <small class="form-text">Décrivez vos besoins le plus précisément possible.</small>
+                    {% if form.description_brief.errors %}
+                        <div class="text-danger">{{ form.description_brief.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <button type="submit" class="btn-neon-confirm">
+                    🚀 Confirmer la commande
+                </button>
+                
+                <a href="{% url 'service_detail' service.slug %}" class="btn-neon-cancel">
+                    Annuler
+                </a>
+
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

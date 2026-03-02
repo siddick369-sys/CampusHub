@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Recherche{% endblock %}
+
+{% block content %}
+<section class="ch-section">
+    <h1>Recherche globale</h1>
+
+    <form method="get" class="ch-inline-form">
+        <input type="text" name="q" placeholder="Nom, compétence, offre, service…"
+               value="{{ query }}">
+        <button type="submit" class="ch-btn ch-btn-ghost">Rechercher</button>
+    </form>
+
+    {% if query %}
+        <h2>Profils</h2>
+        <div class="ch-list">
+            {% for p in profiles %}
+                <article class="ch-card">
+                    <h3><a href="{% url 'profile_detail' p.id %}">{{ p.full_name }}</a></h3>
+                    <p class="ch-muted">{{ p.headline }}</p>
+                </article>
+            {% empty %}
+                <p>Aucun profil trouvé.</p>
+            {% endfor %}
+        </div>
+
+        <h2>Offres d’emploi</h2>
+        <div class="ch-list">
+            {% for job in jobs %}
+                <article class="ch-card">
+                    <h3><a href="{% url 'job_detail' job.pk %}">{{ job.title }}</a></h3>
+                    <p class="ch-muted">{{ job.company_name }} · {{ job.city }}</p>
+                </article>
+            {% empty %}
+                <p>Aucune offre trouvée.</p>
+            {% endfor %}
+        </div>
+
+        <h2>Services</h2>
+        <div class="ch-list">
+            {% for s in services %}
+                <article class="ch-card">
+                    <h3><a href="{% url 'service_detail' s.pk %}">{{ s.title }}</a></h3>
+                    <p class="ch-muted">{{ s.get_category_display }}</p>
+                </article>
+            {% empty %}
+                <p>Aucun service trouvé.</p>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>Entre un mot-clé pour lancer une recherche.</p>
+    {% endif %}
+</section>
+{% endblock %}

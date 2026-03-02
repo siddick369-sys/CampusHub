@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Test Module Orientation{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+
+    <h2 class="fw-bold">🧪 Test du module Orientation</h2>
+    <p class="text-muted">Page temporaire pour vérifier que tout fonctionne côté orientation.</p>
+
+    <hr>
+
+    <h4 class="mt-3">🔹 Navigation principale</h4>
+    <ul>
+        <li><a href="{% url 'orientation_dashboard' %}">Dashboard Orientation</a></li>
+        <li><a href="{% url 'orientation_test' %}">Passer un test d'orientation</a></li>
+        <li><a href="{% url 'orientation_history' %}">Voir l'historique de mes tests</a></li>
+        <li><a href="{% url 'track_list' %}">Voir toutes les filières</a></li>
+        <li><a href="{% url 'track_search' %}">Rechercher une filière</a></li>
+    </ul>
+
+    <hr>
+
+    <h4 class="mt-3">ℹ️ Conseils de test</h4>
+    <ul>
+        <li>Vas dans l’admin Django et crée :
+            <ul>
+                <li>des <strong>Track</strong> (filières)</li>
+                <li>des <strong>School</strong> liées à des Track</li>
+                <li>des <strong>Job</strong> liés à des Track</li>
+                <li>des <strong>Question</strong>, <strong>Choice</strong> et <strong>ChoiceTrackScore</strong></li>
+            </ul>
+        </li>
+        <li>Ensuite :
+            <ul>
+                <li>Lance le test d’orientation et vérifie que tu obtiens un résultat</li>
+                <li>Vérifie que les filières recommandées s’affichent correctement</li>
+                <li>Clique sur une filière pour voir les écoles et métiers associés</li>
+            </ul>
+        </li>
+    </ul>
+
+</div>
+{% endblock %}

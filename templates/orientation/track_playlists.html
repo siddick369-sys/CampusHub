@@ -1,0 +1,152 @@
+<!-- templates/orientation/track_playlists.html -->
+{% extends 'base.html' %}
+
+{% block title %}Formations {{ track.name }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- En-tête de la filière -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'orientation:track_list' %}">Filières</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'orientation:track_detail' track.slug %}">{{ track.name }}</a></li>
+                    <li class="breadcrumb-item active">Formations</li>
+                </ol>
+            </nav>
+            
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1>
+                        {% if track.icon %}<i class="{{ track.icon }}"></i>{% endif %}
+                        Formations {{ track.name }}
+                    </h1>
+                    <p class="text-muted">{{ total_playlists }} playlists disponibles</p>
+                </div>
+                <div class="dropdown">
+                    <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-filter"></i> Filtre
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="?">Tous les niveaux</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="?difficulty=beginner">Débutant</a></li>
+                        <li><a class="dropdown-item" href="?difficulty=intermediate">Intermédiaire</a></li>
+                        <li><a class="dropdown-item" href="?difficulty=advanced">Avancé</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Playlists par niveau -->
+    {% for difficulty_level, playlists in playlists_by_difficulty.items %}
+    {% if playlists %}
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header 
+                    {% if difficulty_level == 'beginner' %}bg-success text-white
+                    {% elif difficulty_level == 'intermediate' %}bg-warning text-dark
+                    {% else %}bg-danger text-white
+                    {% endif %}">
+                    <h4 class="mb-0">
+                        {% if difficulty_level == 'beginner' %}
+                        🟢 Débutant
+                        {% elif difficulty_level == 'intermediate' %}
+                        🟡 Intermédiaire
+                        {% else %}
+                        🔴 Avancé
+                        {% endif %}
+                        ({{ playlists|length }} formations)
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for playlist in playlists %}
+                        <div class="col-lg-6 mb-4">
+                            <div class="card h-100">
+                                <div class="row g-0">
+                                    <div class="col-md-4">
+                                        {% if playlist.thumbnail_url %}
+                                        <img src="{{ playlist.thumbnail_url }}" class="img-fluid rounded-start h-100" style="object-fit: cover;" alt="{{ playlist.title }}">
+                                        {% else %}
+                                        <div class="bg-light h-100 d-flex align-items-center justify-content-center">
+                                            <i class="fas fa-video fa-2x text-muted"></i>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="col-md-8">
+                                        <div class="card-body d-flex flex-column h-100">
+                                            <h5 class="card-title">{{ playlist.title }}</h5>
+                                            <p class="card-text small text-muted flex-grow-1">
+                                                {{ playlist.channel_name }}
+                                                {% if playlist.description %}
+                                                <br>{{ playlist.description|truncatewords:15 }}
+                                                {% endif %}
+                                            </p>
+                                            
+                                            <div class="mt-auto">
+                                                <div class="badges mb-2">
+                                                    <span class="badge bg-secondary">{{ playlist.estimated_hours }}h</span>
+                                                    <span class="badge bg-info">{{ playlist.get_language_display }}</span>
+                                                    {% if playlist.video_count %}
+                                                    <span class="badge bg-light text-dark">{{ playlist.video_count }} vidéos</span>
+                                                    {% endif %}
+                                                </div>
+                                                
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <a href="{{ playlist.youtube_url }}" target="_blank" class="btn btn-danger btn-sm">
+                                                        <i class="fab fa-youtube"></i> Regarder
+                                                    </a>
+                                                    <a href="{% url 'orientation:playlist_detail' playlist.id %}" class="btn btn-outline-primary btn-sm">
+                                                        Détails
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    {% endfor %}
+
+    <!-- Aucune playlist -->
+    {% if total_playlists == 0 %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-video-slash fa-3x text-muted mb-3"></i>
+                    <h4 class="text-muted">Aucune playlist disponible</h4>
+                    <p class="text-muted">
+                        Aucune formation n'est actuellement disponible pour cette filière.
+                        Revenez plus tard ou explorez d'autres filières.
+                    </p>
+                    <a href="{% url 'orientation:track_list' %}" class="btn btn-primary">
+                        Explorer les autres filières
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Retour -->
+    <div class="row mt-4">
+        <div class="col-12 text-center">
+            <a href="{% url 'orientation:track_detail' track.slug %}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Retour à la fiche de la filière
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,483 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Mes Favoris{% endblock %}
+
+{% block content %}
+
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+
+<div id="pageLoader" class="loader-overlay">
+    <div class="loader-content">
+        <div class="spinner-rings">
+            <div></div><div></div>
+        </div>
+        <p class="loader-text">Chargement de vos favoris...</p>
+    </div>
+</div>
+
+<div class="desktop-bg-animation">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+</div>
+
+<div id="progressWidget" class="progress-widget">
+    <div class="progress-info">
+        <span class="label">Favoris affichés</span>
+        <span class="count" id="progressText">0 / 0</span>
+    </div>
+    <div class="progress-track">
+        <div class="progress-fill" id="progressBar"></div>
+    </div>
+</div>
+
+<header class="fav-header">
+    <div class="container relative-z reveal-on-scroll">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-4">
+            
+            <div class="header-text">
+                <span class="badge-header">Ma Sélection</span>
+                <h1>Mes Services <span class="text-primary">Favoris</span></h1>
+                <p class="subtitle mb-0">Retrouvez ici les services que vous avez sauvegardés.</p>
+            </div>
+
+            <div class="toolbar-box shadow-sm">
+                <form method="get" class="d-flex align-items-center gap-2">
+                    <div class="input-icon-wrapper">
+                        <i class="bi bi-sort-down"></i>
+                        <select name="sort" class="form-select-pro" onchange="this.form.submit()">
+                            <option value="recent" {% if sort == "recent" %}selected{% endif %}>Plus récents</option>
+                            <option value="price_asc" {% if sort == "price_asc" %}selected{% endif %}>Prix croissant</option>
+                            <option value="price_desc" {% if sort == "price_desc" %}selected{% endif %}>Prix décroissant</option>
+                            <option value="rating_desc" {% if sort == "rating_desc" %}selected{% endif %}>Meilleure note</option>
+                        </select>
+                    </div>
+                    <a href="{% url 'service_list' %}" class="liquid-btn btn-primary-pro btn-sm-custom">
+                        <span><i class="bi bi-plus-lg"></i> Ajouter</span>
+                    </a>
+                </form>
+            </div>
+
+        </div>
+    </div>
+</header>
+
+<section class="section-padding" id="favSection">
+    <div class="container relative-z">
+
+        {% if favorite_links %}
+        
+        <div class="fav-grid" id="favGrid">
+            {% for fav in favorite_links %}
+            {% with srv=fav.service %}
+            <div class="service-card js-fav-card reveal-on-scroll">
+                
+                {% if srv.status != "active" or srv.visibility != "public" %}
+                    <div class="status-overlay">
+                        <span class="badge-status danger">Indisponible</span>
+                    </div>
+                {% endif %}
+
+                <div class="card-header-svc">
+                    <div class="badges-wrapper">
+                        {% if srv.single_active_order %}
+                            <span class="badge-pro info">Unique</span>
+                        {% else %}
+                            <span class="badge-pro standard">Service</span>
+                        {% endif %}
+                    </div>
+                    <form method="post" action="{% url 'service_toggle_favorite' srv.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-remove" title="Retirer des favoris">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </form>
+                </div>
+
+                <div class="card-body-svc">
+                    <h3 class="svc-title">{{ srv.title|truncatechars:40 }}</h3>
+                    
+                    <div class="provider-mini">
+                        <div class="provider-avatar">
+                            {{ srv.provider.username|slice:":1" }}
+                        </div>
+                        <div class="provider-txt">
+                            <span class="p-name">
+                                {{ srv.provider.username }}
+                                {% if srv.provider.profile.is_service_provider_verified %}
+                                    <i class="bi bi-patch-check-fill text-primary"></i>
+                                {% endif %}
+                            </span>
+                            <span class="rating-txt">
+                                <i class="bi bi-star-fill text-warning"></i> {{ srv.average_rating|floatformat:1 }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <p class="svc-desc">{{ srv.short_description|truncatechars:80 }}</p>
+                </div>
+
+                <div class="divider-card"></div>
+
+                <div class="card-footer-svc">
+                    <div class="price-box">
+                        <span class="price-label">À partir de</span>
+                        <span class="price-val">{{ srv.price_min }} {{ srv.currency }}</span>
+                    </div>
+
+                    <div class="actions-box">
+                        <a href="{% url 'service_detail' srv.slug %}" class="icon-btn-sm" title="Voir">
+                            <i class="bi bi-eye"></i>
+                        </a>
+                        
+                        {% if user.is_authenticated and user.id != srv.provider.id and srv.status == "active" and srv.visibility == "public" %}
+                            <a href="{% url 'service_order_create' srv.slug %}" class="liquid-btn btn-primary-pro btn-xs">
+                                <span>Réserver</span>
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+
+            </div>
+            {% endwith %}
+            {% endfor %}
+        </div>
+
+        <div id="paginationControls" class="pagination-container"></div>
+
+        {% else %}
+        
+        <div class="empty-state reveal-on-scroll">
+            <div class="empty-img">
+                <i class="bi bi-bookmark-heart"></i>
+            </div>
+            <h3>Votre liste est vide</h3>
+            <p>Sauvegardez les services intéressants pour les retrouver ici plus tard.</p>
+            <a href="{% url 'service_list' %}" class="liquid-btn btn-primary-pro mt-3">
+                <span>Explorer les services</span>
+            </a>
+        </div>
+
+        {% endif %}
+    </div>
+</section>
+
+<button id="backToTop" title="Retour en haut">
+    <i class="bi bi-arrow-up"></i>
+</button>
+<style>
+  /* --- VARIABLES --- */
+:root {
+    --primary: #2563eb;
+    --primary-light: #60a5fa;
+    --dark: #0f172a;
+    --light: #f8fafc;
+    --white: #ffffff;
+    --text: #334155;
+    --text-muted: #64748b;
+    --border: #e2e8f0;
+    --radius: 16px;
+    --shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+    --shadow-hover: 0 20px 25px -5px rgba(0,0,0,0.1);
+}
+
+body { background: var(--light); color: var(--text); font-family: 'Inter', sans-serif; overflow-x: hidden; position: relative; }
+h1, h3 { font-family: 'Outfit', sans-serif; font-weight: 700; color: var(--dark); }
+
+/* --- BACKGROUND ANIMATION (DESKTOP ONLY) --- */
+.desktop-bg-animation {
+    display: none; /* Caché sur mobile */
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0;
+    pointer-events: none; overflow: hidden;
+}
+
+/* Affichage uniquement sur grand écran */
+@media (min-width: 992px) {
+    .desktop-bg-animation { display: block; }
+    
+    .orb {
+        position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.6;
+        animation: floatOrb 20s infinite ease-in-out;
+    }
+    .orb-1 { width: 400px; height: 400px; background: rgba(37, 99, 235, 0.15); top: -10%; left: -10%; animation-delay: 0s; }
+    .orb-2 { width: 300px; height: 300px; background: rgba(96, 165, 250, 0.15); top: 40%; right: -5%; animation-delay: -5s; }
+    .orb-3 { width: 250px; height: 250px; background: rgba(139, 92, 246, 0.1); bottom: -10%; left: 20%; animation-delay: -10s; }
+
+    @keyframes floatOrb {
+        0% { transform: translate(0, 0) scale(1); }
+        33% { transform: translate(30px, -50px) scale(1.1); }
+        66% { transform: translate(-20px, 20px) scale(0.9); }
+        100% { transform: translate(0, 0) scale(1); }
+    }
+}
+
+/* Z-Index Helper pour le contenu */
+.relative-z { position: relative; z-index: 2; }
+
+/* --- HEADER --- */
+.fav-header { padding: 60px 0 40px; }
+.badge-header { background: #eff6ff; color: var(--primary); padding: 5px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; margin-bottom: 10px; display: inline-block; }
+.header-text h1 { font-size: 2.5rem; margin-bottom: 5px; }
+.subtitle { color: var(--text-muted); }
+.text-primary { color: var(--primary) !important; }
+
+/* Toolbar Box */
+.toolbar-box {
+    background: white; padding: 10px 15px; border-radius: 50px; border: 1px solid var(--border);
+    display: flex; gap: 10px; align-items: center;
+}
+.form-select-pro {
+    border: none; background: transparent; font-size: 0.9rem; font-weight: 600; color: var(--text);
+    padding-right: 25px; cursor: pointer; outline: none;
+}
+.input-icon-wrapper { display: flex; align-items: center; gap: 8px; padding-left: 10px; border-right: 1px solid var(--border); padding-right: 10px; }
+.input-icon-wrapper i { color: var(--primary); }
+
+/* --- GRID & CARDS --- */
+.section-padding { padding-bottom: 80px; }
+.fav-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 30px; min-height: 300px;
+}
+
+.service-card {
+    background: white; border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 25px; display: flex; flex-direction: column; transition: 0.3s;
+    position: relative; overflow: hidden; box-shadow: var(--shadow);
+    opacity: 0; transform: translateY(20px); animation: fadeInUp 0.5s forwards;
+}
+.service-card:hover { transform: translateY(-8px); box-shadow: var(--shadow-hover); border-color: #cbd5e1; }
+
+/* Overlay Status (Indisponible) */
+.status-overlay {
+    position: absolute; inset: 0; background: rgba(255,255,255,0.8); z-index: 5;
+    display: flex; align-items: center; justify-content: center; backdrop-filter: blur(2px);
+}
+.badge-status.danger { background: #fee2e2; color: #dc2626; padding: 8px 16px; border-radius: 30px; font-weight: 700; border: 1px solid #fecaca; }
+
+/* Header Card */
+.card-header-svc { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; }
+.badge-pro { padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
+.badge-pro.info { background: #eff6ff; color: var(--primary); }
+.badge-pro.standard { background: #f8fafc; color: var(--text-muted); border: 1px solid var(--border); }
+.btn-remove {
+    background: transparent; border: none; color: #cbd5e1; width: 30px; height: 30px;
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    transition: 0.2s; cursor: pointer;
+}
+.btn-remove:hover { background: #fee2e2; color: #ef4444; }
+
+/* Body */
+.svc-title { font-size: 1.15rem; margin-bottom: 15px; line-height: 1.4; color: var(--dark); min-height: 50px; }
+.provider-mini { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; }
+.provider-avatar {
+    width: 32px; height: 32px; background: var(--dark); color: white; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.8rem;
+}
+.provider-txt { display: flex; flex-direction: column; line-height: 1.2; font-size: 0.85rem; }
+.p-name { font-weight: 600; color: var(--text); }
+.rating-txt { font-size: 0.75rem; color: var(--text-muted); }
+.svc-desc { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+.divider-card { height: 1px; background: var(--border); margin: 20px 0; width: 100%; }
+
+/* Footer Card */
+.card-footer-svc { display: flex; justify-content: space-between; align-items: center; margin-top: auto; }
+.price-box { display: flex; flex-direction: column; line-height: 1; }
+.price-label { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 2px; }
+.price-val { font-weight: 700; color: var(--primary); font-size: 1.1rem; }
+
+.actions-box { display: flex; gap: 8px; }
+.icon-btn-sm {
+    width: 36px; height: 36px; border: 1px solid var(--border); border-radius: 8px;
+    background: white; color: var(--text-muted); display: flex; align-items: center; justify-content: center;
+    transition: 0.2s; text-decoration: none;
+}
+.icon-btn-sm:hover { border-color: var(--primary); color: var(--primary); }
+
+/* Buttons */
+.liquid-btn {
+    position: relative; display: inline-flex; justify-content: center; align-items: center;
+    padding: 8px 16px; font-weight: 600; border-radius: 8px; overflow: hidden;
+    transition: all 0.4s ease; cursor: pointer; border: none; z-index: 1; text-decoration: none;
+}
+.btn-primary-pro { background: var(--primary); color: white; }
+.btn-primary-pro::before { content: ''; position: absolute; top: 0; left: 0; width: 0; height: 100%; background: #1e40af; z-index: -1; transition: width 0.4s ease; }
+.liquid-btn:hover::before { width: 100%; }
+.btn-sm-custom { padding: 8px 20px; font-size: 0.9rem; }
+.btn-xs { padding: 6px 12px; font-size: 0.85rem; height: 36px; }
+
+/* Empty State */
+.empty-state { text-align: center; padding: 80px 20px; background: white; border-radius: var(--radius); border: 1px dashed var(--border); }
+.empty-img { font-size: 4rem; color: #e2e8f0; margin-bottom: 20px; }
+.empty-state h3 { font-size: 1.5rem; margin-bottom: 10px; }
+
+/* Pagination & Widget */
+.pagination-container { display: flex; justify-content: center; gap: 10px; margin-top: 50px; flex-wrap: wrap; }
+.page-btn { width: 40px; height: 40px; border-radius: 50%; background: white; border: 1px solid var(--border); color: #64748b; font-weight: 600; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; box-shadow: var(--shadow); }
+.page-btn:hover { border-color: var(--primary); color: var(--primary); transform: translateY(-3px); }
+.page-btn.active { background: var(--primary); color: white; border-color: var(--primary); transform: scale(1.1); }
+
+.progress-widget { position: fixed; top: 100px; right: 30px; z-index: 900; background: rgba(255,255,255,0.9); backdrop-filter: blur(10px); padding: 15px; border-radius: 12px; box-shadow: var(--shadow-hover); border: 1px solid var(--border); width: 180px; transform: translateX(150%); transition: 0.5s; }
+.progress-widget.visible { transform: translateX(0); }
+.progress-track { height: 6px; background: #e2e8f0; border-radius: 10px; margin-top: 8px; overflow: hidden; }
+.progress-fill { height: 100%; background: var(--primary); width: 0; transition: 0.5s; }
+.progress-info { display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 600; }
+.progress-info .count { color: var(--primary); }
+
+/* Loader */
+.loader-overlay { position: fixed; inset: 0; background: white; z-index: 9999; display: flex; justify-content: center; align-items: center; transition: opacity 0.6s; }
+.spinner-rings div { position: absolute; width: 40px; height: 40px; border: 4px solid var(--primary); border-radius: 50%; animation: spin 1s infinite; border-color: var(--primary) transparent transparent transparent; }
+
+/* Back to Top */
+#backToTop { position: fixed; bottom: 30px; right: 30px; width: 45px; height: 45px; background: var(--primary); color: white; border: none; border-radius: 50%; display: none; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 5px 15px rgba(37,99,235,0.3); z-index: 900; transition: 0.3s; }
+#backToTop.show { display: flex; animation: fadeInUp 0.3s; }
+
+/* Keyframes */
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+@keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
+.reveal-on-scroll { opacity: 0; transform: translateY(30px); transition: all 0.6s ease-out; }
+.reveal-on-scroll.active { opacity: 1; transform: translateY(0); }
+
+/* Responsive */
+@media (max-width: 768px) {
+    .header-text h1 { font-size: 2rem; }
+    .toolbar-box { width: 100%; justify-content: space-between; }
+}
+</style>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    
+    // --- VARIABLES ---
+    const itemsPerPage = 9;
+    const grid = document.getElementById('favGrid');
+    
+    // Si pas de grille (liste vide), on arrête là pour éviter les erreurs
+    if (!grid) {
+        const loader = document.getElementById("pageLoader");
+        if(loader) setTimeout(() => { loader.style.opacity = "0"; setTimeout(() => loader.style.display = "none", 600); }, 800);
+        return;
+    }
+
+    const allCards = Array.from(grid.getElementsByClassName('js-fav-card'));
+    const controls = document.getElementById('paginationControls');
+    const progressWidget = document.getElementById('progressWidget');
+    const progressText = document.getElementById('progressText');
+    const progressBar = document.getElementById('progressBar');
+    const totalItems = allCards.length;
+    let currentPage = 1;
+
+    // --- 1. AFFICHAGE PAGINATION ---
+    function showPage(page) {
+        const startIndex = (page - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        let visibleCount = 0;
+
+        allCards.forEach((card, index) => {
+            if (index >= startIndex && index < endIndex) {
+                card.style.display = 'flex';
+                // Reset Animation
+                card.style.animation = 'none';
+                card.offsetHeight; /* Trigger reflow */
+                card.style.animation = 'fadeInUp 0.5s forwards';
+                card.style.animationDelay = `${(index - startIndex) * 0.1}s`;
+                visibleCount++;
+            } else {
+                card.style.display = 'none';
+            }
+        });
+
+        updatePaginationButtons(page);
+        updateProgressBar(endIndex);
+
+        if(page > 1) {
+            document.getElementById('favSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }
+
+    // --- 2. PROGRESS BAR ---
+    function updateProgressBar(currentEndIndex) {
+        const realCount = Math.min(currentEndIndex, totalItems);
+        const percent = (realCount / totalItems) * 100;
+        progressText.textContent = `${realCount} / ${totalItems}`;
+        progressBar.style.width = `${percent}%`;
+        if(totalItems > 0) progressWidget.classList.add('visible');
+    }
+
+    // --- 3. BOUTONS PAGINATION ---
+    function updatePaginationButtons(activePage) {
+        const totalPages = Math.ceil(totalItems / itemsPerPage);
+        controls.innerHTML = "";
+        if (totalPages <= 1) return;
+
+        if (activePage > 1) {
+            controls.appendChild(createBtn('<i class="bi bi-chevron-left"></i>', () => showPage(activePage - 1)));
+        }
+
+        let startPage = Math.max(1, activePage - 2);
+        let endPage = Math.min(totalPages, startPage + 4);
+        if (endPage - startPage < 4) startPage = Math.max(1, endPage - 4);
+
+        for (let i = startPage; i <= endPage; i++) {
+            const btn = createBtn(i, () => { currentPage = i; showPage(i); });
+            if (i === activePage) btn.classList.add('active');
+            controls.appendChild(btn);
+        }
+
+        if (activePage < totalPages) {
+            controls.appendChild(createBtn('<i class="bi bi-chevron-right"></i>', () => showPage(activePage + 1)));
+        }
+    }
+
+    function createBtn(content, onClick) {
+        const btn = document.createElement('div');
+        btn.className = 'page-btn';
+        btn.innerHTML = content;
+        btn.addEventListener('click', onClick);
+        return btn;
+    }
+
+    // --- INIT ---
+    const loader = document.getElementById("pageLoader");
+    if(loader) {
+        setTimeout(() => {
+            loader.style.opacity = "0";
+            setTimeout(() => { 
+                loader.style.display = "none"; 
+                if(totalItems > 0) showPage(1);
+            }, 600);
+        }, 800);
+    }
+
+    // Reveal
+    const revealObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('active');
+            }
+        });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.reveal-on-scroll').forEach(el => revealObserver.observe(el));
+
+    // Back to Top
+    const backToTopBtn = document.getElementById("backToTop");
+    window.addEventListener("scroll", () => {
+        if (window.scrollY > 300) backToTopBtn.classList.add("show");
+        else backToTopBtn.classList.remove("show");
+    });
+    if(backToTopBtn) backToTopBtn.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
+    
+    // Liquid Buttons
+    document.querySelectorAll(".liquid-btn").forEach(btn => {
+        btn.addEventListener("mousemove", e => {
+            const rect = btn.getBoundingClientRect();
+            btn.style.transform = `translate(${(e.clientX - rect.left - rect.width/2)/10}px, ${(e.clientY - rect.top - rect.height/2)/10}px)`;
+        });
+        btn.addEventListener("mouseleave", () => btn.style.transform = "translate(0,0)");
+    });
+});
+</script>
+
+{% endblock %}

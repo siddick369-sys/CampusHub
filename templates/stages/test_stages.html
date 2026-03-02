@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Test Module Stages{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+
+    <h2 class="fw-bold">🧪 Test du module Stages</h2>
+    <p class="text-muted">Page temporaire pour vérifier que tout fonctionne.</p>
+
+    <hr>
+
+    <h4 class="mt-4">🔹 Étudiant</h4>
+    <ul>
+        <li><a href="{% url 'offer_list' %}">Voir toutes les offres</a></li>
+        <li><a href="{% url 'recommended_offers' %}">Voir mes recommandations</a></li>
+        <li><a href="{% url 'student_applications' %}">Voir mes candidatures</a></li>
+        <li><a href="{% url 'recommendation_template' %}">Modèle de lettre de recommandation</a></li>
+        <li><a href="{% url 'notifications_list' %}">Mes notifications</a></li>
+    </ul>
+
+    <hr>
+
+    <h4 class="mt-4">🔹 Entreprise</h4>
+    <ul>
+        <li><a href="{% url 'company_offers' %}">Mes offres</a></li>
+        <li><a href="{% url 'company_offer_create' %}">Créer une offre</a></li>
+    </ul>
+
+    <hr>
+
+    <h4 class="mt-4">ℹ️ Astuces</h4>
+    <p>
+        Pour tester correctement :
+    </p>
+    <ul>
+        <li>Crée un compte <strong>étudiant</strong> pour tester toutes les pages du haut</li>
+        <li>Crée un compte <strong>entreprise</strong> pour tester les pages du bas</li>
+        <li>Publie des offres → teste les candidatures</li>
+        <li>Teste les recommandations en changeant ton profil</li>
+        <li>Vérifie les notifications en changeant le statut d'une candidature</li>
+    </ul>
+
+</div>
+{% endblock %}

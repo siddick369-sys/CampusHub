@@ -1,0 +1,82 @@
+<div class="mb-4">
+    <label class="form-label-pro">Service concerné</label>
+    <div class="input-group-custom">
+        <span class="input-icon"><i class="bi bi-briefcase"></i></span>
+        {{ form.service }}
+    </div>
+    <div class="form-text text-muted small mt-1">
+        <i class="bi bi-info-circle"></i> Laissez vide pour appliquer cette disponibilité à tous vos services.
+    </div>
+    {% if form.service.errors %}
+        <div class="text-danger small mt-1 fw-bold ps-2">
+            {{ form.service.errors }}
+        </div>
+    {% endif %}
+</div>
+
+<div class="mb-4">
+    <label class="form-label-pro">Jour de la semaine</label>
+    <div class="input-group-custom">
+        <span class="input-icon"><i class="bi bi-calendar-day"></i></span>
+        {{ form.weekday }}
+    </div>
+    {% if form.weekday.errors %}
+        <div class="text-danger small mt-1 fw-bold ps-2">
+            {{ form.weekday.errors }}
+        </div>
+    {% endif %}
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-6">
+        <label class="form-label-pro">Heure de début</label>
+        <div class="input-group-custom">
+            <span class="input-icon"><i class="bi bi-play-circle"></i></span>
+            {{ form.start_time }}
+        </div>
+        {% if form.start_time.errors %}
+            <div class="text-danger small mt-1 fw-bold ps-2">
+                {{ form.start_time.errors }}
+            </div>
+        {% endif %}
+    </div>
+    <div class="col-6">
+        <label class="form-label-pro">Heure de fin</label>
+        <div class="input-group-custom">
+            <span class="input-icon"><i class="bi bi-stop-circle"></i></span>
+            {{ form.end_time }}
+        </div>
+        {% if form.end_time.errors %}
+            <div class="text-danger small mt-1 fw-bold ps-2">
+                {{ form.end_time.errors }}
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="mb-4">
+    <label class="form-label-pro">Capacité (Personnes max)</label>
+    <div class="input-group-custom">
+        <span class="input-icon"><i class="bi bi-people-fill"></i></span>
+        {{ form.capacity }}
+    </div>
+    <div class="form-text text-muted small mt-1">
+        Combien de clients pouvez-vous recevoir simultanément sur ce créneau ?
+    </div>
+    {% if form.capacity.errors %}
+        <div class="text-danger small mt-1 fw-bold ps-2">
+            {{ form.capacity.errors }}
+        </div>
+    {% endif %}
+</div>
+
+<script>
+    // Ajoute des placeholders utiles si les widgets Django ne les ont pas
+    document.addEventListener("DOMContentLoaded", function() {
+        const startInputs = document.querySelectorAll('input[name$="start_time"]');
+        const endInputs = document.querySelectorAll('input[name$="end_time"]');
+        
+        startInputs.forEach(i => i.placeholder = "ex: 09:00");
+        endInputs.forEach(i => i.placeholder = "ex: 12:00");
+    });
+</script>

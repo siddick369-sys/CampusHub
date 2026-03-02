@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}Mes candidatures – CampusHub{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <header class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
+        <div>
+            <h1 class="h3 mb-1">Mes candidatures</h1>
+            <p class="text-muted mb-0">
+                Suis l’état de toutes les candidatures que tu as envoyées via CampusHub.
+            </p>
+        </div>
+        <a href="{% url 'job_list' %}" class="btn btn-outline-primary mt-3 mt-md-0">
+            Voir toutes les offres
+        </a>
+    </header>
+
+    {% if applications %}
+        <div class="row g-3">
+            {% for app in applications %}
+                <div class="col-12 col-md-6">
+                    <div class="card h-100 shadow-sm border-0 application-card">
+                        <div class="card-body d-flex flex-column">
+                            <!-- Titre + entreprise -->
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <h2 class="h5 mb-1">
+                                        <a href="{% url 'job_detail' pk=app.job.pk %}" class="text-decoration-none">
+                                            {{ app.job.title }}
+                                        </a>
+                                    </h2>
+                                    <p class="mb-0 text-muted small">
+                                        {{ app.job.company_name }}
+                                        {% if app.job.city %} • {{ app.job.city }}{% endif %}
+                                    </p>
+                                </div>
+
+                                <!-- Badge statut -->
+                                <span class="badge 
+                                    {% if app.status == 'accepted' %}bg-success
+                                    {% elif app.status == 'rejected' %}bg-danger
+                                    {% elif app.status == 'reviewed' %}bg-warning text-dark
+                                    {% else %}bg-secondary
+                                    {% endif %}
+                                ">
+                                    {{ app.get_status_display }}
+                                </span>
+                            </div>
+
+                            <!-- Infos dates -->
+                            <p class="mb-2 small text-muted">
+                                Envoyée le
+                                <strong>{{ app.created_at|date:"d/m/Y" }}</strong>
+                                {% if app.updated_at and app.updated_at != app.created_at %}
+                                    • maj : {{ app.updated_at|date:"d/m/Y H:i" }}
+                                {% endif %}
+                            </p>
+
+                            <!-- Extrait lettre de motiv -->
+                            {% if app.cover_letter %}
+                                <p class="flex-grow-1 small mb-2">
+                                    {{ app.cover_letter|truncatechars:140 }}
+                                </p>
+                            {% else %}
+                                <p class="flex-grow-1 small text-muted mb-2">
+                                    Aucune lettre de motivation fournie.
+                                </p>
+                            {% endif %}
+
+                            <!-- Type de contrat + bouton -->
+                            <div class="d-flex justify-content-between align-items-center mt-2">
+                                <div class="small text-muted">
+                                    Contrat :
+                                    <strong>{{ app.job.get_contract_type_display }}</strong>
+                                </div>
+
+                                <a href="{% url 'job_detail' pk=app.job.pk %}" class="btn btn-sm btn-primary">
+                                    Voir l’offre
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info">
+            Tu n’as encore envoyé aucune candidature sur CampusHub.
+            <br>
+            <a href="{% url 'job_list' %}" class="alert-link">
+                Parcourir les offres disponibles
+            </a>.
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

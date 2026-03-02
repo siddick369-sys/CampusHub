@@ -1,0 +1,174 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Confirmation de suppression - CampusHub{% endblock %}
+
+{% block content %}
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+<div id="pageLoader" class="page-loader">
+    <div class="loader-content">
+        <div class="logo-placeholder mb-4">
+            <div class="main-spinner danger-spinner"></div>
+            <i class="bi bi-exclamation-triangle-fill spinner-icon text-danger"></i>
+        </div>
+        <div class="loader-text-wrap">
+            <h5 class="fw-bold text-dark mb-1">Espace Sécurité</h5>
+            <div class="progress-bar-wrap"><div class="progress-bar-fill bg-danger"></div></div>
+            <small class="text-muted mt-2 d-block">Validation des droits d'accès...</small>
+        </div>
+    </div>
+</div>
+
+<div class="desktop-bg-animation">
+    <div class="shape-blob shape-danger-1"></div>
+    <div class="shape-blob shape-danger-2"></div>
+</div>
+
+<div class="container py-5 relative-z min-vh-100 d-flex flex-column justify-content-center">
+    
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            
+            <div class="card-pro shadow-lg border-0 reveal-on-scroll" data-aos="zoom-in">
+                <div class="card-body p-4 p-md-5 text-center">
+                    
+                    <div class="icon-box-lg bg-danger bg-opacity-10 text-danger rounded-circle mx-auto mb-4 animate-shake">
+                        <i class="bi bi-trash3-fill fs-1"></i>
+                    </div>
+
+                    <h2 class="fw-bold text-dark mb-2">Confirmation requise</h2>
+                    <p class="text-muted mb-4">Cette action est définitive. Vous allez supprimer :</p>
+                    
+                    <div class="p-3 bg-light rounded-3 border border-dashed mb-4">
+                        <span class="fw-bold text-dark fs-5">"{{ objet }}"</span>
+                    </div>
+
+                    {% if type == 'challenge' %}
+                        <div class="alert alert-warning border-0 rounded-4 text-start p-4 mb-4" data-aos="fade-up">
+                            <div class="d-flex">
+                                <i class="bi bi-info-circle-fill fs-4 me-3"></i>
+                                <div>
+                                    <h6 class="fw-bold mb-1">Impact sur la communauté</h6>
+                                    <p class="small mb-0 text-dark-emphasis">
+                                        Un email d'annulation automatique sera envoyé à tous les participants. Leurs livrables seront supprimés de nos serveurs.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    {% elif type == 'projet' %}
+                        <div class="alert alert-danger border-0 rounded-4 text-start p-4 mb-4" data-aos="fade-up">
+                            <div class="d-flex">
+                                <i class="bi bi-exclamation-octagon-fill fs-4 me-3"></i>
+                                <div>
+                                    <h6 class="fw-bold mb-1">Suppression totale des données</h6>
+                                    <p class="small mb-0 text-dark-emphasis">
+                                        L'historique, les likes, les statistiques et le journal de bord seront <strong>définitivement effacés</strong> sans possibilité de restauration.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-grid gap-3">
+                            <button type="submit" class="liquid-btn btn-danger-pro py-3 shadow-sm">
+                                <span><i class="bi bi-check2-all me-2"></i>Confirmer la suppression</span>
+                            </button>
+                            <button type="button" class="btn btn-link text-muted fw-600 text-decoration-none" onclick="window.history.back()">
+                                Annuler et revenir en arrière
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                
+                <div class="card-footer bg-light border-0 p-4 text-center">
+                    <p class="x-small text-muted mb-0 fw-bold text-uppercase ls-1">
+                        <i class="bi bi-shield-lock me-1"></i> Opération irréversible
+                    </p>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+</div>
+
+<button id="btnBackToTop" class="btn-back-to-top"><i class="bi bi-arrow-up"></i></button>
+
+<style>
+:root { --primary: #2563eb; --danger: #ef4444; --danger-dark: #dc2626; --light-bg: #f8fafc; --white: #ffffff; --text-dark: #0f172a; --border: #e2e8f0; --radius: 16px; }
+
+body { background-color: var(--light-bg); color: var(--text-dark); font-family: 'Inter', sans-serif; overflow-x: hidden; }
+h2, h6 { font-family: 'Outfit', sans-serif; }
+
+/* Loader */
+.page-loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 9999; display: flex; align-items: center; justify-content: center; transition: 0.6s; }
+.logo-placeholder { position: relative; width: 80px; height: 80px; margin: 0 auto; }
+.main-spinner { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 4px solid #f1f5f9; border-top: 4px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
+.danger-spinner { border-top-color: var(--danger); }
+.spinner-icon { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 2rem; }
+@keyframes spin { 100% { transform: rotate(360deg); } }
+
+/* Progress Bar Loader */
+.progress-bar-wrap { height: 4px; background: #f1f5f9; border-radius: 10px; overflow: hidden; margin-top: 15px; width: 200px; }
+.progress-bar-fill { height: 100%; width: 0%; background: var(--primary); animation: loadProgress 1.5s forwards; }
+@keyframes loadProgress { 100% { width: 100%; } }
+
+/* Confirmation Card */
+.card-pro { background: var(--white); border-radius: 24px; border: 1px solid var(--border); overflow: hidden; }
+.icon-box-lg { width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; }
+
+/* Danger Button Liquid */
+.btn-danger-pro {
+    position: relative; background: var(--danger); color: white; border: none; border-radius: 50px;
+    font-weight: 700; text-transform: uppercase; transition: 0.3s; overflow: hidden; z-index: 1;
+}
+.btn-danger-pro span { position: relative; z-index: 2; }
+.btn-danger-pro::after {
+    content: ''; position: absolute; top: 100%; left: 0; width: 100%; height: 200%;
+    background: var(--danger-dark); transition: 0.5s; z-index: 1; border-radius: 40%;
+}
+.btn-danger-pro:hover::after { transform: translateY(-150%) rotate(180deg); }
+
+/* Animation Shake Danger */
+.animate-shake { animation: shake 2s infinite; }
+@keyframes shake { 0%, 100% { transform: rotate(0deg); } 25% { transform: rotate(-8deg); } 75% { transform: rotate(8deg); } }
+
+/* Back to Top */
+.btn-back-to-top { position: fixed; bottom: 30px; right: 30px; width: 50px; height: 50px; background: var(--primary); color: white; border: none; border-radius: 50%; opacity: 0; visibility: hidden; transition: 0.3s; z-index: 1000; display: flex; align-items: center; justify-content: center; }
+.btn-back-to-top.show { opacity: 1; visibility: visible; }
+
+/* Background Shapes */
+.desktop-bg-animation { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; }
+.shape-blob { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.15; animation: float 10s infinite alternate; }
+.shape-danger-1 { top: -10%; left: -10%; width: 600px; height: 600px; background: var(--danger); }
+.shape-danger-2 { bottom: -10%; right: -10%; width: 500px; height: 500px; background: var(--primary); }
+@keyframes float { 100% { transform: translate(40px, 40px); } }
+
+.ls-1 { letter-spacing: 1px; }
+.x-small { font-size: 0.7rem; }
+.fw-600 { font-weight: 600; }
+</style>
+
+<script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script>
+    window.addEventListener('load', () => {
+        const loader = document.getElementById('pageLoader');
+        setTimeout(() => {
+            loader.style.opacity = '0';
+            setTimeout(() => loader.style.visibility = 'hidden', 600);
+        }, 1000);
+    });
+
+    document.addEventListener("DOMContentLoaded", function () {
+        AOS.init({ duration: 800, once: true });
+
+        const btt = document.getElementById("btnBackToTop");
+        window.addEventListener("scroll", () => { btt.classList.toggle("show", window.scrollY > 400); });
+        btt.onclick = () => window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+</script>
+{% endblock %}

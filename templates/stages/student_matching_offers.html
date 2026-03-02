@@ -1,0 +1,213 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Offres qui te correspondent – CampusHub{% endblock %}
+
+{% block content %}
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+<link rel="stylesheet" href="https://unpkg.com/aos@2.3.4/dist/aos.css" />
+
+<style>
+/* === DESIGN SYSTEM SAAS PREMIUM === */
+:root {
+    --primary: #2563eb;
+    --primary-soft: rgba(37, 99, 235, 0.05);
+    --accent: #06b6d4;
+    --text-dark: #0f172a;
+    --text-muted: #64748b;
+    --border: #e2e8f0;
+    --bg-body: #f8fafc;
+    --card-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.04);
+}
+
+body { background-color: var(--bg-body); color: var(--text-dark); font-family: 'Inter', sans-serif; }
+h2, h5 { font-family: 'Outfit', sans-serif; }
+
+/* === LOADER PERSONNALISÉ === */
+#loader-wrapper {
+    position: fixed; inset: 0; background: #fff; z-index: 9999;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    transition: opacity 0.5s ease, visibility 0.5s;
+}
+.loader-content { position: relative; width: 100px; height: 100px; }
+.loader-circle {
+    position: absolute; inset: 0; border: 3px solid var(--primary-soft);
+    border-top-color: var(--primary); border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+.loader-icon {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    font-size: 2rem; color: var(--primary);
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* === BLOBS DE FOND === */
+.bg-blob {
+    position: fixed; width: 500px; height: 500px; filter: blur(100px);
+    opacity: 0.1; z-index: -1; pointer-events: none;
+}
+.blob-1 { top: -100px; left: -100px; background: var(--primary); }
+.blob-2 { bottom: -100px; right: -100px; background: var(--accent); }
+
+/* === CARTES D'OFFRES === */
+.offer-card {
+    background: white; border: 1px solid var(--border); border-radius: 20px;
+    padding: 24px; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    text-decoration: none !important; color: inherit; display: block;
+    margin-bottom: 1.5rem; position: relative; overflow: hidden;
+}
+.offer-card:hover {
+    transform: translateY(-5px); box-shadow: 0 20px 40px rgba(0,0,0,0.06);
+    border-color: var(--primary);
+}
+.offer-card::before {
+    content: ''; position: absolute; left: 0; top: 0; height: 100%; width: 4px;
+    background: var(--primary); transform: scaleY(0); transition: 0.3s;
+}
+.offer-card:hover::before { transform: scaleY(1); }
+
+/* === SCORE DE MATCH === */
+.match-badge {
+    background: var(--primary-soft); color: var(--primary);
+    padding: 8px 16px; border-radius: 12px; font-weight: 700;
+    display: inline-flex; align-items: center; gap: 8px;
+}
+.match-badge i { font-size: 1.1rem; }
+
+/* === INFO ICONS === */
+.info-item { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; color: var(--text-muted); }
+.info-item i { color: var(--primary); }
+
+/* === PAGINATION === */
+.pagination-container { display: flex; justify-content: center; gap: 10px; margin-top: 2rem; }
+.page-btn {
+    border: 1px solid var(--border); background: white; width: 40px; height: 40px;
+    border-radius: 10px; display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: 0.2s; font-weight: 600;
+}
+.page-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+.page-btn:hover:not(.active) { background: var(--primary-soft); border-color: var(--primary); }
+</style>
+
+<div id="loader-wrapper">
+    <div class="loader-content">
+        <div class="loader-circle"></div>
+        <i class="bi bi-briefcase-fill loader-icon"></i>
+    </div>
+    <p class="mt-4 small fw-bold text-muted text-uppercase" style="letter-spacing: 2px;">Analyse de ton profil...</p>
+</div>
+
+<div class="bg-blob blob-1"></div>
+<div class="bg-blob blob-2"></div>
+
+<div class="container py-5" data-aos="fade-up">
+    <div class="text-center mb-5">
+        <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill fw-bold mb-3">
+            <i class="bi bi-lightning-charge-fill me-1"></i> Smart Matching
+        </span>
+        <h2 class="fw-bold text-dark">🎯 Offres qui te correspondent</h2>
+        <p class="text-muted">Nous avons analysé tes compétences pour trouver ces opportunités.</p>
+    </div>
+
+    {% if offers_with_scores %}
+    <div id="offers-list">
+        {% for item in offers_with_scores %}
+        {% with offer=item.offer matching=item.matching %}
+        <a href="{% url 'offer_detail' offer.slug %}" class="offer-card offer-item" data-aos="fade-up">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
+                <div class="flex-grow-1">
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <h5 class="fw-bold mb-0 text-dark">{{ offer.title }}</h5>
+                        <span class="badge bg-light text-dark border rounded-pill small px-2 py-1">
+                            {{ offer.get_contract_type_display|default:"CDI" }}
+                        </span>
+                    </div>
+                    
+                    <div class="d-flex flex-wrap gap-4 mb-3">
+                        <div class="info-item">
+                            <i class="bi bi-building"></i>
+                            <span>{{ offer.company.profile.company_name|default:offer.company.username }}</span>
+                        </div>
+                        <div class="info-item">
+                            <i class="bi bi-geo-alt"></i>
+                            <span>{{ offer.location_city }}{% if offer.location_country %}, {{ offer.location_country }}{% endif %}</span>
+                        </div>
+                        <div class="info-item">
+                            <i class="bi bi-calendar3"></i>
+                            <span>Publié le {{ offer.created_at|date:"d M Y" }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-md-end">
+                    <div class="match-badge mb-2">
+                        <i class="bi bi-cpu"></i>
+                        <span>Match : {{ matching.score }}%</span>
+                    </div>
+                    <div class="small text-muted">
+                        <span class="me-2"><i class="bi bi-check2-circle text-success me-1"></i>{{ matching.skills_score }}/40 Compétences</span>
+                        <span><i class="bi bi-mortarboard text-info me-1"></i>{{ matching.tracks_score }}/30 Filière</span>
+                    </div>
+                </div>
+            </div>
+        </a>
+        {% endwith %}
+        {% endfor %}
+    </div>
+
+    <div id="pagination" class="pagination-container"></div>
+
+    {% else %}
+    <div class="text-center py-5 bg-white rounded-4 border border-dashed">
+        <i class="bi bi-search display-4 text-muted mb-3"></i>
+        <h5 class="fw-bold">Pas de match parfait pour le moment</h5>
+        <p class="text-muted">Complète ton profil ou tes compétences pour affiner les résultats.</p>
+        <a href="{% url 'profile_edit' %}" class="btn btn-primary rounded-pill px-4">Mettre à jour mon profil</a>
+    </div>
+    {% endif %}
+</div>
+
+<script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+<script>
+AOS.init({ duration: 800, once: true });
+
+window.addEventListener('load', () => {
+    const loader = document.getElementById('loader-wrapper');
+    setTimeout(() => {
+        loader.style.opacity = '0';
+        setTimeout(() => loader.style.visibility = 'hidden', 500);
+    }, 800);
+});
+
+/* === PAGINATION JS (6 PAR PAGE) === */
+document.addEventListener('DOMContentLoaded', function() {
+    const itemsPerPage = 6;
+    const items = document.querySelectorAll('.offer-item');
+    const pagination = document.getElementById('pagination');
+    const pageCount = Math.ceil(items.length / itemsPerPage);
+
+    function showPage(page) {
+        items.forEach((item, index) => {
+            item.style.display = (index >= (page - 1) * itemsPerPage && index < page * itemsPerPage) ? 'block' : 'none';
+        });
+
+        // Update active class
+        document.querySelectorAll('.page-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelector(`[data-page="${page}"]`)?.classList.add('active');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    if (pageCount > 1) {
+        for (let i = 1; i <= pageCount; i++) {
+            const btn = document.createElement('div');
+            btn.className = 'page-btn';
+            btn.innerText = i;
+            btn.dataset.page = i;
+            btn.addEventListener('click', () => showPage(i));
+            pagination.appendChild(btn);
+        }
+        showPage(1);
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Votre entreprise est vérifiée sur CampusHub</title>
+</head>
+<body style="font-family: Arial, sans-serif; font-size: 14px; color: #222;">
+    <p>Bonjour {{ profile.company_name|default:company.username }},</p>
+
+    <p>
+        Nous avons le plaisir de vous informer que votre entreprise est
+        <strong>désormais vérifiée</strong> sur CampusHub ✅.
+    </p>
+
+    <p>
+        Vous pouvez maintenant publier des offres visibles par les étudiants,
+        et votre profil affichera le badge <strong>« Entreprise vérifiée »</strong>
+        pour renforcer la confiance.
+    </p>
+
+    <p>
+        Accédez à votre tableau de bord :
+        <a href="{{ base_url }}/stages/company/dashboard/">
+            {{ base_url }}/stages/company/dashboard/
+        </a>
+    </p>
+
+    <p>
+        Merci de votre confiance,<br>
+        L'équipe CampusHub.
+    </p>
+</body>
+</html>

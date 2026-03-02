@@ -1,0 +1,265 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Recommandations Personnalisées{% endblock %}
+
+{% block content %}
+
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+
+<div class="desktop-bg-animation">
+    <div class="shape-blob shape-1"></div>
+    <div class="shape-blob shape-2"></div>
+</div>
+
+<div class="container py-5 relative-z">
+
+    <div class="text-center mb-5 reveal-on-scroll">
+        {% if last_result %}
+            <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 rounded-pill px-3 py-2 mb-3">
+                <i class="bi bi-calendar-check me-2"></i>Basé sur l'analyse du {{ last_result.created_at|date:"d/m/Y" }}
+            </span>
+        {% endif %}
+        <h1 class="fw-bold text-dark mb-2">Recommandations Personnalisées</h1>
+        <p class="text-muted">Des contenus sélectionnés par notre IA pour booster votre parcours.</p>
+    </div>
+
+    <div class="mb-5 reveal-on-scroll" data-delay="100">
+        <div class="d-flex align-items-center mb-4">
+            <div class="icon-box-sm bg-danger-subtle text-danger me-3 rounded-circle d-flex align-items-center justify-content-center" style="width:40px; height:40px;">
+                <i class="bi bi-bullseye"></i>
+            </div>
+            <h4 class="fw-bold text-dark mb-0">Nos meilleures suggestions</h4>
+        </div>
+
+        <div class="row g-4">
+            {% for playlist in recommendations %}
+            <div class="col-lg-3 col-md-6">
+                <div class="video-card h-100">
+                    <div class="video-thumbnail">
+                        {% if playlist.thumbnail_url %}
+                            <img src="{{ playlist.thumbnail_url }}" alt="{{ playlist.title }}">
+                        {% else %}
+                            <div class="placeholder-img">
+                                <i class="bi bi-play-btn-fill fs-1 text-muted opacity-50"></i>
+                            </div>
+                        {% endif %}
+                        <a href="{{ playlist.youtube_url }}" target="_blank" class="play-overlay">
+                            <div class="play-btn">
+                                <i class="bi bi-play-fill"></i>
+                            </div>
+                        </a>
+                        <span class="duration-badge">{{ playlist.estimated_hours }}h</span>
+                    </div>
+
+                    <div class="video-body d-flex flex-column h-100">
+                        <div class="mb-2">
+                            <span class="badge bg-light text-primary border fw-normal me-1">{{ playlist.get_difficulty_display }}</span>
+                        </div>
+                        <h6 class="fw-bold text-dark mb-1 line-clamp-2">{{ playlist.title }}</h6>
+                        <p class="text-muted small mb-3">{{ playlist.channel_name }}</p>
+                        
+                        <div class="mt-auto d-flex gap-2">
+                            <a href="{{ playlist.youtube_url }}" target="_blank" class="btn btn-outline-danger btn-sm w-100 rounded-pill fw-600">
+                                <i class="bi bi-youtube me-1"></i> Voir
+                            </a>
+                            <a href="{% url 'orientation:playlist_detail' playlist.id %}" class="btn btn-outline-primary btn-sm w-100 rounded-pill fw-600">
+                                Détails
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+                <div class="col-12">
+                    <div class="card-pro text-center p-5">
+                        <div class="icon-box-xl bg-light text-muted mx-auto mb-3 rounded-circle d-flex align-items-center justify-content-center" style="width:80px; height:80px; font-size:2rem;">
+                            <i class="bi bi-collection-play"></i>
+                        </div>
+                        <h5 class="fw-bold text-dark">Aucune recommandation disponible</h5>
+                        <p class="text-muted mb-4">Complétez le test d'orientation pour obtenir des suggestions personnalisées.</p>
+                        <a href="{% url 'orientation:orientation_test' %}" class="liquid-btn btn-primary-pro d-inline-flex px-4">
+                            <span>Passer le test</span>
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    {% for track, playlists in track_recommendations.items %}
+        {% if playlists %}
+        <div class="mb-5 reveal-on-scroll" data-delay="200">
+            <div class="d-flex align-items-center mb-4 p-3 bg-white rounded-4 border shadow-sm">
+                <div class="icon-box-sm bg-primary-subtle text-primary me-3 rounded-circle d-flex align-items-center justify-content-center" style="width:40px; height:40px;">
+                    <i class="bi bi-mortarboard-fill"></i>
+                </div>
+                <div>
+                    <span class="text-uppercase text-muted x-small fw-bold ls-1 d-block">Focus Filière</span>
+                    <h5 class="fw-bold text-dark mb-0">{{ track.name }}</h5>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                {% for playlist in playlists %}
+                <div class="col-lg-4 col-md-6">
+                    <div class="card-pro h-100 p-3 d-flex align-items-center">
+                        <div class="flex-shrink-0 position-relative me-3">
+                            {% if playlist.thumbnail_url %}
+                                <img src="{{ playlist.thumbnail_url }}" class="rounded-3 object-fit-cover" style="width: 100px; height: 70px;" alt="Thumb">
+                            {% else %}
+                                <div class="bg-light rounded-3 d-flex align-items-center justify-content-center text-muted" style="width: 100px; height: 70px;">
+                                    <i class="bi bi-film"></i>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="flex-grow-1 min-w-0">
+                            <h6 class="fw-bold text-dark mb-1 text-truncate">{{ playlist.title }}</h6>
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <span class="badge bg-light text-muted border x-small">{{ playlist.estimated_hours }}h</span>
+                                <span class="small text-muted text-truncate">{{ playlist.channel_name }}</span>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <a href="{{ playlist.youtube_url }}" target="_blank" class="link-danger small fw-600 text-decoration-none">
+                                    <i class="bi bi-play-circle me-1"></i>Regarder
+                                </a>
+                                <a href="{% url 'orientation:playlist_detail' playlist.id %}" class="link-primary small fw-600 text-decoration-none">
+                                    Détails
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    {% endfor %}
+
+    <div class="row justify-content-center mt-5 reveal-on-scroll" data-delay="300">
+        <div class="col-lg-8">
+            <div class="card-pro bg-primary text-white border-0 overflow-hidden text-center p-5 position-relative">
+                <div class="blob-bg"></div>
+                <div class="position-relative z-1">
+                    <h3 class="fw-bold mb-3">Envie d'explorer davantage ?</h3>
+                    <p class="text-white text-opacity-75 mb-4">
+                        Accédez à l'ensemble de notre catalogue éducatif ou retournez à votre tableau de bord.
+                    </p>
+                    <div class="d-flex justify-content-center gap-3">
+                        <a href="{% url 'orientation:orientation_dashboard' %}" class="btn btn-white rounded-pill px-4 fw-600 text-primary">
+                            <i class="bi bi-speedometer2 me-2"></i>Dashboard
+                        </a>
+                        <a href="{% url 'orientation:playlist_list' %}" class="btn btn-outline-light rounded-pill px-4 fw-600">
+                            <i class="bi bi-collection-play me-2"></i>Catalogue
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<style>
+/* Variables */
+:root {
+    --primary: #2563eb; --primary-dark: #1e40af; --light-bg: #f8fafc; 
+    --white: #ffffff; --text-dark: #0f172a; --text-muted: #64748b; 
+    --border: #e2e8f0; --radius: 16px;
+}
+
+body { background-color: var(--light-bg); color: var(--text-dark); font-family: 'Inter', sans-serif; }
+h1, h4, h5 { font-family: 'Outfit', sans-serif; }
+
+/* Typo Utils */
+.fw-600 { font-weight: 600; }
+.x-small { font-size: 0.75rem; }
+.ls-1 { letter-spacing: 1px; }
+.line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.object-fit-cover { object-fit: cover; }
+
+/* Video Card (Top Suggestions) */
+.video-card {
+    background: var(--white); border: 1px solid var(--border); border-radius: var(--radius);
+    overflow: hidden; transition: 0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+}
+.video-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0,0,0,0.1); border-color: #bfdbfe; }
+
+.video-thumbnail { position: relative; aspect-ratio: 16/9; overflow: hidden; background: #000; }
+.video-thumbnail img { width: 100%; height: 100%; object-fit: cover; transition: 0.5s; opacity: 0.9; }
+.video-card:hover .video-thumbnail img { transform: scale(1.05); opacity: 0.7; }
+
+.play-overlay {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(0,0,0,0.2); opacity: 0; transition: 0.3s; text-decoration: none;
+}
+.video-card:hover .play-overlay { opacity: 1; }
+
+.play-btn {
+    width: 50px; height: 50px; background: rgba(255, 255, 255, 0.9);
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-size: 1.5rem; color: #dc3545; box-shadow: 0 0 20px rgba(0,0,0,0.3);
+    transform: scale(0.8); transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.video-card:hover .play-btn { transform: scale(1); }
+
+.duration-badge {
+    position: absolute; bottom: 8px; right: 8px; background: rgba(0,0,0,0.7);
+    color: white; font-size: 0.75rem; padding: 2px 6px; border-radius: 4px; font-weight: 500;
+}
+
+.video-body { padding: 1.25rem; }
+
+/* Card Pro (Track List) */
+.card-pro {
+    background: var(--white); border: 1px solid var(--border); border-radius: var(--radius);
+    transition: 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+}
+.card-pro:hover { background: #fff; border-color: var(--primary); box-shadow: 0 5px 15px rgba(37, 99, 235, 0.1); }
+
+/* Placeholder Img */
+.placeholder-img { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #f1f5f9; }
+
+/* Button Liquid & CTA */
+.liquid-btn { 
+    position: relative; display: flex; justify-content: center; align-items: center; 
+    padding: 12px 24px; border: none; border-radius: 50px; background: var(--primary); 
+    color: white; font-weight: 700; text-transform: uppercase; font-size: 0.85rem; 
+    transition: 0.3s; overflow: hidden; box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3); text-decoration: none;
+}
+.liquid-btn:hover { transform: translateY(-2px); background: var(--primary-dark); color: white; }
+
+.btn-white { background: white; color: var(--primary); border: none; transition: 0.3s; }
+.btn-white:hover { background: #f8fafc; color: var(--primary-dark); transform: translateY(-2px); }
+
+/* Blob Background */
+.blob-bg {
+    position: absolute; top: -50%; right: -50%; width: 200%; height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 70%);
+    pointer-events: none;
+}
+
+/* Animation */
+.desktop-bg-animation { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; }
+.shape-blob { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.5; animation: float 10s infinite alternate; }
+.shape-1 { top: -10%; left: -10%; width: 500px; height: 500px; background: rgba(37, 99, 235, 0.1); }
+.shape-2 { bottom: -10%; right: -10%; width: 400px; height: 400px; background: rgba(16, 185, 129, 0.1); }
+@keyframes float { 0% { transform: translate(0,0); } 100% { transform: translate(30px, 30px); } }
+
+.reveal-on-scroll { animation: fadeInUp 0.6s ease-out; }
+@keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => { if(entry.isIntersecting) entry.target.style.animationPlayState = "running"; });
+    });
+    document.querySelectorAll(".reveal-on-scroll").forEach(el => observer.observe(el));
+});
+</script>
+
+{% endblock %}

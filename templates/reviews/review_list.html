@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Avis sur {{ target_profile.full_name }}{% endblock %}
+
+{% block content %}
+<section class="ch-section">
+    <h1>Avis sur {{ target_profile.full_name }}</h1>
+
+    <a href="{% url 'review_add' target_profile.user.id %}" class="ch-btn ch-btn-ghost">
+        Laisser un avis
+    </a>
+
+    <div class="ch-list">
+        {% for review in reviews %}
+            <article class="ch-card">
+                <p><strong>{{ review.reviewer.full_name }}</strong> a noté 
+                    <strong>{{ review.rating }}/5</strong></p>
+                <p>{{ review.comment|default:"(pas de commentaire)" }}</p>
+                <small>Le {{ review.created_at|date:"d/m/Y H:i" }}</small>
+            </article>
+        {% empty %}
+            <p>Aucun avis pour le moment.</p>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Profil — {{ profile.full_name }}{% endblock %}
+
+{% block content %}
+<section class="ch-section">
+    <div class="ch-profile-header">
+        <div class="ch-avatar-lg">
+            {% if profile.avatar %}
+                <img src="{{ profile.avatar.url }}" alt="Avatar">
+            {% else %}
+                <div class="ch-avatar-placeholder">
+                    {{ profile.full_name|first|upper }}
+                </div>
+            {% endif %}
+        </div>
+
+        <div>
+            <h1>{{ profile.full_name }}</h1>
+            <p class="ch-muted">{{ profile.get_role_display }} · {{ profile.headline }}</p>
+            <p class="ch-muted">
+                {{ profile.location }} · {{ profile.user.email }}
+            </p>
+
+            {% if user.is_authenticated and user == profile.user %}
+                <a href="{% url 'profile_edit' %}" class="ch-btn ch-btn-primary">Modifier mon profil</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="ch-profile-content">
+        <section>
+            <h2>À propos</h2>
+            <p>{{ profile.bio|default:"Aucune description pour le moment." }}</p>
+        </section>
+
+        <section>
+            <h2>Compétences</h2>
+            <ul>
+                {% for ps in profile.profile_skills.all %}
+                    <li>
+                        {{ ps.skill.name }} — niveau {{ ps.level }}/5 ({{ ps.years_experience }} an(s))
+                    </li>
+                {% empty %}
+                    <li>Aucune compétence renseignée.</li>
+                {% endfor %}
+            </ul>
+        </section>
+
+        <section>
+            <h2>Expériences</h2>
+            <ul>
+                {% for exp in profile.experiences.all %}
+                    <li>
+                        <strong>{{ exp.title }}</strong> — {{ exp.organisation }}<br>
+                        <small>
+                            Du {{ exp.start_date }} {% if exp.is_current %} à aujourd’hui {% else %} au {{ exp.end_date }}{% endif %}
+                        </small><br>
+                        <span>{{ exp.description }}</span>
+                    </li>
+                {% empty %}
+                    <li>Aucune expérience renseignée.</li>
+                {% endfor %}
+            </ul>
+        </section>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,283 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Rapport de Performance - CampusHub AI{% endblock %}
+
+{% block content %}
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+<div id="pageLoader" class="page-loader">
+    <div class="loader-content">
+        <div class="logo-placeholder mb-4">
+            <div class="main-spinner"></div>
+            <i class="bi bi-graph-up-arrow spinner-icon text-primary"></i>
+        </div>
+        <div class="loader-text-wrap">
+            <h5 class="fw-bold text-dark mb-1">Analyse des Résultats</h5>
+            <div class="progress-bar-wrap"><div class="progress-bar-fill"></div></div>
+            <small class="text-muted mt-2 d-block">Génération du rapport de mission...</small>
+        </div>
+    </div>
+</div>
+
+<div class="desktop-bg-animation">
+    <div class="shape-blob shape-1"></div>
+    <div class="shape-blob shape-2"></div>
+</div>
+
+<div class="container py-5 relative-z">
+
+    <div class="text-center mb-5" data-aos="fade-down">
+        <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 rounded-pill px-3 py-2 mb-3">
+            <i class="bi bi-file-earmark-bar-graph me-2"></i>Bilan de Simulation
+        </span>
+        <h1 class="fw-bold text-dark mb-2 text-uppercase ls-1">Rapport de Mission</h1>
+        <div class="d-flex justify-content-center gap-3 mt-3 flex-wrap">
+            <span class="badge bg-white text-muted border px-3 py-2 rounded-pill shadow-sm small">
+                <i class="bi bi-person me-1"></i> CANDIDAT : {{ user.get_full_name|upper }}
+            </span>
+            <span class="badge bg-white text-muted border px-3 py-2 rounded-pill shadow-sm small">
+                <i class="bi bi-target me-1"></i> CIBLE : {{ session.target_role|upper }}
+            </span>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            
+            <div class="card-pro shadow-lg border-0 mb-4 overflow-hidden" data-aos="fade-up">
+                <div class="card-body p-4 p-md-5">
+                    
+                    <div class="row align-items-center mb-5">
+                        <div class="col-md-4 text-center">
+                            <div class="verdict-wrapper mb-4 mb-md-0">
+                                <div class="verdict-stamp" id="verdict-badge">
+                                    <span id="verdict-text" class="fw-bold">ANALYSE</span>
+                                </div>
+                                <p class="x-small text-muted fw-bold mt-2 text-uppercase ls-1">Verdict final</p>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4 text-center">
+                            <div class="score-circle-container mx-auto">
+                                <svg class="progress-ring" width="180" height="180">
+                                    <circle class="progress-ring__circle-bg" stroke="#f1f5f9" stroke-width="12" fill="transparent" r="80" cx="90" cy="90"/>
+                                    <circle class="progress-ring__circle" id="score-ring" stroke="#2563eb" stroke-width="12" fill="transparent" r="80" cx="90" cy="90"/>
+                                </svg>
+                                <div class="score-text">
+                                    <span id="score-number" class="fw-bold text-dark">0</span>
+                                    <span class="score-label">/ 100</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4 text-center">
+                            <div class="p-3 bg-light rounded-4 border border-dashed">
+                                <span class="text-muted x-small fw-bold text-uppercase d-block mb-1 ls-1">Difficulté</span>
+                                <h5 class="fw-bold text-dark mb-0">{{ session.get_difficulty_display|upper }}</h5>
+                                <div class="mt-2">
+                                    {% if session.difficulty == 'hard' %}
+                                        <i class="bi bi-star-fill text-warning"></i><i class="bi bi-star-fill text-warning"></i><i class="bi bi-star-fill text-warning"></i>
+                                    {% elif session.difficulty == 'medium' %}
+                                        <i class="bi bi-star-fill text-warning"></i><i class="bi bi-star-fill text-warning"></i><i class="bi bi-star text-muted"></i>
+                                    {% else %}
+                                        <i class="bi bi-star-fill text-warning"></i><i class="bi bi-star text-muted"></i><i class="bi bi-star text-muted"></i>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row g-4 mb-5">
+                        <div class="col-md-6">
+                            <div class="card-pro h-100 border-success border-opacity-10 bg-success bg-opacity-5 p-4">
+                                <h5 class="fw-bold text-success mb-3"><i class="bi bi-shield-check me-2"></i>Atouts détectés</h5>
+                                <ul id="pros-list" class="list-unstyled custom-list success">
+                                    <li class="small text-muted italic">Calcul des points forts...</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card-pro h-100 border-danger border-opacity-10 bg-danger bg-opacity-5 p-4">
+                                <h5 class="fw-bold text-danger mb-3"><i class="bi bi-shield-exclamation me-2"></i>Zones de risque</h5>
+                                <ul id="cons-list" class="list-unstyled custom-list danger">
+                                    <li class="small text-muted italic">Identification des axes...</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card-pro bg-primary bg-opacity-5 border-primary border-opacity-10 p-4 mb-5">
+                        <div class="d-flex align-items-start gap-3">
+                            <div class="icon-box-sm bg-primary text-white rounded-circle flex-shrink-0">
+                                <i class="bi bi-stars"></i>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold text-primary mb-2 text-uppercase ls-1">Conseil Stratégique du Coach</h6>
+                                <p id="main-advice" class="text-dark-emphasis mb-0 leading-relaxed">Chargement du conseil...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex flex-wrap justify-content-center gap-3 pt-4 border-top">
+                        <a href="{% url 'start_coach' %}" class="btn btn-outline-primary rounded-pill px-4 py-2 fw-600">
+                            <i class="bi bi-arrow-counterclockwise me-2"></i>Nouvelle Simulation
+                        </a>
+                        <a href="{% url 'student_dashboard' %}" class="liquid-btn btn-primary-pro px-5 py-2">
+                            <span>Retour au Dashboard</span>
+                        </a>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<textarea id="raw-ai-data" style="display:none;">{{ report }}</textarea>
+
+<button id="btnBackToTop" class="btn-back-to-top"><i class="bi bi-arrow-up"></i></button>
+
+<style>
+:root { --primary: #2563eb; --primary-dark: #1e40af; --light-bg: #f8fafc; --white: #ffffff; --text-dark: #0f172a; --border: #e2e8f0; --radius: 16px; }
+
+body { background-color: var(--light-bg); color: var(--text-dark); font-family: 'Inter', sans-serif; overflow-x: hidden; }
+h1, h4, h5, h6 { font-family: 'Outfit', sans-serif; }
+
+/* Loader Page */
+.page-loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 9999; display: flex; align-items: center; justify-content: center; transition: 0.6s; }
+.logo-placeholder { position: relative; width: 80px; height: 80px; margin: 0 auto; }
+.main-spinner { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 4px solid #f1f5f9; border-top: 4px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
+.spinner-icon { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 2rem; }
+.progress-bar-wrap { height: 4px; background: #f1f5f9; border-radius: 10px; overflow: hidden; margin-top: 15px; width: 200px; }
+.progress-bar-fill { height: 100%; width: 0%; background: var(--primary); animation: loadProgress 1.5s forwards; }
+@keyframes spin { 100% { transform: rotate(360deg); } }
+@keyframes loadProgress { 100% { width: 100%; } }
+
+/* Cards & Badges */
+.card-pro { background: var(--white); border-radius: var(--radius); border: 1px solid var(--border); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
+
+/* Score & Verdict */
+.score-circle-container { position: relative; width: 180px; height: 180px; }
+.progress-ring__circle { transition: stroke-dashoffset 1.5s ease-in-out; transform: rotate(-90deg); transform-origin: 50% 50%; }
+.score-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; }
+#score-number { font-size: 3.5rem; line-height: 1; display: block; font-family: 'Outfit'; }
+.score-label { color: #64748b; font-weight: 600; font-size: 0.9rem; }
+
+.verdict-stamp { 
+    width: 130px; height: 130px; border: 6px double #cbd5e1; border-radius: 50%; 
+    display: flex; align-items: center; justify-content: center;
+    transform: rotate(-12deg); margin: 0 auto; transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.verdict-stamp.success { color: #10b981; border-color: #10b981; transform: rotate(-12deg) scale(1.1); box-shadow: 0 0 20px rgba(16, 185, 129, 0.2); }
+.verdict-stamp.fail { color: #ef4444; border-color: #ef4444; transform: rotate(-12deg) scale(1.1); }
+
+/* Lists */
+.custom-list li { position: relative; padding-left: 25px; margin-bottom: 12px; font-size: 0.95rem; line-height: 1.4; color: #475569; }
+.custom-list li::before { position: absolute; left: 0; font-family: "bootstrap-icons"; font-weight: bold; }
+.custom-list.success li::before { content: "\f272"; color: #10b981; }
+.custom-list.danger li::before { content: "\f659"; color: #ef4444; }
+
+/* Buttons & Utils */
+.liquid-btn { background: var(--primary); color: white; border: none; border-radius: 50px; font-weight: 700; text-transform: uppercase; transition: 0.3s; cursor: pointer; text-decoration: none; display: flex; align-items: center; justify-content: center; }
+.liquid-btn:hover { background: var(--primary-dark); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(37, 99, 235, 0.25); color: white; }
+.icon-box-sm { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; }
+
+.btn-back-to-top { position: fixed; bottom: 30px; right: 30px; width: 50px; height: 50px; background: var(--primary); color: white; border: none; border-radius: 50%; opacity: 0; visibility: hidden; transition: 0.3s; z-index: 1000; display: flex; align-items: center; justify-content: center; }
+.btn-back-to-top.show { opacity: 1; visibility: visible; }
+
+/* Background Shapes */
+.desktop-bg-animation { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; }
+.shape-blob { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.4; animation: float 10s infinite alternate; }
+.shape-1 { top: -10%; left: -10%; width: 600px; height: 600px; background: rgba(37, 99, 235, 0.1); }
+.shape-2 { bottom: -10%; right: -10%; width: 500px; height: 500px; background: rgba(16, 185, 129, 0.05); }
+@keyframes float { 100% { transform: translate(40px, 40px); } }
+
+.ls-1 { letter-spacing: 1px; }
+.x-small { font-size: 0.7rem; }
+.fw-600 { font-weight: 600; }
+.leading-relaxed { line-height: 1.7; }
+</style>
+
+<script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script>
+    window.addEventListener('load', () => {
+        const loader = document.getElementById('pageLoader');
+        setTimeout(() => {
+            loader.style.opacity = '0';
+            setTimeout(() => loader.style.visibility = 'hidden', 600);
+        }, 1000);
+    });
+
+    document.addEventListener("DOMContentLoaded", function () {
+        AOS.init({ duration: 800, once: true });
+
+        // Logic JSON AI
+        const rawData = document.getElementById('raw-ai-data').value;
+        const cleanJson = rawData.replace(/```json/g, '').replace(/```/g, '').trim();
+        
+        try {
+            const reportData = JSON.parse(cleanJson);
+            renderReport(reportData);
+        } catch (e) {
+            console.error("Erreur JSON:", e);
+            document.getElementById('main-advice').innerText = "Données analytiques indisponibles.";
+        }
+
+        function renderReport(data) {
+            // 1. Animation Cercle Score
+            const circle = document.getElementById('score-ring');
+            const radius = circle.r.baseVal.value;
+            const circumference = radius * 2 * Math.PI;
+            circle.style.strokeDasharray = `${circumference} ${circumference}`;
+            
+            const score = data.score || 0;
+            const offset = circumference - (score / 100) * circumference;
+            
+            setTimeout(() => {
+                circle.style.strokeDashoffset = offset;
+                if(score < 50) circle.style.stroke = "#ef4444";
+                else if(score < 75) circle.style.stroke = "#f59e0b";
+                else circle.style.stroke = "#10b981";
+            }, 500);
+
+            // Compteur
+            let cur = 0;
+            const inv = setInterval(() => {
+                if(cur >= score) { cur = score; clearInterval(inv); }
+                document.getElementById('score-number').innerText = cur;
+                cur++;
+            }, 20);
+
+            // 2. Verdict
+            const vText = document.getElementById('verdict-text');
+            const vBadge = document.getElementById('verdict-badge');
+            const verdict = data.verdict || "";
+            
+            if (verdict.toLowerCase().includes('retenu') || score > 70) {
+                vBadge.classList.add('success');
+                vText.innerText = "RETENU";
+            } else {
+                vBadge.classList.add('fail');
+                vText.innerText = "RECALÉ";
+            }
+
+            // 3. Listes & Conseil
+            const pList = document.getElementById('pros-list');
+            const cList = document.getElementById('cons-list');
+            pList.innerHTML = ""; cList.innerHTML = "";
+
+            (data.points_forts || []).forEach(t => pList.innerHTML += `<li>${t}</li>`);
+            (data.points_faibles || []).forEach(t => cList.innerHTML += `<li>${t}</li>`);
+            document.getElementById('main-advice').innerText = data.conseil_principal || "...";
+        }
+
+        // Back to top
+        const btt = document.getElementById("btnBackToTop");
+        window.addEventListener("scroll", () => { btt.classList.toggle("show", window.scrollY > 400); });
+        btt.onclick = () => window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+</script>
+{% endblock %}

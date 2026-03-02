@@ -1,0 +1,68 @@
+{% extends "base.html" %} {% block title %}Dashboard — CampusHub{% endblock %} {% block content %}
+<section class="ch-section">
+    <h1>Dashboard</h1>
+
+    <div class="ch-dashboard-grid">
+        <div class="ch-card">
+            <h2>Mon profil</h2>
+            <p><strong>{{ profile.full_name }}</strong> ({{ profile.get_role_display }})</p>
+            <p>{{ profile.headline }}</p>
+            <a href="{% url 'profile_detail' profile.id %}" class="ch-link">Voir mon profil</a> ·
+            <a href="{% url 'profile_edit' %}" class="ch-link">Modifier</a>
+        </div>
+
+        <div class="ch-card">
+            <h2>Offres d’emploi</h2>
+            <p>Offres publiées : {{ job_offers_count }}</p>
+            <p>Mes candidatures : {{ applications_count }}</p>
+            <a href="{% url 'job_list' %}" class="ch-link">Voir les offres</a> ·
+            <a href="{% url 'job_create' %}" class="ch-link">Publier une offre</a>
+        </div>
+
+        <div class="ch-card">
+            <h2>Services</h2>
+            <p>Services proposés : {{ services_count }}</p>
+            <a href="{% url 'service_list' %}" class="ch-link">Voir les services</a> ·
+            <a href="{% url 'service_create' %}" class="ch-link">Créer un service</a>
+        </div>
+
+        <div class="ch-card">
+            <h2>Avis reçus</h2>
+            <p>{{ reviews_count }} avis sur mon profil / services.</p>
+            <a href="{% url 'user_reviews' profile.user.id %}" class="ch-link">Voir les avis</a>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+<!-- === SECTION CONTACT === -->
+{% comment %} <section id="contact" class="contact-section" data-aos="fade-up">
+  <h2 class="text-center mb-4">📬 Contacte-nous</h2>
+  <p class="text-center text-muted mb-5">Une question, une suggestion ou une collaboration ? Écris-nous !</p>
+
+  <form class="contact-form mx-auto" style="max-width: 600px;">
+    <div class="mb-3">
+      <input type="text" class="form-control" placeholder="Nom complet" required>
+    </div>
+    <div class="mb-3">
+      <input type="email" class="form-control" placeholder="Adresse email" required>
+    </div>
+    <div class="mb-3">
+      <textarea class="form-control" rows="4" placeholder="Ton message..." required></textarea>
+    </div>
+    <button type="submit" class="liquid-btn"><span>Envoyer ✉️</span></button>
+  </form>
+</section>
+
+<!-- === FOOTER === -->
+<footer class="footer text-center mt-5">
+  <div class="footer-content">
+    <p>© {{ now|date:"Y" }} <strong>CampusHub</strong> — Connecter les talents et les opportunités.</p>
+    <div class="footer-links">
+      <a href="{% url 'about' %}">À propos</a> |
+      <a href="#contact">Contact</a> |
+      <a href="{% url 'success_stories' %}">Success Stories</a>
+    </div>
+  </div>
+</footer>
+ {% endcomment %}

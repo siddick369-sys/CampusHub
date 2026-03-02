@@ -1,0 +1,342 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}À propos – CampusHub{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="https://unpkg.com/aos@2.3.4/dist/aos.css">
+<style>
+    /* --- 1. VIDÉO BACKGROUND FIXE --- */
+    .video-bg-container {
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        z-index: -1; /* Derrière tout */
+        overflow: hidden;
+    }
+    
+    #bg-video {
+        width: 100%; height: 100%;
+        object-fit: cover; /* Remplit l'écran sans déformer */
+        filter: brightness(0.4); /* Assombri pour la lisibilité */
+    }
+
+    /* --- 2. CONFIGURATION GLOBALE --- */
+    body {
+        background-color: #000; /* Fallback si vidéo charge pas */
+        color: #e0e0e0;
+        font-family: 'Rajdhani', sans-serif; /* Police Tech recommandée */
+        overflow-x: hidden;
+    }
+
+    /* --- 3. SECTIONS "CARTE DE VERRE" (GLASSMORPHISM) --- */
+    .glass-section {
+        background: rgba(10, 10, 15, 0.65); /* Noir bleuté transparent */
+        backdrop-filter: blur(12px); /* Flou d'arrière-plan */
+        border: 1px solid rgba(0, 247, 255, 0.2); /* Bordure Cyan subtile */
+        border-radius: 20px;
+        padding: 4rem;
+        margin: 4rem auto;
+        max-width: 1100px;
+        box-shadow: 0 0 40px rgba(0, 0, 0, 0.7);
+        position: relative;
+        overflow: hidden;
+    }
+
+    /* Ligne néon décorative sur les sections */
+    .glass-section::before {
+        content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%;
+        background: linear-gradient(to bottom, #ff0055, #00f7ff);
+        box-shadow: 0 0 15px #ff0055;
+    }
+
+    .section-title {
+        font-family: 'Orbitron', sans-serif;
+        font-size: 3rem;
+        text-transform: uppercase;
+        margin-bottom: 2rem;
+        background: linear-gradient(90deg, #fff, #00f7ff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        text-shadow: 0 0 20px rgba(0, 247, 255, 0.4);
+    }
+
+    .section-text {
+        font-size: 1.2rem; line-height: 1.8; color: #ccc;
+        margin-bottom: 2rem;
+    }
+
+    /* --- 4. CARTES "À PROPOS" (Image + Texte alternés) --- */
+    .feature-row {
+        display: flex; align-items: center; gap: 3rem; margin-bottom: 4rem;
+    }
+    .feature-row.reverse { flex-direction: row-reverse; }
+
+    .feature-img-box {
+        flex: 1; position: relative;
+        border-radius: 15px; overflow: hidden;
+        border: 2px solid #ff0055;
+        box-shadow: 0 0 20px rgba(255, 0, 85, 0.3);
+        transform: perspective(1000px) rotateY(5deg);
+        transition: 0.5s;
+    }
+    .feature-img-box:hover {
+        transform: perspective(1000px) rotateY(0deg) scale(1.02);
+        box-shadow: 0 0 40px rgba(255, 0, 85, 0.6);
+    }
+    .feature-img { width: 100%; display: block; }
+
+    .feature-content { flex: 1; }
+    .feature-h3 {
+        color: #ff0055; font-family: 'Orbitron', sans-serif;
+        font-size: 1.8rem; margin-bottom: 1rem;
+        text-transform: uppercase; letter-spacing: 2px;
+    }
+
+    /* --- 5. ÉQUIPE (Adaptation Néon) --- */
+    .team-grid {
+        display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem; margin-top: 3rem;
+    }
+    
+    .team-card {
+        background: rgba(20, 20, 30, 0.8);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 15px; overflow: hidden;
+        transition: 0.4s; position: relative;
+    }
+    
+    /* Hover Team Card : Effet Néon Rouge */
+    .team-card:hover {
+        transform: translateY(-10px);
+        border-color: #ff0055;
+        box-shadow: 0 0 30px rgba(255, 0, 85, 0.4);
+    }
+
+    .team-img-wrapper {
+        width: 100%; height: 300px; overflow: hidden;
+        position: relative;
+    }
+    .team-img {
+        width: 100%; height: 100%; object-fit: cover;
+        transition: 0.5s; filter: grayscale(100%);
+    }
+    .team-card:hover .team-img { filter: grayscale(0%); transform: scale(1.1); }
+
+    .team-info {
+        padding: 1.5rem; text-align: center;
+        background: linear-gradient(to top, rgba(255,0,85,0.1), transparent);
+    }
+    .team-name {
+        color: #fff; font-family: 'Orbitron', sans-serif;
+        font-size: 1.2rem; margin-bottom: 5px;
+    }
+    .team-role { color: #00f7ff; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; }
+
+    /* RESPONSIVE */
+    @media (max-width: 992px) {
+        .feature-row, .feature-row.reverse { flex-direction: column; }
+        .glass-section { padding: 2rem; margin: 2rem 1rem; }
+    }
+    
+
+/* ÉQUIPE */
+.team-section {
+  text-align: center;
+  padding: 4rem 2rem;
+}
+.team-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 2rem;
+  margin-top: 2rem;
+}
+.team-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 18px;
+  background: rgba(17, 24, 39, 0.9);
+  transition: transform 0.4s ease, box-shadow 0.4s ease;
+}
+.team-card:hover {
+  transform: translateY(-8px) rotateY(6deg);
+  box-shadow: 0 0 25px rgba(147,51,234,0.4);
+}
+.team-card img {
+  width: 100%;
+  border-radius: 18px;
+  filter: grayscale(80%);
+  transition: filter 0.5s ease;
+}
+.team-card:hover img {
+  filter: grayscale(0%);
+}
+.team-info {
+  position: absolute;
+  bottom: -100%;
+  left: 0;
+  width: 100%;
+  background: rgba(147,51,234,0.8);
+  color: white;
+  padding: 1rem;
+  text-align: center;
+  border-radius: 0 0 18px 18px;
+  transition: bottom 0.5s ease;
+}
+.team-card:hover .team-info {
+  bottom: 0;
+}
+
+</style>
+
+<!-- === SPINNER DE CHARGEMENT === -->
+<div id="page-loader">
+  <div class="ring-spinner">
+    <div></div><div></div><div></div><div></div>
+  </div>
+</div>
+
+<style>
+#page-loader {
+  position: fixed;
+  inset: 0;
+  background: #0f172a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+/* === ANNEAUX ENTRELACÉS === */
+.ring-spinner {
+  display: inline-block;
+  position: relative;
+  width: 80px;
+  height: 80px;
+}
+.ring-spinner div {
+  box-sizing: border-box;
+  display: block;
+  position: absolute;
+  width: 64px;
+  height: 64px;
+  margin: 8px;
+  border: 6px solid #9333ea;
+  border-radius: 50%;
+  animation: ring-spin 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+  border-color: #9333ea transparent transparent transparent;
+}
+.ring-spinner div:nth-child(1) { animation-delay: -0.45s; }
+.ring-spinner div:nth-child(2) { animation-delay: -0.3s; }
+.ring-spinner div:nth-child(3) { animation-delay: -0.15s; }
+
+@keyframes ring-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+</style>
+
+<script>
+// Disparition du loader quand la page est prête
+window.addEventListener('load', () => {
+  const loader = document.getElementById('page-loader');
+  loader.style.opacity = '0';
+  setTimeout(() => loader.remove(), 500);
+});
+</script>
+
+
+<div class="video-bg-container">
+    <video autoplay muted loop id="bg-video" poster="{% static 'images/video-poster.jpg' %}">
+        <source src="{% static 'videos/bg-tunnel.mp4' %}" type="video/mp4">
+        Votre navigateur ne supporte pas la vidéo.
+    </video>
+</div>
+
+<div class="container" style="position: relative; z-index: 1;">
+
+    <section class="glass-section" data-aos="fade-up">
+        <div class="text-center mb-5">
+            <h1 class="section-title">LE FUTUR DE L'ÉDUCATION</h1>
+            <p class="section-text" style="max-width: 800px; margin: 0 auto;">
+                Nous construisons le pont numérique entre le savoir académique et la réalité du marché. 
+                Une plateforme décentralisée où chaque étudiant devient acteur de sa carrière.
+            </p>
+        </div>
+
+        <div class="feature-row" data-aos="fade-right">
+            <div class="feature-img-box">
+                <img src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=800&q=80" class="feature-img" alt="Ecosystème">
+            </div>
+            <div class="feature-content">
+                <h3 class="feature-h3">Écosystème Connecté</h3>
+                <p class="section-text">
+                    CampusHub fusionne les besoins des entreprises avec le potentiel brut des étudiants. 
+                    Grâce à notre algorithme de matching IA, les opportunités ne sont plus cherchées, elles sont <strong>révélées</strong>.
+                </p>
+            </div>
+        </div>
+
+        <div class="feature-row reverse" data-aos="fade-left">
+            <div class="feature-img-box" style="border-color: #00f7ff; box-shadow: 0 0 20px rgba(0, 247, 255, 0.3);">
+                <img src="https://images.unsplash.com/photo-1515630278258-407f66498911?auto=format&fit=crop&w=800&q=80" class="feature-img" alt="Vision">
+            </div>
+            <div class="feature-content">
+                <h3 class="feature-h3" style="color: #00f7ff;">Accélération de Carrière</h3>
+                <p class="section-text">
+                    Plus qu'un site d'offres, nous offrons des outils de pointe : génération de CV, 
+                    analyse de compétences et marketplace de services freelances pour monétiser vos talents dès aujourd'hui.
+                </p>
+            </div>
+        </div>
+    </section>
+    
+<!-- SECTION ÉQUIPE -->
+<section class="team-section" data-aos="zoom-in">
+  <h2>Notre équipe</h2>
+  <div class="team-grid">
+    {% for member in team_members %}
+    <div class="team-card" data-aos="flip-left">
+      <img src="{% static member.image %}" alt="{{ member.name }}">
+      <div class="team-info">
+        <h4>{{ member.name }}</h4>
+        <p>{{ member.role }}</p>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+<script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+<script>AOS.init({duration:1000,once:true});</script>
+
+{% endblock %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

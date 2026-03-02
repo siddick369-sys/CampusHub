@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}403 - Accès Refusé{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column justify-content-center align-items-center" style="min-height: 80vh;">
+    
+    <i class="bi bi-shield-lock-fill text-warning" style="font-size: 6rem; filter: drop-shadow(0 0 15px orange);"></i>
+    
+    <h1 style="font-family: 'Orbitron', sans-serif; font-size: 4rem; color: #fff;">403</h1>
+    
+    <h3 class="text-warning text-uppercase mb-4" style="letter-spacing: 3px;">
+        PROTOCOLE DE SÉCURITÉ ACTIVÉ
+    </h3>
+    
+    <p class="text-white-50 text-center mb-5" style="max-width: 500px;">
+        Vos accréditations sont insuffisantes pour accéder à ce secteur de données.
+        Veuillez contacter l'administrateur ou vous authentifier avec un niveau supérieur.
+    </p>
+
+    <a href="/" class="btn btn-outline-warning rounded-0 px-5 py-3 fw-bold" style="font-family: 'Orbitron', sans-serif;">
+        <i class="bi bi-shield-check me-2"></i> RETOUR BASE
+    </a>
+</div>
+{% endblock %}

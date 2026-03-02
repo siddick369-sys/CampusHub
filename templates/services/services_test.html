@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container py-4">
+  <h3 class="mb-3">Page de test – Module Services</h3>
+  <p class="text-muted">
+    Utilise cette page pour vérifier rapidement les principales fonctionnalités
+    (liste de services, création, commandes, alertes, emails).
+  </p>
+
+  <div class="row mb-4">
+    <div class="col-md-6 mb-3">
+      <div class="card h-100">
+        <div class="card-body">
+          <h5>Navigation générale</h5>
+          <p class="small text-muted">Accès rapide aux écrans principaux.</p>
+
+          <a href="{% url 'service_list' %}" class="btn btn-outline-primary btn-sm mb-2 w-100">
+            🔍 Liste / recherche de services
+          </a>
+
+          <a href="{% url 'service_search_alert_list' %}" class="btn btn-outline-secondary btn-sm mb-2 w-100">
+            🔔 Mes alertes de services
+          </a>
+
+          <a href="{% url 'service_email_settings' %}" class="btn btn-outline-secondary btn-sm mb-2 w-100">
+            📧 Préférences email (services)
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6 mb-3">
+      <div class="card h-100">
+        <div class="card-body">
+          <h5>Espace prestataire</h5>
+          {% if profile and profile.is_service_provider_verified %}
+            <p class="small text-muted">
+              Votre compte est marqué comme prestataire vérifié.
+            </p>
+
+            <a href="{% url 'provider_dashboard' %}" class="btn btn-outline-primary btn-sm mb-2 w-100">
+              📊 Tableau de bord prestataire
+            </a>
+
+            <a href="{% url 'service_create' %}" class="btn btn-outline-success btn-sm mb-2 w-100">
+              ➕ Publier un nouveau service
+            </a>
+          {% else %}
+            <p class="small text-muted">
+              Votre profil n'est pas encore marqué comme prestataire vérifié.<br>
+              Vérifiez vos informations dans votre profil, puis demandez une validation à l'admin.
+            </p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+
+    <div class="col-md-6 mb-4">
+      <div class="card h-100">
+        <div class="card-body">
+          <h5>Mes derniers services publiés</h5>
+          {% if my_services %}
+            <ul class="list-unstyled small mb-0">
+              {% for service in my_services|slice:":5" %}
+                <li class="mb-1">
+                  <a href="{% url 'service_detail' service.slug %}">
+                    {{ service.title }}
+                  </a>
+                  – <span class="text-muted">{{ service.get_status_display }}</span>
+                </li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p class="small text-muted mb-0">
+              Vous n'avez pas encore publié de service.
+            </p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6 mb-4">
+      <div class="card h-100">
+        <div class="card-body">
+          <h5>Commandes récentes</h5>
+
+          <p class="fw-semibold small mb-1">En tant que prestataire</p>
+          {% if my_orders_as_provider %}
+            <ul class="list-unstyled small mb-2">
+              {% for order in my_orders_as_provider %}
+                <li>
+                  <a href="{% url 'service_order_detail' order.id %}">
+                    #{{ order.id }} – {{ order.service_title_snapshot }}
+                  </a>
+                  ({{ order.get_status_display }})
+                </li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p class="small text-muted mb-2">Aucune commande reçue.</p>
+          {% endif %}
+
+          <p class="fw-semibold small mb-1">En tant que client</p>
+          {% if my_orders_as_client %}
+            <ul class="list-unstyled small mb-0">
+              {% for order in my_orders_as_client %}
+                <li>
+                  <a href="{% url 'service_order_detail' order.id %}">
+                    #{{ order.id }} – {{ order.service_title_snapshot }}
+                  </a>
+                  ({{ order.get_status_display }})
+                </li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p class="small text-muted mb-0">Aucune commande passée.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="row mt-3">
+    <div class="col">
+      <a href="{% url 'home' %}" class="btn btn-link btn-sm">
+        ← Retour à l'accueil
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}

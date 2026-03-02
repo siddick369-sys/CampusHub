@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% block title %}{{ job.title }} - Détails du Métier{% endblock %}
+
+{% block content %}
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+
+<div class="container py-5">
+    <div class="mb-4">
+        <a href="{% url 'job_list' %}" class="btn btn-link text-muted text-decoration-none p-0 fw-600">
+            <i class="bi bi-arrow-left me-2"></i>Retour aux métiers
+        </a>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="card-pro mb-4">
+                <div class="card-body p-4 p-lg-5">
+                    <div class="d-flex align-items-center mb-4">
+                        <div class="icon-box-lg bg-primary text-white rounded-3 d-flex align-items-center justify-content-center me-4">
+                            <i class="bi bi-briefcase-fill fs-2"></i>
+                        </div>
+                        <div>
+                            <span class="badge bg-primary bg-opacity-10 text-primary mb-2 px-3 py-2 rounded-pill fw-600">{{ job.sector }}</span>
+                            <h1 class="fw-bold text-dark mb-0">{{ job.title }}</h1>
+                        </div>
+                    </div>
+
+                    <h5 class="fw-bold text-dark mb-3"><i class="bi bi-info-circle me-2 text-primary"></i>Description du métier</h5>
+                    <p class="text-muted leading-relaxed mb-5">{{ job.description }}</p>
+
+                    <div class="bg-light p-4 rounded-4 mb-5">
+                        <h6 class="fw-bold text-dark mb-3"><i class="bi bi-list-check me-2 text-primary"></i>Missions Principales</h6>
+                        <p class="text-muted small mb-0">{{ job.main_tasks|linebreaksbr }}</p>
+                    </div>
+
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <h6 class="fw-bold text-dark mb-3"><i class="bi bi-cpu me-2 text-primary"></i>Hard Skills</h6>
+                            <div class="text-muted small">{{ job.required_hard_skills|linebreaksbr }}</div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="fw-bold text-dark mb-3"><i class="bi bi-person-heart me-2 text-primary"></i>Soft Skills</h6>
+                            <div class="text-muted small">{{ job.required_soft_skills|linebreaksbr }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-pro">
+                <div class="card-header bg-white border-bottom p-4">
+                    <h5 class="fw-bold text-dark mb-0"><i class="bi bi-mortarboard me-2 text-primary"></i>Filières d'études recommandées</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        {% for relevance in job.jobtrackrelevance_set.all|dictsortreversed:"relevance_score" %}
+                        <a href="{% url 'track_detail' relevance.track.slug %}" class="list-group-item list-group-item-action p-4 d-flex justify-content-between align-items-center track-item">
+                            <div class="d-flex align-items-center">
+                                <div class="icon-box-sm bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center me-3">
+                                    <i class="bi bi-journal-check"></i>
+                                </div>
+                                <div>
+                                    <span class="fw-bold text-dark d-block">{{ relevance.track.name }}</span>
+                                    <span class="text-muted x-small">Indice de pertinence : {{ relevance.relevance_score }}/5</span>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center gap-1">
+                                {% for i in "12345"|make_list %}
+                                    <i class="bi bi-star-fill {% if forloop.counter <= relevance.relevance_score %}text-warning{% else %}text-light{% endif %}"></i>
+                                {% endfor %}
+                            </div>
+                        </a>
+                        {% empty %}
+                        <div class="p-4 text-center text-muted">Aucune filière liée pour le moment.</div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card-pro mb-4 bg-primary text-white border-0 overflow-hidden position-relative">
+                <div class="card-body p-4 z-1 relative">
+                    <h6 class="text-white text-opacity-75 small fw-bold mb-3 text-uppercase ls-1">Salaire Estimé</h6>
+                    <h2 class="fw-bold mb-1">{{ job.typical_salary_min }} - {{ job.typical_salary_max }}</h2>
+                    <span class="opacity-75 small">{{ job.salary_currency }} / an</span>
+                </div>
+                <div class="blob-bg"></div>
+            </div>
+
+            <div class="card-pro p-4">
+                <h6 class="fw-bold text-dark mb-3">Détails du marché</h6>
+                <div class="d-flex align-items-center mb-3">
+                    <div class="icon-box-sm bg-light rounded text-primary me-3 d-flex align-items-center justify-content-center"><i class="bi bi-graph-up"></i></div>
+                    <div><span class="d-block x-small text-muted">Demande</span><span class="fw-bold small">{{ job.get_demand_level_display }}</span></div>
+                </div>
+                <div class="d-flex align-items-center">
+                    <div class="icon-box-sm bg-light rounded text-primary me-3 d-flex align-items-center justify-content-center"><i class="bi bi-house-door"></i></div>
+                    <div><span class="d-block x-small text-muted">Télétravail</span><span class="fw-bold small">{% if job.remote_friendly %}Compatible{% else %}Non disponible{% endif %}</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+:root { --primary: #2563eb; --white: #ffffff; --text-dark: #0f172a; --border: #e2e8f0; --radius: 16px; }
+h1, h5, h6 { font-family: 'Outfit', sans-serif; }
+.card-pro { background: var(--white); border-radius: var(--radius); border: 1px solid var(--border); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); overflow: hidden; }
+.icon-box-lg { width: 70px; height: 70px; }
+.icon-box-sm { width: 45px; height: 45px; }
+.track-item { transition: 0.3s; }
+.track-item:hover { background-color: #f8fafc; padding-left: 1.8rem !important; }
+.blob-bg { position: absolute; top: -50%; right: -50%; width: 200%; height: 200%; background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%); pointer-events: none; }
+.fw-600 { font-weight: 600; }
+.x-small { font-size: 0.75rem; }
+.ls-1 { letter-spacing: 1px; }
+.leading-relaxed { line-height: 1.7; }
+</style>
+{% endblock %}

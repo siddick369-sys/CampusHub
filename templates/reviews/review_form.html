@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Laisser un avis{% endblock %}
+
+{% block content %}
+<section class="ch-section ch-form-section">
+    <h1>Laisser un avis</h1>
+
+    <form method="post" class="ch-form">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="ch-btn ch-btn-primary">Publier l’avis</button>
+    </form>
+</section>
+{% endblock %}

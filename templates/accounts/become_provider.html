@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-4">
+  <h3>Devenir prestataire</h3>
+  <p>
+    En activant l’option « Je veux proposer des services », vous pourrez publier des services
+    (ménage, coiffure, cours, développement, etc.) et recevoir des commandes de clients.
+  </p>
+  <p>
+    Votre profil devra être vérifié par l’équipe avant que vos services soient visibles.
+  </p>
+  <a href="{% url 'profile_edit' %}" class="btn btn-primary btn-sm">
+    ✏️ Modifier mon profil pour devenir prestataire
+  </a>
+</div>
+{% endblock %}

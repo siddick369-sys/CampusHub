@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}Politique de Confidentialité{% endblock %}
+
+{% block content %}
+<style>
+    .legal-container {
+        background: #101015; border: 1px solid #333; padding: 0;
+        border-radius: 12px; overflow: hidden; margin: 3rem auto;
+        max-width: 900px; box-shadow: 0 0 50px rgba(0,0,0,0.8);
+    }
+    
+    .legal-header-img {
+        width: 100%; height: 250px;
+        background: url('https://images.unsplash.com/photo-1510511459019-5dda7724fd87?q=80&w=2070&auto=format&fit=crop') center/cover;
+        position: relative;
+        display: flex; align-items: center; justify-content: center;
+    }
+    .legal-header-img::after {
+        content: ''; position: absolute; inset: 0;
+        background: linear-gradient(to bottom, rgba(0,247,255,0.2), #101015);
+    }
+    
+    .legal-title-overlay {
+        position: relative; z-index: 2; font-family: 'Orbitron', sans-serif;
+        font-size: 3rem; color: #fff; text-shadow: 0 0 20px #000;
+        text-transform: uppercase; background: rgba(0,0,0,0.6);
+        padding: 10px 30px; border: 1px solid #00f7ff;
+    }
+
+    .legal-content { padding: 3rem; color: #ccc; font-family: 'Roboto', sans-serif; }
+    .section-block { margin-bottom: 2rem; display: flex; gap: 20px; }
+    .icon-box { 
+        min-width: 60px; height: 60px; background: rgba(0,247,255,0.1); 
+        color: #00f7ff; display: flex; align-items: center; justify-content: center; 
+        font-size: 1.5rem; border-radius: 8px; border: 1px solid rgba(0,247,255,0.3);
+    }
+</style>
+
+<div class="container">
+    <div class="legal-container">
+        
+        <div class="legal-header-img">
+            <h1 class="legal-title-overlay">Données Privées</h1>
+        </div>
+
+        <div class="legal-content">
+            <p class="fst-italic text-center mb-5 text-white-50">
+                Protocole de protection des données utilisateur v2.4 (RGPD Compliant)
+            </p>
+
+            <div class="section-block">
+                <div class="icon-box"><i class="bi bi-hdd-network"></i></div>
+                <div>
+                    <h3 class="text-white h5 mb-2">1. Collecte des Données</h3>
+                    <p>Nous collectons uniquement les données nécessaires au bon fonctionnement du service : Identité, Parcours Académique, et Historique de commandes.</p>
+                </div>
+            </div>
+
+            <div class="section-block">
+                <div class="icon-box"><i class="bi bi-shield-lock"></i></div>
+                <div>
+                    <h3 class="text-white h5 mb-2">2. Sécurité & Chiffrement</h3>
+                    <p>Vos mots de passe sont hachés (Argon2) et vos transactions sont sécurisées via SSL. Aucune donnée bancaire n'est stockée sur nos serveurs.</p>
+                </div>
+            </div>
+
+            <div class="section-block">
+                <div class="icon-box"><i class="bi bi-cookie"></i></div>
+                <div>
+                    <h3 class="text-white h5 mb-2">3. Cookies & Traceurs</h3>
+                    <p>Nous utilisons des cookies de session pour maintenir votre connexion. Aucun cookie publicitaire tiers n'est utilisé sans votre consentement explicite.</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

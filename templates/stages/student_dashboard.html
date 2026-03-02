@@ -1,0 +1,267 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Mon Pilotage – CampusHub{% endblock %}
+
+{% block content %}
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+<link rel="stylesheet" href="https://unpkg.com/aos@2.3.4/dist/aos.css" />
+
+<style>
+/* === DESIGN SYSTEM CAMPUSHUB PREMIUM === */
+:root {
+    --primary: #2563eb; --primary-light: rgba(37, 99, 235, 0.08);
+    --accent: #06b6d4; --success: #10b981; --warning: #f59e0b; --danger: #ef4444;
+    --text-dark: #0f172a; --text-muted: #64748b; 
+    --border: #e2e8f0; --white: #ffffff; --bg-light: #f8fafc;
+}
+
+body { background-color: var(--bg-light); color: var(--text-dark); font-family: 'Inter', sans-serif; }
+h1, h2, h3, h5, .fw-600 { font-family: 'Outfit', sans-serif; }
+
+/* === LOADER THEMATIQUE === */
+.page-loader {
+    position: fixed; inset: 0; background: #fff; z-index: 10000;
+    display: flex; align-items: center; justify-content: center;
+    transition: opacity 0.6s ease;
+}
+.main-spinner {
+    width: 80px; height: 80px; border: 4px solid #f1f5f9; border-top: 4px solid var(--primary);
+    border-radius: 50%; animation: spin 1s linear infinite; position: relative;
+}
+.spinner-icon { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 2rem; color: var(--primary); }
+@keyframes spin { 100% { transform: rotate(360deg); } }
+
+/* === BLOBS & BACKGROUND === */
+.desktop-bg-animation { position: fixed; inset: 0; z-index: -1; pointer-events: none; }
+.shape-blob { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.15; }
+.shape-1 { top: -10%; left: -10%; width: 500px; height: 500px; background: var(--primary); }
+.shape-2 { bottom: -10%; right: -10%; width: 400px; height: 400px; background: var(--accent); }
+
+/* === CARDS STYLING === */
+.glass-card {
+    background: var(--white); border: 1px solid var(--border); border-radius: 24px;
+    padding: 25px; transition: 0.3s ease; height: 100%;
+}
+.glass-card:hover { transform: translateY(-5px); box-shadow: 0 20px 40px rgba(0,0,0,0.05); }
+
+/* === FEEDBACK FLIP 3D (Refonte Premium) === */
+.feedback-slider-container {
+    display: flex; overflow-x: auto; gap: 20px; padding: 10px 5px 25px 5px;
+    scrollbar-width: none; perspective: 1000px;
+}
+.feedback-card {
+    min-width: 280px; height: 200px; position: relative;
+    transform-style: preserve-3d; transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+}
+.feedback-card:hover { transform: rotateY(180deg); }
+.feedback-front, .feedback-back {
+    position: absolute; inset: 0; backface-visibility: hidden;
+    border-radius: 20px; padding: 20px; border: 1px solid var(--border);
+}
+.feedback-front { background: white; display: flex; flex-direction: column; justify-content: center; }
+.feedback-back { 
+    background: var(--primary); color: white; transform: rotateY(180deg); 
+    display: flex; align-items: center; justify-content: center; text-align: center; font-size: 0.85rem;
+}
+
+/* === ALERTE VAINQUEUR (Gamer/Pro mix) === */
+.winner-alert {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    color: white; border-radius: 24px; padding: 30px; position: relative; overflow: hidden;
+    border: 2px solid var(--success);
+}
+.winner-alert::after {
+    content: '🏆'; position: absolute; right: -10px; bottom: -10px;
+    font-size: 8rem; opacity: 0.1; transform: rotate(-15deg);
+}
+
+/* === LIQUID BUTTONS === */
+.btn-liquid {
+    position: relative; display: inline-block; border-radius: 50px; overflow: hidden; 
+    border: none; cursor: pointer; text-decoration: none; font-weight: 700;
+    transition: 0.4s; background: var(--primary-light); text-align: center;
+}
+.btn-liquid span { position: relative; z-index: 2; color: var(--primary); transition: 0.4s; font-size: 0.8rem; }
+.btn-liquid::before {
+    content: ''; position: absolute; top: 100%; left: 0; width: 100%; height: 100%;
+    background: var(--primary); transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 1;
+}
+.btn-liquid:hover::before { top: 0; }
+.btn-liquid:hover span { color: #fff; }
+
+.btn-outline-custom {
+    border: 1px solid var(--border); border-radius: 50px; padding: 5px 15px;
+    font-size: 0.75rem; font-weight: 600; color: var(--text-muted); transition: 0.3s;
+}
+.btn-outline-custom:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
+
+/* === LIST ITEMS === */
+.todo-item { border-left: 3px solid var(--border); padding-left: 15px; margin-bottom: 20px; transition: 0.3s; }
+.todo-item:hover { border-left-color: var(--primary); }
+</style>
+
+<div id="pageLoader" class="page-loader">
+    <div class="text-center">
+        <div class="main-spinner"><i class="bi bi-lightning-charge-fill spinner-icon"></i></div>
+        <p class="mt-3 small text-uppercase fw-600 text-muted" style="letter-spacing: 2px;">Chargement de vos opportunités...</p>
+    </div>
+</div>
+
+<div class="desktop-bg-animation">
+    <div class="shape-blob shape-1"></div>
+    <div class="shape-blob shape-2"></div>
+</div>
+
+<div class="container py-5">
+    
+    <div class="text-center mb-5 reveal-on-scroll">
+        <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill fw-600 mb-3">
+            <i class="bi bi-grid-fill me-2"></i>Tableau de bord intelligent
+        </span>
+        <h1 class="fw-bold text-dark">💡 Mes opportunités</h1>
+    </div>
+
+    {% if participation.est_vainqueur %}
+    <div class="winner-alert mb-5 shadow-lg reveal-on-scroll">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h3 class="fw-bold mb-2">🎉 Félicitations, Champion !</h3>
+                <p class="mb-4 opacity-75">Votre solution a été retenue. L'entreprise va vous contacter pour : <strong>{{ participation.challenge.recompense }}</strong>.</p>
+                
+                {% if participation.statut_recompense == 'PENDING' or participation.statut_recompense == 'SENT' %}
+                    <div class="bg-white bg-opacity-10 p-3 rounded-4 border border-white border-opacity-10">
+                        <p class="small fw-600 mb-3">Avez-vous reçu votre récompense ?</p>
+                        <form action="{% url 'confirmer_recompense' participation.pk %}" method="POST" class="d-flex flex-wrap gap-2">
+                            {% csrf_token %}
+                            <button type="submit" name="action" value="confirm" class="btn btn-success btn-sm rounded-pill px-3">Oui, c'est fait !</button>
+                            <button type="button" onclick="document.getElementById('litige-box').classList.toggle('d-none')" class="btn btn-outline-light btn-sm rounded-pill px-3">Non, signaler</button>
+                            
+                            <div id="litige-box" class="d-none w-100 mt-3">
+                                <textarea name="motif_litige" class="form-control form-control-sm bg-dark text-white border-secondary mb-2" placeholder="Expliquez brièvement..."></textarea>
+                                <button type="submit" name="action" value="dispute" class="btn btn-danger btn-sm w-100">Envoyer le signalement</button>
+                            </div>
+                        </form>
+                    </div>
+                {% elif participation.statut_recompense == 'RECEIVED' %}
+                    <span class="badge bg-success text-white px-3 py-2 rounded-pill"><i class="bi bi-check-circle me-1"></i>Dossier clos avec succès</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="row g-4">
+        <div class="col-lg-6">
+            <div class="glass-card reveal-on-scroll">
+                <h5 class="fw-bold mb-4 d-flex align-items-center">
+                    <i class="bi bi-list-check text-primary me-2"></i>À faire aujourd'hui
+                </h5>
+                
+                {% if todo_items %}
+                    <div class="todo-list">
+                    {% for item in todo_items %}
+                        <div class="todo-item">
+                            <p class="fw-600 mb-2 text-dark" style="font-size: 0.95rem;">{{ item.text }}</p>
+                            {% if item.code == "no_cv" %}
+                                <a href="{% url 'student_cv_generate' %}" class="btn-liquid px-3 py-2"><span>Générer mon CV</span></a>
+                            {% elif item.code == "never_applied" or item.code == "no_recent_applications" %}
+                                <a href="{% url 'offer_list' %}" class="btn-liquid px-3 py-2"><span>Voir les offres</span></a>
+                            {% elif item.code == "offer_ending_tomorrow" and item.offer %}
+                                <a href="{% url 'offer_detail' item.offer.slug %}" class="btn btn-sm btn-outline-danger rounded-pill">Urgent : Postuler</a>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="bi bi-emoji-smile text-muted display-6"></i>
+                        <p class="text-muted small mt-2">Tout est à jour ! Continuez ainsi.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="glass-card mb-4 reveal-on-scroll" data-delay="100">
+                <h5 class="fw-bold mb-4 d-flex align-items-center">
+                    <i class="bi bi-clock-history text-danger me-2"></i>Se terminent bientôt
+                </h5>
+                {% if matching_offers_ending_tomorrow %}
+                    {% for off in matching_offers_ending_tomorrow %}
+                    <div class="d-flex justify-content-between align-items-center mb-3 p-2 hover-bg-light rounded-3 transition">
+                        <div>
+                            <h6 class="mb-0 fw-600 small">{{ off.title }}</h6>
+                            <span class="text-danger fw-bold" style="font-size: 0.7rem;">Expire demain !</span>
+                        </div>
+                        <a href="{% url 'offer_detail' off.slug %}" class="btn-outline-custom">Détails</a>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted small">Aucune échéance critique pour vos matchs.</p>
+                {% endif %}
+            </div>
+
+            <div class="glass-card reveal-on-scroll" data-delay="200">
+                <h5 class="fw-bold mb-3 d-flex align-items-center">
+                    <i class="bi bi-activity text-success me-2"></i>Dernière activité
+                </h5>
+                {% if last_application %}
+                    <div class="p-3 bg-light rounded-4">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="fw-600 small text-dark">{{ last_application.offer.title }}</span>
+                            <span class="badge bg-primary bg-opacity-10 text-primary" style="font-size: 0.65rem;">{{ last_application.get_status_display }}</span>
+                        </div>
+                        <p class="x-small text-muted mb-0">Postulé le {{ last_application.created_at|date:"d/m/Y à H:i" }}</p>
+                    </div>
+                {% else %}
+                    <p class="text-muted small mb-0">Aucune candidature enregistrée.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="col-12 mt-4 reveal-on-scroll">
+            <h4 class="fw-bold mb-4 text-center">💬 Ce que disent les entreprises</h4>
+            {% if feedbacks %}
+                <div class="feedback-slider-container">
+                    {% for fb in feedbacks %}
+                    <div class="feedback-card">
+                        <div class="feedback-front">
+                            <h6 class="fw-bold text-primary mb-1">{{ fb.company.profile.company_name|default:fb.company.username }}</h6>
+                            <div class="mb-2" style="font-size: 0.8rem;">
+                                {% for i in "12345"|make_list %}
+                                    <i class="bi bi-star-fill {% if forloop.counter <= fb.rating %}text-warning{% else %}text-light{% endif %}"></i>
+                                {% endfor %}
+                            </div>
+                            <p class="small text-muted mb-0">“{{ fb.content|truncatechars:60 }}”</p>
+                            <span class="mt-3 text-uppercase fw-bold text-muted" style="font-size: 0.6rem;">Survolez pour lire <i class="bi bi-arrow-right"></i></span>
+                        </div>
+                        <div class="feedback-back">
+                            <p class="p-3">{{ fb.content }}</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-5 border rounded-4 border-dashed">
+                    <p class="text-muted">Les avis des entreprises apparaîtront ici après vos stages.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+<script>
+// --- LOADER ---
+window.addEventListener('load', () => {
+    setTimeout(() => {
+        document.getElementById('pageLoader').style.opacity = '0';
+        setTimeout(() => document.getElementById('pageLoader').style.visibility = 'hidden', 600);
+    }, 800);
+});
+
+AOS.init({ duration: 800, once: true });
+</script>
+{% endblock %}

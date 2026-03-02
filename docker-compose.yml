@@ -1,0 +1,119 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: campushub_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    restart: unless-stopped
+    expose:
+      - "5432"
+    networks:
+      - campushub_net
+
+  redis:
+    image: redis:7-alpine
+    container_name: campushub_redis
+    restart: unless-stopped
+    expose:
+      - "6379"
+    networks:
+      - campushub_net
+
+  django-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: campushub_app
+    command: gunicorn CampuHub.wsgi:application -c gunicorn.conf.py
+    volumes:
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+    env_file:
+      - .env
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - postgres
+      - redis
+    restart: unless-stopped
+    networks:
+      - campushub_net
+
+  celery-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: campushub_worker
+    command: celery -A CampuHub worker -l info
+    volumes:
+      - media_volume:/app/media
+    env_file:
+      - .env
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - postgres
+      - redis
+    restart: unless-stopped
+    networks:
+      - campushub_net
+
+  celery-beat:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: campushub_beat
+    command: celery -A CampuHub beat -l info
+    volumes:
+      - media_volume:/app/media
+    env_file:
+      - .env
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - postgres
+      - redis
+    restart: unless-stopped
+    networks:
+      - campushub_net
+
+  nginx:
+    image: nginx:1.25-alpine
+    container_name: campushub_nginx
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - static_volume:/app/static
+      - media_volume:/app/media
+      - ./nginx/certs:/etc/nginx/certs:ro
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - django-app
+    restart: unless-stopped
+    networks:
+      - campushub_net
+
+networks:
+  campushub_net:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  static_volume:
+  media_volume:

@@ -1,0 +1,185 @@
+{% extends "base.html" %}
+{% block title %}Lettre de Motivation – {{ offer.title }}{% endblock %}
+{% load static %}
+
+{% block content %}
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+
+<div id="pageLoader" class="page-loader">
+    <div class="loader-content">
+        <div class="logo-placeholder mb-4">
+            <div class="main-spinner"></div>
+            <i class="bi bi-pen-fill spinner-icon text-primary"></i>
+        </div>
+        <div class="loader-text-wrap">
+            <h5 class="fw-bold text-dark mb-1">CampusHub AI Writer</h5>
+            <div class="progress-bar-wrap"><div class="progress-bar-fill"></div></div>
+            <small class="text-muted mt-2 d-block">Finalisation de la rédaction...</small>
+        </div>
+    </div>
+</div>
+
+<div class="desktop-bg-animation">
+    <div class="shape-blob shape-1"></div>
+    <div class="shape-blob shape-2"></div>
+</div>
+
+<div class="container py-5 relative-z">
+
+    <div class="mb-4 reveal-on-scroll">
+        <a href="{% url 'apply_to_offer' offer.slug %}" class="btn-back mb-3">
+            <i class="bi bi-arrow-left me-2"></i>Retour à l'offre
+        </a>
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end">
+            <div>
+                <span class="badge-status status-info mb-2">Assistant de Candidature</span>
+                <h1 class="fw-bold text-dark h2 mb-0">Votre Lettre de Motivation</h1>
+                <p class="text-muted small mt-1">Générée pour : <strong>{{ offer.title }}</strong> chez {{ offer.company_name_snapshot|default:offer.company.username }}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-8 reveal-on-scroll" data-delay="100">
+            <div class="card-pro shadow-sm border-0">
+                <div class="card-header bg-white border-bottom p-4 d-flex justify-content-between align-items-center">
+                    <h6 class="fw-bold text-dark mb-0"><i class="bi bi-file-earmark-text me-2 text-primary"></i>Aperçu du document</h6>
+                    <button class="btn btn-sm btn-light rounded-pill border fw-600 px-3" onclick="copyLetter()" id="copyBtn">
+                        <i class="bi bi-clipboard me-2"></i>Copier
+                    </button>
+                </div>
+                <div class="card-body p-4 p-md-5 bg-white">
+                    <div id="letter-text" class="letter-paper">
+                        {{ text|linebreaks }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 reveal-on-scroll" data-delay="200">
+            <div class="card-pro p-4 sticky-top" style="top: 20px;">
+                <h6 class="fw-bold text-dark mb-4">Actions disponibles</h6>
+                
+                <div class="d-grid gap-3">
+                    <a href="{% url 'apply_to_offer' offer.slug %}" class="btn-liquid primary w-100 py-3">
+                        <span><i class="bi bi-send-check me-2"></i>Utiliser pour postuler</span>
+                    </a>
+                    
+                    <a href="{% url 'motivation_letter_pdf' offer.slug %}" class="btn-liquid info w-100 py-3">
+                        <span><i class="bi bi-file-pdf me-2"></i>Télécharger en PDF</span>
+                    </a>
+
+                    <hr class="my-2 opacity-10">
+
+                    <p class="x-small text-muted text-center mb-0">
+                        <i class="bi bi-info-circle me-1"></i> 
+                        Vous pouvez encore modifier vos informations dans votre profil pour régénérer une lettre différente.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="backToTop" class="back-to-top shadow-lg"><i class="bi bi-arrow-up"></i></div>
+
+<style>
+/* === VARIABLES & BASE === */
+:root {
+    --primary: #2563eb; --info: #0ea5e9; --success: #10b981;
+    --white: #ffffff; --text-dark: #0f172a; --text-muted: #64748b; 
+    --border: #e2e8f0; --radius: 20px;
+}
+body { background-color: #f8fafc; color: var(--text-dark); font-family: 'Inter', sans-serif; }
+h1, h2, h5, h6 { font-family: 'Outfit', sans-serif; }
+
+/* === PAPIER DE LA LETTRE (Web View) === */
+.letter-paper {
+    font-family: 'Inter', serif; /* Ou une police serif pour plus de réalisme */
+    font-size: 1.05rem;
+    line-height: 1.7;
+    color: #334155;
+    white-space: pre-wrap;
+}
+
+/* === CARD PRO === */
+.card-pro { background: #fff; border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden; }
+
+/* === LIQUID BUTTONS === */
+.btn-liquid {
+    position: relative; display: inline-block; border-radius: 50px; overflow: hidden; 
+    border: none; cursor: pointer; text-decoration: none; font-weight: 700;
+    transition: 0.4s; background: rgba(37, 99, 235, 0.08); text-align: center;
+}
+.btn-liquid span { position: relative; z-index: 2; color: var(--primary); transition: 0.4s; }
+.btn-liquid::before {
+    content: ''; position: absolute; top: 100%; left: 0; width: 100%; height: 100%;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 1;
+}
+.btn-liquid:hover::before { top: 0; }
+.btn-liquid:hover span { color: #fff; }
+
+.btn-liquid.primary::before { background: var(--primary); }
+.btn-liquid.info::before { background: var(--info); }
+.btn-liquid.info span { color: var(--info); }
+
+/* === BADGES & UTILS === */
+.badge-status { padding: 4px 12px; border-radius: 50px; font-weight: 600; font-size: 0.75rem; }
+.status-info { background: rgba(37, 99, 235, 0.1); color: var(--primary); }
+.btn-back { color: var(--text-muted); text-decoration: none; font-weight: 600; font-size: 0.9rem; transition: 0.3s; }
+.btn-back:hover { color: var(--primary); transform: translateX(-5px); }
+.x-small { font-size: 0.75rem; } .fw-600 { font-weight: 600; }
+.relative-z { position: relative; z-index: 10; }
+
+/* === LOADER === */
+.page-loader { position: fixed; inset: 0; background: #fff; z-index: 10000; display: flex; align-items: center; justify-content: center; }
+.main-spinner { width: 80px; height: 80px; border: 4px solid #f1f5f9; border-top: 4px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
+@keyframes spin { 100% { transform: rotate(360deg); } }
+
+/* Background */
+.desktop-bg-animation { position: fixed; inset: 0; z-index: -1; pointer-events: none; }
+.shape-blob { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.3; }
+.shape-1 { top: -10%; left: -10%; width: 400px; height: 400px; background: rgba(37, 99, 235, 0.1); }
+.shape-2 { bottom: -10%; right: -10%; width: 400px; height: 400px; background: rgba(16, 185, 129, 0.1); }
+
+/* === STYLE POUR L'IMPRESSION / PDF === */
+@media print {
+    .btn-liquid, .btn-back, .desktop-bg-animation, .page-loader, .back-to-top, .card-header { display: none !important; }
+    body { background: white; padding: 0; }
+    .container { width: 100%; max-width: 100%; margin: 0; }
+    .card-pro { border: none; box-shadow: none; }
+    .letter-paper { font-size: 12pt; color: black; }
+}
+</style>
+
+<script>
+function copyLetter() {
+    const text = document.getElementById("letter-text").innerText;
+    const btn = document.getElementById("copyBtn");
+    navigator.clipboard.writeText(text).then(() => {
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="bi bi-check2 me-2"></i>Copié !';
+        btn.classList.replace('btn-light', 'btn-success');
+        setTimeout(() => {
+            btn.innerHTML = originalText;
+            btn.classList.replace('btn-success', 'btn-light');
+        }, 2000);
+    });
+}
+
+window.addEventListener('load', () => {
+    setTimeout(() => {
+        document.getElementById('pageLoader').style.opacity = '0';
+        setTimeout(() => document.getElementById('pageLoader').style.visibility = 'hidden', 600);
+    }, 1000);
+});
+
+const btt = document.getElementById('backToTop');
+window.onscroll = () => {
+    if (window.scrollY > 300) btt.classList.add('show');
+    else btt.classList.remove('show');
+};
+btt.onclick = () => window.scrollTo({top: 0, behavior: 'smooth'});
+</script>
+{% endblock %}

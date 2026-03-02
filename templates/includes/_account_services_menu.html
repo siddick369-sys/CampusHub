@@ -1,0 +1,19 @@
+{# templates/includes/_account_services_menu.html #}
+
+{% if request.user.is_authenticated %}
+  <li><hr class="dropdown-divider"></li>
+
+  <li class="dropdown-header">Services</li>
+
+  <li>
+    <a class="dropdown-item" href="{% url 'service_search_alert_list' %}">
+      Mes alertes de services
+    </a>
+  </li>
+
+  <li>
+    <a class="dropdown-item" href="{% url 'service_email_settings' %}">
+      Préférences emails (services)
+    </a>
+  </li>
+{% endif %}

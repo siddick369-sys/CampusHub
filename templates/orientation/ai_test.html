@@ -1,0 +1,307 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Test d'Orientation IA - CampusHub{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-lg" style="border-radius: 20px; overflow: hidden; background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px);">
+                <!-- Header -->
+                <div class="card-header border-0 py-4 text-center" style="background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);">
+                    <h2 class="text-white mb-0 fw-bold">
+                        <i class="fas fa-brain me-2"></i> Test d'Orientation Intelligent
+                    </h2>
+                    <p class="text-white-50 mt-2 mb-0">Discute avec notre IA pour trouver ta voie idéale sur CampusHub</p>
+                </div>
+
+                <!-- Chat Body -->
+                <div id="chat-container" class="card-body p-4" style="height: 500px; overflow-y: auto; display: flex; flex-direction: column; gap: 1rem; background: #f8fafc;">
+                    <!-- Messages will be injected here -->
+                    <div class="text-center my-auto" id="start-screen">
+                        <div class="mb-4">
+                            <i class="fas fa-comments-alt fa-4x text-primary opacity-25"></i>
+                        </div>
+                        <h4 class="text-muted">Prêt à commencer ?</h4>
+                        <p class="text-muted mb-4">L'IA va te poser quelques questions pour mieux comprendre tes centres d'intérêt.</p>
+                        <button id="start-btn" class="btn btn-lg btn-primary rounded-pill px-5 shadow">
+                            Démarrer le test
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Input Area -->
+                <div class="card-footer bg-white border-0 p-4" id="input-area" style="display: none;">
+                    <form id="chat-form" class="input-group mb-3">
+                        <button type="button" id="btn-mic" class="btn btn-outline-primary rounded-start-pill px-3 border-end-0" title="Utiliser ma voix">
+                            <i class="fas fa-microphone"></i>
+                        </button>
+                        <input type="text" id="user-input" class="form-control form-control-xl border-start-0 border-end-0 px-4" placeholder="Tape ta réponse ici..." style="height: 60px;">
+                        <button class="btn btn-primary rounded-end-pill px-4" type="submit">
+                            <i class="fas fa-paper-plane fa-lg"></i>
+                        </button>
+                    </form>
+                    <div class="text-center" id="finish-area" style="display: none;">
+                        <button id="finish-btn" class="btn btn-outline-primary rounded-pill px-4 btn-sm fw-600">
+                            <i class="bi bi-flag-fill me-2"></i>Terminer et voir mes résultats
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Footer / Status -->
+                <div class="card-footer bg-light border-0 py-2 px-4 d-flex justify-content-between align-items-center">
+                    <small class="text-muted" id="status-text">Analysé par Llama 3 (Groq)</small>
+                    <div id="typing-indicator" style="display: none;">
+                        <span class="badge rounded-pill bg-light text-primary border shadow-sm">
+                            <i class="fas fa-circle-notch fa-spin me-1"></i> L'IA réfléchit...
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Voice Error Modal -->
+<div class="modal fade" id="voiceErrorModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 24px;">
+            <div class="modal-body text-center p-5">
+                <div class="mb-4">
+                    <div class="bg-warning bg-opacity-10 text-warning rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                        <i class="fas fa-microphone-slash fa-2x"></i>
+                    </div>
+                </div>
+                <h4 class="fw-bold text-dark mb-3">L'IA n'a pas pu t'entendre</h4>
+                <p class="text-muted mb-4">Désolé, nous n'avons pas bien compris ta réponse vocale. Peux-tu réessayer de parler plus fort ou taper ta réponse ?</p>
+                <button type="button" class="btn btn-primary rounded-pill px-5 py-2 fw-bold" data-bs-dismiss="modal">D'accord</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .message {
+        max-width: 80%;
+        padding: 1rem 1.25rem;
+        border-radius: 1.25rem;
+        font-size: 1rem;
+        line-height: 1.5;
+        position: relative;
+        animation: fadeIn 0.3s ease-out;
+    }
+
+    .message-ai {
+        align-self: flex-start;
+        background: white;
+        color: #1e293b;
+        border-bottom-left-radius: 0.25rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    .message-user {
+        align-self: flex-end;
+        background: #6366f1;
+        color: white;
+        border-bottom-right-radius: 0.25rem;
+        box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.3);
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Scrollbar */
+    #chat-container::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    #chat-container::-webkit-scrollbar-thumb {
+        background-color: #e2e8f0;
+        border-radius: 10px;
+    }
+
+    /* Mic Animation */
+    .listening {
+        background-color: #ef4444 !important;
+        color: white !important;
+        border-color: #ef4444 !important;
+        animation: pulseMic 1.5s infinite;
+    }
+
+    @keyframes pulseMic {
+        0% {
+            box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+        }
+
+        70% {
+            box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+        }
+
+        100% {
+            box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+        }
+    }
+</style>
+
+<script>
+    const chatContainer = document.getElementById('chat-container');
+    const startScreen = document.getElementById('start-screen');
+    const inputArea = document.getElementById('input-area');
+    const startBtn = document.getElementById('start-btn');
+    const chatForm = document.getElementById('chat-form');
+    const userInput = document.getElementById('user-input');
+    const typingIndicator = document.getElementById('typing-indicator');
+    const finishArea = document.getElementById('finish-area');
+    const finishBtn = document.getElementById('finish-btn');
+    const statusText = document.getElementById('status-text');
+    const sessionId = "{{ session_id|default:'' }}" || Math.random().toString(36).substring(7);
+    let messageCount = 0;
+
+    function addMessage(text, role) {
+        const div = document.createElement('div');
+        div.className = `message message-${role}`;
+        div.textContent = text;
+        chatContainer.appendChild(div);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+        if (role === 'user') messageCount++;
+
+        // Afficher le bouton terminer après 3 messages utilisateur
+        if (messageCount >= 3) {
+            finishArea.style.display = 'block';
+        }
+    }
+
+    async function sendMessage(message, isStart = false, isFinal = false) {
+        typingIndicator.style.display = 'block';
+        if (statusText) statusText.textContent = isFinal ? "Génération de ton profil final..." : "L'IA analyse tes réponses...";
+
+        if (isFinal) {
+            inputArea.style.pointerEvents = 'none';
+            inputArea.style.opacity = '0.7';
+        }
+
+        try {
+            const response = await fetch("{% url 'ai_orientation_api' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({
+                    message: message,
+                    session_id: sessionId,
+                    is_start: isStart,
+                    is_final_request: isFinal
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.error) {
+                addMessage("Oups, une erreur est survenue. Réessaie !", "ai");
+                inputArea.style.pointerEvents = 'auto';
+                inputArea.style.opacity = '1';
+            } else {
+                addMessage(data.response, "ai");
+                if (data.is_finished && data.redirect_url) {
+                    if (statusText) statusText.textContent = "Test terminé ! Analyse prête...";
+                    setTimeout(() => {
+                        window.location.href = data.redirect_url;
+                    }, 3000);
+                }
+            }
+        } catch (error) {
+            addMessage("Erreur de connexion au serveur.", "ai");
+            inputArea.style.pointerEvents = 'auto';
+            inputArea.style.opacity = '1';
+        } finally {
+            typingIndicator.style.display = 'none';
+            if (statusText && !statusText.textContent.includes("Test terminé")) {
+                statusText.textContent = "Analysé par Llama 3 (Groq)";
+            }
+        }
+    }
+
+    startBtn.addEventListener('click', () => {
+        startScreen.style.display = 'none';
+        inputArea.style.display = 'block';
+        sendMessage("", true);
+    });
+
+    chatForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const msg = userInput.value.trim();
+        if (msg) {
+            addMessage(msg, "user");
+            userInput.value = "";
+            sendMessage(msg);
+        }
+    });
+
+    finishBtn.addEventListener('click', () => {
+        if (confirm("Veux-tu arrêter le test maintenant et voir tes résultats ?")) {
+            sendMessage("", false, true);
+        }
+    });
+
+    // --- VOICE LOGIC ---
+    const voiceErrorModal = new bootstrap.Modal(document.getElementById('voiceErrorModal'));
+    const btnMic = document.getElementById('btn-mic');
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if (SpeechRecognition) {
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'fr-FR';
+        recognition.interimResults = false;
+
+        btnMic.addEventListener('click', () => {
+            if (btnMic.classList.contains('listening')) {
+                recognition.stop();
+            } else {
+                try {
+                    recognition.start();
+                    btnMic.classList.add('listening');
+                } catch (e) {
+                    console.error("Mic start error:", e);
+                }
+            }
+        });
+
+        recognition.onresult = (event) => {
+            const transcript = event.results[0][0].transcript;
+            if (transcript.trim()) {
+                userInput.value = transcript;
+                addMessage(transcript, "user");
+                sendMessage(transcript);
+                userInput.value = "";
+            } else {
+                voiceErrorModal.show();
+            }
+        };
+
+        recognition.onerror = (event) => {
+            console.error("Speech recognition error:", event.error);
+            if (event.error !== 'no-speech') {
+                voiceErrorModal.show();
+            }
+        };
+
+        recognition.onend = () => {
+            btnMic.classList.remove('listening');
+        };
+    } else {
+        btnMic.style.display = 'none';
+    }
+
+</script>
+{% endblock %}

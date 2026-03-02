@@ -1,0 +1,171 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Écrire dans le journal - {{ projet.titre }}{% endblock %}
+
+{% block content %}
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+
+<div id="pageLoader" class="page-loader">
+    <div class="loader-content">
+        <div class="logo-placeholder mb-4">
+            <div class="main-spinner"></div>
+            <i class="bi bi-journal-plus spinner-icon text-primary"></i>
+        </div>
+        <div class="loader-text-wrap">
+            <h5 class="fw-bold text-dark mb-1">Journal de Bord</h5>
+            <div class="progress-bar-wrap"><div class="progress-bar-fill"></div></div>
+            <small class="text-muted mt-2 d-block">Préparation de l'éditeur...</small>
+        </div>
+    </div>
+</div>
+
+<div class="desktop-bg-animation">
+    <div class="shape-blob shape-1"></div>
+    <div class="shape-blob shape-2"></div>
+</div>
+
+<div class="container py-5 relative-z">
+    
+    <div class="text-center mb-5 reveal-on-scroll">
+        <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 rounded-pill px-3 py-2 mb-3">
+            <i class="bi bi-megaphone me-2"></i>Communication Projet
+        </span>
+        <h1 class="fw-bold text-dark mb-2">Écrire dans le journal</h1>
+        <p class="text-muted">Partagez vos succès, vos défis et l'évolution de votre projet.</p>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-7">
+            <div class="card-pro reveal-on-scroll" data-delay="100">
+                <div class="card-header bg-white border-bottom p-4">
+                    <h5 class="fw-bold text-dark mb-0">
+                        <i class="bi bi-pencil-square me-2 text-primary"></i>Nouvelle Publication
+                    </h5>
+                </div>
+                
+                <div class="card-body p-4 p-md-5">
+                    <form method="post" enctype="multipart/form-data" id="journalForm">
+                        {% csrf_token %}
+
+                        <div class="mb-4">
+                            <label class="form-label fw-600 text-dark small">Titre de l'actualité</label>
+                            {{ form.titre }}
+                            {% if form.titre.errors %}<div class="text-danger x-small mt-1">{{ form.titre.errors }}</div>{% endif %}
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-600 text-dark small">Contenu du post</label>
+                            {{ form.contenu }}
+                            <div class="form-text small mt-2">
+                                <i class="bi bi-info-circle me-1"></i> Racontez votre histoire ou vos avancées techniques.
+                            </div>
+                            {% if form.contenu.errors %}<div class="text-danger x-small mt-1">{{ form.contenu.errors }}</div>{% endif %}
+                        </div>
+
+                        <div class="mb-5">
+                            <label class="form-label fw-600 text-dark small">Illustrer avec une photo (Optionnel)</label>
+                            <div class="upload-zone text-center p-4 border border-dashed rounded-4 bg-light">
+                                <i class="bi bi-camera text-primary fs-2 mb-2 d-block"></i>
+                                <div class="d-flex justify-content-center">
+                                    {{ form.image }}
+                                </div>
+                                <p class="text-muted x-small mt-2 mb-0">Une image augmente l'engagement de 300%</p>
+                            </div>
+                        </div>
+
+                        <div class="d-flex align-items-center justify-content-between gap-3 border-top pt-4">
+                            <a href="{% url 'detail_projet' projet.slug %}" class="text-muted text-decoration-none small fw-600 hover-primary">
+                                <i class="bi bi-arrow-left me-1"></i> Annuler
+                            </a>
+                            <button type="submit" class="liquid-btn btn-primary-pro px-5 py-3 shadow-sm">
+                                <span>🚀 Publier l'actualité</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="text-center mt-4 reveal-on-scroll" data-delay="200">
+                <p class="small text-muted">
+                    <i class="bi bi-shield-check text-success me-1"></i> Votre post sera visible immédiatement sur la page de votre projet.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<button id="btnBackToTop" class="btn-back-to-top"><i class="bi bi-arrow-up"></i></button>
+
+<style>
+:root { --primary: #2563eb; --primary-dark: #1e40af; --light-bg: #f8fafc; --white: #ffffff; --text-dark: #0f172a; --text-muted: #64748b; --border: #e2e8f0; --radius: 16px; }
+
+body { background-color: var(--light-bg); color: var(--text-dark); font-family: 'Inter', sans-serif; overflow-x: hidden; }
+h1, h5 { font-family: 'Outfit', sans-serif; }
+
+/* Loader */
+.page-loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 9999; display: flex; align-items: center; justify-content: center; transition: 0.6s; }
+.logo-placeholder { position: relative; width: 80px; height: 80px; margin: 0 auto; }
+.main-spinner { position: absolute; width: 100%; height: 100%; border: 4px solid #f1f5f9; border-top: 4px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
+@keyframes spin { 100% { transform: rotate(360deg); } }
+.spinner-icon { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 2rem; }
+.progress-bar-wrap { height: 4px; width: 200px; background: #f1f5f9; border-radius: 10px; overflow: hidden; margin-top: 15px; }
+.progress-bar-fill { height: 100%; width: 0%; background: var(--primary); animation: loadProgress 1.5s forwards; }
+@keyframes loadProgress { 100% { width: 100%; } }
+
+/* Form Elements */
+.card-pro { background: var(--white); border-radius: var(--radius); border: 1px solid var(--border); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
+input[type="text"], textarea, input[type="file"] { 
+    width: 100%; border-radius: 12px; border: 1px solid var(--border); padding: 14px; font-size: 0.95rem; transition: 0.3s; 
+}
+input:focus, textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); outline: none; }
+
+/* Upload Zone */
+.upload-zone { border: 2px dashed #cbd5e1 !important; transition: 0.3s; }
+.upload-zone:hover { border-color: var(--primary) !important; background-color: #fff !important; }
+
+/* Buttons & Utils */
+.liquid-btn { background: var(--primary); color: white; border: none; border-radius: 50px; font-weight: 700; text-transform: uppercase; transition: 0.3s; cursor: pointer; }
+.liquid-btn:hover { background: var(--primary-dark); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(37, 99, 235, 0.25); }
+.hover-primary:hover { color: var(--primary) !important; }
+.fw-600 { font-weight: 600; }
+.ls-1 { letter-spacing: 1px; }
+.x-small { font-size: 0.75rem; }
+
+/* Back to Top */
+.btn-back-to-top { position: fixed; bottom: 30px; right: 30px; width: 50px; height: 50px; background: var(--primary); color: white; border: none; border-radius: 50%; opacity: 0; visibility: hidden; transition: 0.3s; z-index: 1000; display: flex; align-items: center; justify-content: center; }
+.btn-back-to-top.show { opacity: 1; visibility: visible; }
+
+/* Background Shapes */
+.desktop-bg-animation { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; }
+.shape-blob { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.4; animation: float 10s infinite alternate; }
+.shape-1 { top: -10%; left: -10%; width: 600px; height: 600px; background: rgba(37, 99, 235, 0.15); }
+.shape-2 { bottom: -10%; right: -10%; width: 500px; height: 500px; background: rgba(16, 185, 129, 0.1); }
+@keyframes float { 100% { transform: translate(40px, 40px); } }
+
+.reveal-on-scroll { animation: fadeInUp 0.6s ease-out; }
+@keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+
+<script>
+window.addEventListener('load', () => {
+    const loader = document.getElementById('pageLoader');
+    setTimeout(() => {
+        loader.style.opacity = '0';
+        setTimeout(() => loader.style.visibility = 'hidden', 600);
+    }, 1000);
+});
+
+document.addEventListener("DOMContentLoaded", function () {
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => { if(entry.isIntersecting) entry.target.style.animationPlayState = "running"; });
+    });
+    document.querySelectorAll(".reveal-on-scroll").forEach(el => observer.observe(el));
+
+    const btt = document.getElementById("btnBackToTop");
+    window.addEventListener("scroll", () => { btt.classList.toggle("show", window.scrollY > 400); });
+    btt.onclick = () => window.scrollTo({ top: 0, behavior: "smooth" });
+});
+</script>
+{% endblock %}

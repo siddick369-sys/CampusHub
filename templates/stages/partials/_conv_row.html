@@ -1,0 +1,140 @@
+<div class="conv-accent-border 
+    {% if conv.service_order %}bg-info
+    {% elif conv.application %}bg-success
+    {% elif conv.participation %}bg-warning
+    {% else %}bg-secondary{% endif %}">
+</div>
+
+<div class="row align-items-center w-100 g-0">
+    
+    <div class="col-lg-3 col-md-4 mb-3 mb-md-0 px-3">
+        <div class="d-flex align-items-center">
+            <div class="avatar-wrapper me-3">
+                {% if partner.profile.avatar %}
+                    <img src="{{ partner.profile.avatar.url }}" class="avatar-img-pro" alt="Avatar">
+                {% else %}
+                    <div class="avatar-box-pro bg-primary bg-opacity-10 text-primary">
+                        {{ partner.username|slice:":1"|upper }}
+                    </div>
+                {% endif %}
+                {% if partner.is_online %} <span class="online-indicator"></span>
+                {% endif %}
+            </div>
+            <div class="overflow-hidden">
+                <h6 class="fw-bold text-dark mb-0 text-truncate">
+                    {% if partner.profile.role == "company" %}
+                        {{ partner.profile.company_name|default:partner.username }}
+                    {% else %}
+                        {{ partner.profile.full_name|default:partner.username }}
+                    {% endif %}
+                </h6>
+                <div class="x-small text-muted fw-500">
+                    <i class="bi bi-clock-history me-1"></i>{{ conv.updated_at|date:"d M, H:i" }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6 col-md-5 mb-3 mb-md-0 px-lg-4 border-start-md">
+        <div class="d-flex flex-column">
+            <div class="d-flex align-items-center mb-1">
+                {% if conv.service_order %}
+                    <span class="badge-mini bg-info-soft text-info">Service</span>
+                    <span class="text-dark fw-600 small ms-2">{{ conv.service_order.service_title_snapshot|truncatechars:40 }}</span>
+                {% elif conv.application %}
+                    <span class="badge-mini bg-success-soft text-success">Stage</span>
+                    <span class="text-dark fw-600 small ms-2">{{ conv.application.offer.title|truncatechars:40 }}</span>
+                {% elif conv.participation %}
+                    <span class="badge-mini bg-warning-soft text-warning">Challenge</span>
+                    <span class="text-dark fw-600 small ms-2">{{ conv.participation.challenge.titre|truncatechars:40 }}</span>
+                {% else %}
+                    <span class="badge-mini bg-secondary-soft text-muted">Général</span>
+                {% endif %}
+            </div>
+            <p class="text-muted x-small mb-0 text-truncate italic">
+                {% if conv.last_message %}
+                    {{ conv.last_message.text|truncatechars:80 }}
+                {% else %}
+                    Débuter la discussion...
+                {% endif %}
+            </p>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-md-3 text-md-end d-flex align-items-center justify-content-md-end gap-2 px-3">
+        {% if conv.has_unread_for_user %}
+            <div class="unread-dot-pulse" title="{{ conv.unread_count_for_user }} non lu(s)">
+                {{ conv.unread_count_for_user }}
+            </div>
+        {% endif %}
+
+        <a href="{% url 'messaging_conversation' conv.id %}" class="btn-liquid primary btn-sm">
+            <span>Ouvrir</span>
+        </a>
+
+        {% if not show_archived %}
+            <form method="post" action="{% url 'messaging_archive' conv.id %}" class="m-0">
+                {% csrf_token %}
+                <button type="submit" class="btn-icon-only text-muted" title="Archiver">
+                    <i class="bi bi-archive"></i>
+                </button>
+            </form>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+/* === NOUVEAUX STYLES POUR LE PARTIAL === */
+
+/* Bordure accentuée sur la gauche */
+.conv-accent-border {
+    position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
+}
+
+/* Avatar Pro */
+.avatar-box-pro {
+    width: 48px; height: 48px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 1.1rem;
+}
+.avatar-img-pro {
+    width: 48px; height: 48px; border-radius: 12px;
+    object-fit: cover; border: 1px solid var(--border);
+}
+
+/* Badges Soft */
+.badge-mini {
+    padding: 2px 8px; border-radius: 4px; font-size: 10px;
+    font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+}
+.bg-info-soft { background: rgba(14, 165, 233, 0.1); }
+.bg-success-soft { background: rgba(16, 185, 129, 0.1); }
+.bg-warning-soft { background: rgba(245, 158, 11, 0.1); }
+.bg-secondary-soft { background: rgba(100, 116, 139, 0.1); }
+
+/* Point de notification pulsant */
+.unread-dot-pulse {
+    background: var(--danger); color: white;
+    min-width: 20px; height: 20px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 700; padding: 0 6px;
+    animation: pulseRed 2s infinite;
+}
+@keyframes pulseRed {
+    0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+    70% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
+/* Boutons icônes discrets */
+.btn-icon-only {
+    background: none; border: none; padding: 8px;
+    border-radius: 8px; transition: 0.2s;
+}
+.btn-icon-only:hover { background: #f1f5f9; color: var(--primary) !important; }
+
+/* Typo additionnelle */
+.italic { font-style: italic; }
+.border-start-md { border-left: 1px solid var(--border); }
+@media (max-width: 768px) { .border-start-md { border-left: none; } }
+</style>

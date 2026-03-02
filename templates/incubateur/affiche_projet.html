@@ -1,0 +1,201 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Affiche CampusHub - {{ projet.titre }}</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;800&family=Inter:wght@400;500;600&family=Montserrat:wght@900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1e40af;
+            --dark-hub: #0f172a;
+            --white: #ffffff;
+            --border: #e2e8f0;
+        }
+
+        /* --- RESET & IMPRESSION --- */
+        @page { size: A4; margin: 0; }
+        body { margin: 0; padding: 0; background: #f1f5f9; font-family: 'Inter', sans-serif; }
+        
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white; }
+            .poster-wrapper { margin: 0 !important; box-shadow: none !important; }
+        }
+
+        /* --- LOADER --- */
+        .page-loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 10000; display: flex; align-items: center; justify-content: center; transition: 0.6s; }
+        .main-spinner { width: 60px; height: 60px; border: 4px solid #f1f5f9; border-top: 4px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        .loader-icon { position: absolute; font-size: 1.5rem; color: var(--primary); }
+
+        /* --- TOOLBAR CORPORATE --- */
+        .hub-toolbar {
+            position: fixed; top: 0; left: 0; right: 0;
+            background: var(--dark-hub); padding: 12px 25px;
+            display: flex; align-items: center; gap: 15px;
+            z-index: 9999; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            overflow-x: auto; white-space: nowrap;
+        }
+        .theme-btn {
+            color: #94a3b8; text-decoration: none; padding: 8px 16px;
+            border-radius: 50px; font-size: 0.8rem; font-weight: 600;
+            border: 1px solid rgba(255,255,255,0.1); transition: 0.3s;
+        }
+        .theme-btn:hover, .theme-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+        .btn-download { background: var(--white); color: var(--dark-hub); border: none; padding: 8px 20px; border-radius: 50px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 0.85rem; }
+        .btn-download:hover { background: #e2e8f0; }
+
+        /* --- POSTER CONTAINER (A4) --- */
+        .poster-wrapper {
+            width: 21cm; height: 29.7cm;
+            margin: 80px auto 40px;
+            background: white;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* --- THÈME 2 : CORPORATE CAMPUSHUB (Standard) --- */
+        .theme-corporate { display: flex; flex-direction: column; }
+        .theme-corporate .header-strip { height: 15px; background: var(--primary); }
+        .theme-corporate .branding-area { padding: 50px 60px 20px; display: flex; justify-content: space-between; align-items: center; }
+        .theme-corporate .hub-tag { font-family: 'Outfit'; font-weight: 800; color: var(--primary); font-size: 1.4rem; letter-spacing: -1px; }
+        .theme-corporate .poster-img-box { height: 450px; margin: 20px 60px; border-radius: 20px; overflow: hidden; border: 1px solid var(--border); }
+        .theme-corporate .poster-image { width: 100%; height: 100%; object-fit: cover; }
+        
+        .theme-corporate .content-area { padding: 40px 60px; flex-grow: 1; }
+        .theme-corporate .poster-title { font-family: 'Outfit'; font-size: 3.8rem; color: var(--dark-hub); font-weight: 800; line-height: 1; margin-bottom: 25px; text-transform: uppercase; }
+        .theme-corporate .poster-desc { font-size: 1.3rem; color: #475569; line-height: 1.6; border-left: 8px solid var(--primary); padding-left: 25px; margin-bottom: 40px; }
+        
+        .theme-corporate .footer-area { padding: 40px 60px; background: #f8fafc; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: flex-end; }
+        .theme-corporate .qr-box { width: 150px; height: 150px; background: white; padding: 10px; border: 1px solid var(--border); border-radius: 12px; }
+        .theme-corporate .info-box { text-align: right; }
+        .theme-corporate .info-box p { margin: 2px 0; color: #64748b; font-weight: 600; font-size: 0.9rem; }
+
+        /* Thèmes d'origine adaptés... (exemples simplifiés) */
+        .theme-moderne { background: #0f172a; color: white; text-align: center; }
+        /* ... Les autres styles héritent du reset précédent ... */
+
+    </style>
+</head>
+<body>
+
+    <div id="pageLoader" class="page-loader">
+        <div class="main-spinner"></div>
+        <i class="bi bi-rocket-takeoff-fill loader-icon"></i>
+    </div>
+
+    <div class="hub-toolbar no-print">
+        <div class="d-flex align-items-center me-3">
+            <span style="color:white; font-weight:bold; font-family:'Outfit';">CAMPUSHUB <span style="color:var(--primary)">AFFICHE</span></span>
+        </div>
+        
+        {% for code, label in themes_list %}
+            <a href="?style={{ code }}" class="theme-btn {% if style == code %}active{% endif %}">
+                {{ label }}
+            </a>
+        {% endfor %}
+
+        <div style="flex-grow: 1;"></div>
+        
+        <button id="btnPng" class="btn-download">
+            <i class="bi bi-image"></i> Télécharger PNG
+        </button>
+        <button onclick="window.print()" class="btn-download" style="background: var(--primary); color: white;">
+            <i class="bi bi-printer"></i> Imprimer PDF
+        </button>
+    </div>
+
+    <div id="poster-capture" class="poster-wrapper theme-{{ style }}">
+        
+        {% if style == 'corporate' %}
+            <div class="header-strip"></div>
+            <div class="branding-area">
+                <div class="hub-tag">CAMPUS<span style="color:var(--dark-hub)">HUB</span>.</div>
+                <div style="font-weight: 700; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 2px; color: #94a3b8;">Incubation Project 2026</div>
+            </div>
+
+            <div class="poster-img-box">
+                {% if projet.image_couverture %}
+                    <img src="{{ projet.image_couverture.url }}" class="poster-image">
+                {% else %}
+                    <div style="background: #f1f5f9; height: 100%; display: flex; align-items: center; justify-content: center;">
+                        <i class="bi bi-image text-muted fs-1"></i>
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="content-area">
+                <h1 class="poster-title">{{ projet.titre }}</h1>
+                <p class="poster-desc">{{ projet.description_courte }}</p>
+                
+                <div style="margin-top: 20px;">
+                    <span class="badge" style="background: var(--primary); color: white; padding: 8px 15px; border-radius: 5px; font-weight: 700;">
+                        {{ projet.get_secteur_display }}
+                    </span>
+                </div>
+            </div>
+
+            <div class="footer-area">
+                <div class="qr-area">
+                    <div class="qr-box">
+                        <img src="data:image/png;base64,{{ qr_code_base64 }}" style="width: 100%;">
+                    </div>
+                    <p style="font-size: 0.65rem; font-weight: 800; color: var(--primary); margin-top: 8px; letter-spacing: 1px;">SCANNEZ POUR DÉCOUVRIR</p>
+                </div>
+                <div class="info-box">
+                    <p>PORTÉ PAR : {{ projet.porteur.full_name|upper }}</p>
+                    <p>{{ projet.porteur.student_school|upper }}</p>
+                    <p style="color: var(--primary); margin-top: 10px;">PROJET CERTIFIÉ CAMPUSHUB</p>
+                </div>
+            </div>
+
+        {% else %}
+            <div class="poster-content p-5 text-center">
+                <h1 class="display-1 fw-bold">{{ projet.titre }}</h1>
+                <img src="data:image/png;base64,{{ qr_code_base64 }}" class="poster-qr my-4">
+                <p class="lead">{{ projet.description_courte }}</p>
+            </div>
+        {% endif %}
+
+    </div>
+
+    <script>
+        // Loader
+        window.addEventListener('load', () => {
+            const loader = document.getElementById('pageLoader');
+            setTimeout(() => { loader.style.opacity = '0'; setTimeout(() => loader.style.display='none', 600); }, 800);
+        });
+
+        // Capture PNG
+        document.getElementById('btnPng').addEventListener('click', function() {
+            const area = document.getElementById('poster-capture');
+            const btn = this;
+            btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Traitement...';
+
+            html2canvas(area, {
+                scale: 3, // Haute résolution
+                useCORS: true,
+                logging: false,
+                backgroundColor: "#ffffff"
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = 'Affiche-Projet-{{ projet.titre|slugify }}.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+                btn.innerHTML = '<i class="bi bi-image"></i> Télécharger PNG';
+            });
+        });
+    </script>
+
+</body>
+</html>

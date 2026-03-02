@@ -1,0 +1,417 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Gérer mes disponibilités{% endblock %}
+
+{% block content %}
+
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+
+<div id="pageLoader" class="loader-overlay">
+    <div class="loader-content">
+        <div class="spinner-rings">
+            <div class="ring-1"></div>
+            <div class="ring-2"></div>
+            <div class="ring-3"></div>
+        </div>
+        <p class="loader-text">Synchronisation du planning...</p>
+    </div>
+</div>
+
+<div class="desktop-bg-animation">
+    <div class="shape-blob shape-1"></div>
+    <div class="shape-blob shape-2"></div>
+</div>
+
+<div class="container py-5 relative-z">
+
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-5 reveal-on-scroll">
+        <div class="text-center text-md-start mb-4 mb-md-0">
+            <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 rounded-pill px-3 py-2 mb-3">
+                <i class="bi bi-calendar-range me-2"></i>Planning
+            </span>
+            <h2 class="fw-bold text-dark mb-1">Mes Disponibilités</h2>
+            <p class="text-muted small mb-0">Gérez vos créneaux horaires récurrents.</p>
+        </div>
+        
+        <button type="button" class="liquid-btn btn-primary-pro shadow-lg" data-bs-toggle="modal" data-bs-target="#addSlotModal">
+            <span><i class="bi bi-plus-lg me-2"></i>Nouveau créneau</span>
+        </button>
+    </div>
+
+    <div class="row g-4">
+        
+        <div class="col-lg-8 order-2 order-lg-1 reveal-on-scroll">
+            <div class="card-pro shadow-sm h-100 p-0 overflow-hidden">
+                <div class="bg-light p-3 border-bottom d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 fw-bold text-dark">Semaine Type</h5>
+                    <span class="badge bg-white text-dark border">Vue Hebdomadaire</span>
+                </div>
+                <div class="p-3">
+                    <div id="calendar"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 order-1 order-lg-2 reveal-on-scroll" data-delay="100">
+            
+            <div class="card-pro mb-4">
+                <div class="d-flex align-items-center">
+                    <div class="icon-box-sm bg-primary-subtle text-primary me-3">
+                        <i class="bi bi-info-circle"></i>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold text-dark mb-0">Fonctionnement</h6>
+                        <p class="text-muted small mb-0 line-height-sm">
+                            Ces créneaux se répètent chaque semaine. Les clients ne peuvent réserver que dans ces zones.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-pro p-0 overflow-hidden">
+                <div class="bg-light p-3 border-bottom">
+                    <h6 class="mb-0 fw-bold text-dark">Liste Rapide</h6>
+                </div>
+                <div style="max-height: 400px; overflow-y: auto;">
+                    <table class="table table-hover align-middle mb-0 custom-table">
+                        <thead class="bg-white sticky-top" style="z-index: 2;">
+                            <tr>
+                                <th class="ps-3 border-bottom">Jour</th>
+                                <th class="border-bottom">Horaire</th>
+                                <th class="text-end pe-3 border-bottom">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for slot in slots %}
+                            <tr>
+                                <td class="ps-3 fw-600 text-dark">{{ slot.get_weekday_display|slice:":3" }}.</td>
+                                <td>
+                                    <span class="badge bg-light text-secondary border">
+                                        {{ slot.start_time|time:"H:i" }} - {{ slot.end_time|time:"H:i" }}
+                                    </span>
+                                </td>
+                                <td class="text-end pe-3">
+                                    <div class="d-flex justify-content-end gap-2">
+                                        <button class="btn-icon-sm" 
+                                                onclick="openEditModal('{{ slot.id }}', '{{ slot.weekday }}', '{{ slot.start_time|time:'H:i' }}', '{{ slot.end_time|time:'H:i' }}', '{{ slot.capacity }}', '{{ slot.service.id|default:'' }}')"
+                                                title="Modifier">
+                                            <i class="bi bi-pencil-square text-primary"></i>
+                                        </button>
+                                        <button class="btn-icon-sm danger" 
+                                                onclick="openDeleteModal('{% url 'delete_slot' slot.id %}')"
+                                                title="Supprimer">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="3" class="text-center py-4 text-muted small">Aucun créneau configuré.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="addSlotModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header bg-light border-bottom-0">
+                <h5 class="modal-title fw-bold text-dark">Nouveau Créneau</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4 pt-2">
+                <form method="post">
+                    {% csrf_token %}
+                    {% include "services/includes/timeslot_form_fields.html" with form=form prefix="add" %}
+                    
+                    <div class="d-grid mt-4">
+                        <button type="submit" class="liquid-btn btn-primary-pro">
+                            Ajouter au planning
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="editSlotModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header bg-light border-bottom-0">
+                <h5 class="modal-title fw-bold text-dark">Modifier Créneau</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4 pt-2">
+                <form method="post" id="editSlotForm" action="">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label class="form-label-pro">Jour</label>
+                        <select name="weekday" id="edit_weekday" class="form-select form-control-pro">
+                            <option value="0">Lundi</option>
+                            <option value="1">Mardi</option>
+                            <option value="2">Mercredi</option>
+                            <option value="3">Jeudi</option>
+                            <option value="4">Vendredi</option>
+                            <option value="5">Samedi</option>
+                            <option value="6">Dimanche</option>
+                        </select>
+                    </div>
+
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label class="form-label-pro">Début</label>
+                            <input type="time" name="start_time" id="edit_start_time" class="form-control form-control-pro" required>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label-pro">Fin</label>
+                            <input type="time" name="end_time" id="edit_end_time" class="form-control form-control-pro" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label-pro">Capacité</label>
+                        <input type="number" name="capacity" id="edit_capacity" class="form-control form-control-pro" min="1">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label-pro">Service (Optionnel)</label>
+                        {{ form.service }} </div>
+
+                    <div class="d-grid mt-4">
+                        <button type="submit" class="liquid-btn btn-primary-pro">
+                            Enregistrer les modifications
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content border-0 shadow-lg rounded-4 p-3 text-center">
+            <div class="modal-body">
+                <div class="icon-box-danger mx-auto mb-3 rounded-circle d-flex align-items-center justify-content-center" style="width:60px; height:60px; background:#fef2f2; color:#ef4444; font-size:1.5rem;">
+                    <i class="bi bi-trash3-fill"></i>
+                </div>
+                <h5 class="fw-bold text-dark">Supprimer ?</h5>
+                <p class="text-muted small mb-4">Cette action est irréversible.</p>
+                <form id="deleteForm" method="post">
+                    {% csrf_token %}
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-danger fw-600 rounded-pill">Confirmer</button>
+                        <button type="button" class="btn btn-light fw-600 rounded-pill" data-bs-dismiss="modal">Annuler</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Variables */
+:root {
+    --primary: #2563eb; --primary-dark: #1e40af; --light-bg: #f8fafc; --white: #ffffff;
+    --text-dark: #0f172a; --text-muted: #64748b; --border: #e2e8f0; --radius: 16px;
+}
+body { background-color: var(--light-bg); color: var(--text-dark); font-family: 'Inter', sans-serif; }
+h2, h5, h6 { font-family: 'Outfit', sans-serif; }
+
+/* Loader */
+.loader-overlay { position: fixed; inset: 0; background: var(--white); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: opacity 0.6s ease; }
+.spinner-rings { position: relative; width: 70px; height: 70px; }
+.spinner-rings div { position: absolute; width: 100%; height: 100%; border: 3px solid transparent; border-top-color: var(--primary); border-radius: 50%; animation: spin 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite; }
+.ring-1 { animation-delay: -0.45s; } .ring-2 { animation-delay: -0.3s; } .ring-3 { animation-delay: -0.15s; }
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+.loader-text { margin-top: 20px; font-weight: 600; color: var(--primary); font-size: 0.85rem; letter-spacing: 1px; animation: pulse 1.5s infinite; }
+
+/* Cards & Elements */
+.card-pro { background: var(--white); border-radius: var(--radius); border: 1px solid var(--border); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+.icon-box-sm { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+.btn-icon-sm { width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--border); background: white; color: var(--text-muted); display: flex; align-items: center; justify-content: center; transition: 0.2s; }
+.btn-icon-sm:hover { border-color: var(--primary); color: var(--primary); }
+.btn-icon-sm.danger:hover { border-color: #ef4444; color: #ef4444; background: #fef2f2; }
+
+/* Form Styles */
+.form-label-pro { font-weight: 600; font-size: 0.9rem; color: var(--text-dark); margin-bottom: 5px; }
+.input-group-custom { position: relative; }
+.input-icon { position: absolute; left: 15px; top: 12px; color: var(--text-muted); }
+.form-control-pro, select, input { 
+    width: 100%; padding: 10px 15px 10px 40px; border: 1px solid var(--border); 
+    border-radius: 10px; background: #f8fafc; color: var(--text-dark); transition: 0.3s;
+}
+.form-control-pro:focus, select:focus, input:focus { 
+    background: #fff; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); outline: none;
+}
+
+/* Button Liquid */
+.liquid-btn { position: relative; display: flex; justify-content: center; padding: 12px 24px; border: none; border-radius: 50px; background: var(--primary); color: white; font-weight: 700; text-transform: uppercase; font-size: 0.9rem; transition: 0.3s; overflow: hidden; }
+.liquid-btn:hover { transform: translateY(-2px); background: var(--primary-dark); box-shadow: 0 10px 20px -5px rgba(37, 99, 235, 0.3); }
+
+/* Animation */
+.desktop-bg-animation { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; }
+.shape-blob { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.5; animation: float 10s infinite alternate; }
+.shape-1 { top: -10%; left: -5%; width: 500px; height: 500px; background: rgba(37, 99, 235, 0.1); }
+.shape-2 { bottom: -10%; right: -5%; width: 400px; height: 400px; background: rgba(239, 68, 68, 0.1); }
+.reveal-on-scroll { animation: fadeInUp 0.6s ease-out; }
+@keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+/* --- STYLE DARK POUR LES MODALES (Ajout/Modif/Suppr) --- */
+
+/* 1. Fond sombre et texte blanc pour le conteneur principal */
+#addSlotModal .modal-content,
+#editSlotModal .modal-content,
+#deleteModal .modal-content {
+    background-color: var(--dark, #0f172a); /* Fond bleu nuit */
+    color: #ffffff; /* Texte blanc par défaut */
+    border: 1px solid rgba(255, 255, 255, 0.1); /* Bordure subtile */
+}
+
+/* 2. En-tête de la modale */
+#addSlotModal .modal-header,
+#editSlotModal .modal-header,
+#deleteModal .modal-header {
+    background-color: rgba(255, 255, 255, 0.05); /* Légèrement plus clair */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+#addSlotModal .modal-title,
+#editSlotModal .modal-title,
+#deleteModal .modal-title {
+    color: #ffffff !important; /* Force le titre en blanc */
+}
+
+/* 3. Les Labels (Ce que tu as demandé spécifiquement) */
+#addSlotModal .form-label-pro,
+#editSlotModal .form-label-pro {
+    color: #ffffff !important; /* Force les labels en blanc */
+    font-weight: 500;
+}
+
+/* 4. Les petits textes d'aide (text-muted) */
+#addSlotModal .text-muted,
+#editSlotModal .text-muted,
+#deleteModal .text-muted,
+#addSlotModal .form-text,
+#editSlotModal .form-text {
+    color: rgba(255, 255, 255, 0.6) !important; /* Gris clair pour le secondaire */
+}
+
+/* 5. Inputs (Champs de saisie) en mode sombre pour aller avec */
+#addSlotModal input, #addSlotModal select,
+#editSlotModal input, #editSlotModal select {
+    background-color: rgba(255, 255, 255, 0.1) !important; /* Fond translucide */
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #ffffff !important; /* Texte tapé en blanc */
+}
+
+/* Focus sur les inputs */
+#addSlotModal input:focus, #addSlotModal select:focus,
+#editSlotModal input:focus, #editSlotModal select:focus {
+    background-color: rgba(255, 255, 255, 0.15) !important;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.3);
+}
+
+/* 6. La croix de fermeture (X) en blanc */
+#addSlotModal .btn-close,
+#editSlotModal .btn-close,
+#deleteModal .btn-close {
+    filter: invert(1) grayscale(100%) brightness(200%);
+}
+
+/* 7. Icônes dans les inputs */
+#addSlotModal .input-icon,
+#editSlotModal .input-icon {
+    color: rgba(255, 255, 255, 0.7) !important;
+}
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    
+    // 1. LOADER
+    const loader = document.getElementById("pageLoader");
+    if(loader) setTimeout(() => { loader.style.opacity = "0"; setTimeout(() => { loader.style.display = "none"; }, 600); }, 600);
+
+    // 2. PLACEHOLDERS (Ajout dynamique)
+    const startInputs = document.querySelectorAll('input[name="start_time"]');
+    const endInputs = document.querySelectorAll('input[name="end_time"]');
+    startInputs.forEach(i => i.placeholder = "ex: 09:00");
+    endInputs.forEach(i => i.placeholder = "ex: 12:00");
+
+    // 3. FULLCALENDAR
+    var calendarEl = document.getElementById('calendar');
+    if (calendarEl) {
+        var calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'timeGridWeek',
+            headerToolbar: false, // Pas de header (dates inutiles pour sem. type)
+            dayHeaderFormat: { weekday: 'long' }, // Lundi, Mardi...
+            slotMinTime: '06:00:00',
+            slotMaxTime: '22:00:00',
+            allDaySlot: false,
+            height: 'auto',
+            locale: 'fr',
+            firstDay: 1, // Lundi
+            events: [
+                {% for slot in slots %}
+                {
+                    title: '{{ slot.service.title|default:"Dispo"|truncatechars:10|escapejs }}',
+                    // Conversion: Django 0=Lundi => FC 1=Lundi. (0+1=1)
+                    daysOfWeek: [ {{ slot.weekday|add:"1" }} ], 
+                    startTime: '{{ slot.start_time|time:"H:i" }}',
+                    endTime: '{{ slot.end_time|time:"H:i" }}',
+                    color: '#2563eb', // Primary Blue
+                    classNames: ['fc-event-pro']
+                },
+                {% endfor %}
+            ],
+            eventDidMount: function(info) {
+                // Petit tooltip au survol
+                info.el.title = info.event.title + " (Cap: " + "{{ slot.capacity }}" + ")";
+            }
+        });
+        calendar.render();
+    }
+
+    // 4. LOGIQUE MODALE ÉDITION
+    window.openEditModal = function(id, weekday, start, end, capacity, serviceId) {
+        // Remplir les champs
+        document.getElementById('edit_weekday').value = weekday;
+        document.getElementById('edit_start_time').value = start;
+        document.getElementById('edit_end_time').value = end;
+        document.getElementById('edit_capacity').value = capacity;
+        
+        // Gérer le select service (un peu plus complexe car widget Django)
+        const serviceSelect = document.querySelector('#editSlotForm select[name="service"]');
+        if(serviceSelect) serviceSelect.value = serviceId;
+
+        // Mettre à jour l'URL d'action du formulaire
+        // Attention : il faut que l'URL 'provider_timeslot_edit' existe
+        const form = document.getElementById('editSlotForm');
+        form.action = `/services/timeslots/edit/${id}/`; // Adaptez ce chemin selon votre urls.py
+
+        // Ouvrir la modale
+        new bootstrap.Modal(document.getElementById('editSlotModal')).show();
+    };
+
+    // 5. LOGIQUE MODALE SUPPRESSION
+    window.openDeleteModal = function(url) {
+        document.getElementById('deleteForm').action = url;
+        new bootstrap.Modal(document.getElementById('deleteModal')).show();
+    };
+});
+</script>
+
+{% endblock %}

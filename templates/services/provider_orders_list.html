@@ -1,0 +1,481 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Mes Commandes{% endblock %}
+
+{% block content %}
+
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+<style>
+    /* --- VARIABLES --- */
+:root {
+    --primary: #2563eb;
+    --primary-light: #60a5fa;
+    --dark: #0f172a;
+    --light: #f8fafc;
+    --white: #ffffff;
+    --text: #334155;
+    --text-muted: #64748b;
+    --border: #e2e8f0;
+    --radius: 12px;
+    --shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+    --shadow-hover: 0 10px 15px -3px rgba(0,0,0,0.1);
+}
+
+body { background: var(--light); color: var(--text); font-family: 'Inter', sans-serif; overflow-x: hidden; position: relative; }
+h1, h3 { font-family: 'Outfit', sans-serif; font-weight: 700; color: var(--dark); }
+
+/* --- BACKGROUND ANIMATION (DESKTOP ONLY) --- */
+.desktop-bg-animation {
+    display: none; /* Mobile par défaut : caché */
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    z-index: 0; pointer-events: none; overflow: hidden;
+}
+
+@media (min-width: 992px) {
+    .desktop-bg-animation { display: block; }
+    
+    .shape-blob {
+        position: absolute; border-radius: 50%; filter: blur(70px); opacity: 0.5;
+        animation: blobFloat 20s infinite ease-in-out alternate;
+    }
+    .shape-1 { top: -10%; right: -5%; width: 500px; height: 500px; background: rgba(37, 99, 235, 0.1); animation-delay: 0s; }
+    .shape-2 { bottom: 10%; left: -10%; width: 400px; height: 400px; background: rgba(16, 185, 129, 0.1); animation-delay: -5s; }
+    .shape-3 { top: 40%; left: 40%; width: 300px; height: 300px; background: rgba(139, 92, 246, 0.08); animation-delay: -10s; }
+
+    @keyframes blobFloat {
+        0% { transform: translate(0, 0) scale(1); }
+        100% { transform: translate(30px, -20px) scale(1.1); }
+    }
+}
+
+.relative-z { position: relative; z-index: 2; }
+
+/* --- HEADER & BADGES --- */
+.header-section { max-width: 800px; }
+.badge-header { background: #eff6ff; color: var(--primary); padding: 5px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; margin-bottom: 15px; display: inline-block; }
+.text-primary { color: var(--primary) !important; }
+
+/* --- STATS CARDS --- */
+.stat-card {
+    background: white; border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 25px; display: flex; align-items: center; gap: 20px;
+    box-shadow: var(--shadow); transition: 0.3s;
+}
+.stat-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-hover); }
+
+.icon-box {
+    width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;
+}
+.stat-info h3 { font-size: 2rem; margin: 0; line-height: 1; color: var(--dark); }
+.stat-info .label { font-size: 0.85rem; color: var(--text-muted); font-weight: 500; }
+
+/* Couleurs Stats */
+.bg-blue-light { background: #eff6ff; } .text-primary { color: #2563eb !important; }
+.bg-green-light { background: #f0fdf4; } .text-success { color: #16a34a !important; }
+.bg-red-light { background: #fef2f2; } .text-danger { color: #dc2626 !important; }
+.bg-gold-light { background: #fffbeb; } .text-warning { color: #d97706 !important; }
+
+/* Highlight Card (Revenu) */
+.highlight-card { border-color: #fcd34d; background: linear-gradient(to bottom right, #ffffff, #fffbeb); }
+
+/* --- FILTER TOOLBAR --- */
+.filter-toolbar {
+    background: white; border: 1px solid var(--border); border-radius: 16px;
+    padding: 20px; box-shadow: var(--shadow-sm); margin-bottom: 30px;
+}
+.input-group-pro {
+    display: flex; align-items: center; background: #f8fafc; border: 1px solid var(--border);
+    border-radius: 8px; padding: 2px 10px; transition: 0.3s;
+}
+.input-group-pro:focus-within { border-color: var(--primary); background: white; }
+
+.form-select-clean, .form-control-clean {
+    border: none; background: transparent; padding: 10px; width: 100%; outline: none; color: var(--text); font-size: 0.95rem;
+}
+.dropdown-toggle-pro {
+    border: 1px solid var(--border); background: #f8fafc; color: var(--text); padding: 10px 15px; border-radius: 8px; font-size: 0.95rem;
+}
+.dropdown-toggle-pro:hover { background: white; border-color: #cbd5e1; }
+.btn-reset {
+    width: 45px; height: 45px; display: flex; align-items: center; justify-content: center;
+    border: 1px solid var(--border); border-radius: 8px; color: var(--text-muted); transition: 0.3s; background: white;
+}
+.btn-reset:hover { background: #f1f5f9; color: var(--dark); }
+
+.custom-scroll-area { max-height: 250px; overflow-y: auto; }
+.dropdown-item { font-size: 0.9rem; padding: 8px 15px; }
+
+/* --- TABLE STYLES --- */
+.table-container { background: white; border-radius: 16px; border: 1px solid var(--border); overflow: hidden; }
+.table thead th { font-size: 0.75rem; letter-spacing: 0.5px; padding: 15px 10px; background: #f8fafc; border-bottom: 1px solid var(--border); }
+.table tbody td { padding: 20px 10px; border-bottom: 1px solid #f1f5f9; }
+.table tr:last-child td { border-bottom: none; }
+.table tr:hover td { background-color: #f8fafc; }
+
+.avatar-sm { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.8rem; }
+.fw-500 { font-weight: 500; }
+
+/* Status Badges */
+.badge-status { padding: 6px 12px; border-radius: 30px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; display: inline-block; }
+.badge-status.active { background: #eff6ff; color: #2563eb; border: 1px solid #dbeafe; }
+.badge-status.success { background: #f0fdf4; color: #16a34a; border: 1px solid #dcfce7; }
+.badge-status.danger { background: #fef2f2; color: #dc2626; border: 1px solid #fee2e2; }
+.badge-status.pending { background: #f8fafc; color: #64748b; border: 1px solid #e2e8f0; }
+
+.btn-icon-sm {
+    width: 32px; height: 32px; border: 1px solid var(--border); border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; color: var(--text-muted);
+    transition: 0.2s; text-decoration: none;
+}
+.btn-icon-sm:hover { background: var(--primary); color: white; border-color: var(--primary); }
+
+/* --- EMPTY STATE --- */
+.empty-state { text-align: center; padding: 80px 20px; background: white; border-radius: var(--radius); border: 1px dashed var(--border); }
+.empty-icon-box { width: 80px; height: 80px; background: #f1f5f9; color: #94a3b8; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; margin: 0 auto; }
+
+/* --- BOUTONS --- */
+.liquid-btn {
+    position: relative; display: inline-flex; justify-content: center; align-items: center;
+    padding: 12px 20px; font-weight: 600; border-radius: 8px; overflow: hidden;
+    transition: all 0.4s ease; cursor: pointer; border: none; z-index: 1; text-decoration: none;
+}
+.btn-primary-pro { background: var(--primary); color: white; }
+.btn-primary-pro::before { content: ''; position: absolute; top: 0; left: 0; width: 0; height: 100%; background: #1e40af; z-index: -1; transition: width 0.4s ease; }
+.btn-outline-pro { border: 1px solid var(--border); color: var(--text); background: transparent; }
+.btn-outline-pro:hover { border-color: var(--dark); color: var(--dark); }
+.liquid-btn:hover::before { width: 100%; }
+
+/* --- LOADER --- */
+.loader-overlay { position: fixed; inset: 0; background: white; z-index: 9999; display: flex; justify-content: center; align-items: center; transition: opacity 0.6s; }
+.spinner-rings div { position: absolute; width: 40px; height: 40px; border: 4px solid var(--primary); border-radius: 50%; animation: spin 1s infinite; border-color: var(--primary) transparent transparent transparent; }
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+/* Reveal Animation */
+.reveal-on-scroll { opacity: 0; transform: translateY(30px); transition: all 0.6s ease-out; }
+.reveal-on-scroll.active { opacity: 1; transform: translateY(0); }
+</style>
+<div id="pageLoader" class="loader-overlay">
+    <div class="loader-content">
+        <div class="spinner-rings">
+            <div></div><div></div>
+        </div>
+        <p class="loader-text">Chargement des commandes...</p>
+    </div>
+</div>
+
+<div class="desktop-bg-animation">
+    <div class="shape-blob shape-1"></div>
+    <div class="shape-blob shape-2"></div>
+    <div class="shape-blob shape-3"></div>
+</div>
+
+<div class="container py-5 relative-z">
+  
+    <div class="header-section mb-5 reveal-on-scroll">
+        <span class="badge-header">Espace Prestataire</span>
+        <h1 class="display-5 fw-bold text-dark">Mes <span class="text-primary">Commandes</span></h1>
+        <p class="text-muted">Suivez l'état de vos prestations et gérez vos dossiers clients.</p>
+    </div>
+
+    <div class="row g-4 mb-5">
+        <div class="col-md-6 col-lg-3 reveal-on-scroll" data-delay="0">
+            <div class="stat-card">
+                <div class="icon-box bg-blue-light text-primary">
+                    <i class="bi bi-hourglass-split"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>{{ stats.total_active }}</h3>
+                    <span class="label">En cours</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3 reveal-on-scroll" data-delay="100">
+            <div class="stat-card">
+                <div class="icon-box bg-green-light text-success">
+                    <i class="bi bi-check-circle-fill"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>{{ stats.total_done }}</h3>
+                    <span class="label">Terminées</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3 reveal-on-scroll" data-delay="200">
+            <div class="stat-card">
+                <div class="icon-box bg-red-light text-danger">
+                    <i class="bi bi-x-circle-fill"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>{{ stats.total_cancelled }}</h3>
+                    <span class="label">Annulées</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3 reveal-on-scroll" data-delay="300">
+            <div class="stat-card highlight-card">
+                <div class="icon-box bg-gold-light text-warning">
+                    <i class="bi bi-wallet2"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>{{ stats.total_revenue_month|default:0 }} <small>FCFA</small></h3>
+                    <span class="label">Revenu du mois</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="filter-toolbar reveal-on-scroll">
+        <form method="get" class="row g-3 align-items-center w-100 m-0">
+            
+            <div class="col-lg-3 col-md-4">
+                <label class="small text-muted fw-bold mb-1">Filtrer par statut</label>
+                <div class="input-group-pro">
+                    <i class="bi bi-funnel text-muted"></i>
+                    <select name="status" class="form-select-clean">
+                        <option value="" {% if not filters.status %}selected{% endif %}>Tous les statuts</option>
+                        <option value="active" {% if filters.status == "active" %}selected{% endif %}>En cours</option>
+                        <option value="done" {% if filters.status == "done" %}selected{% endif %}>Terminés</option>
+                        <option value="cancelled" {% if filters.status == "cancelled" %}selected{% endif %}>Annulés</option>
+                        <option value="pending" {% if filters.status == "pending" %}selected{% endif %}>En attente</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="col-lg-4 col-md-5">
+                <label class="small text-muted fw-bold mb-1">Service concerné</label>
+                <input type="hidden" name="service" id="input_service" value="{{ filters.service }}">
+                
+                <div class="dropdown">
+                    <button class="btn dropdown-toggle-pro w-100 text-start d-flex justify-content-between align-items-center" 
+                            type="button" id="serviceDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        <span id="service_selected_label" class="text-truncate">
+                            {% if filters.service %}
+                                {% for s in provider_services %}
+                                    {% if filters.service|stringformat:"s" == s.id|stringformat:"s" %}{{ s.title }}{% endif %}
+                                {% endfor %}
+                            {% else %}
+                                Tous mes services
+                            {% endif %}
+                        </span>
+                        <i class="bi bi-chevron-down small text-muted"></i>
+                    </button>
+                    
+                    <div class="dropdown-menu shadow-sm border-0 w-100 p-0 mt-1" aria-labelledby="serviceDropdown">
+                        <div class="p-2 border-bottom bg-light">
+                            <input type="text" class="form-control form-control-sm border-0 bg-white" 
+                                   id="serviceSearchInput" placeholder="Rechercher..." autocomplete="off">
+                        </div>
+                        <div class="custom-scroll-area">
+                            <a class="dropdown-item service-option" href="#" onclick="selectService('', 'Tous mes services')">Tous mes services</a>
+                            {% for s in provider_services %}
+                            <a class="dropdown-item service-option" href="#" 
+                               data-title="{{ s.title|lower }}" 
+                               onclick="selectService('{{ s.id }}', '{{ s.title|escapejs }}')">
+                               {{ s.title|truncatechars:40 }}
+                            </a>
+                            {% endfor %}
+                            <div id="noServiceResults" class="text-center small text-muted py-2" style="display:none;">Aucun résultat</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-md-3">
+                <label class="small text-muted fw-bold mb-1">Recherche rapide</label>
+                <div class="input-group-pro">
+                    <i class="bi bi-search text-muted"></i>
+                    <input type="text" name="q" value="{{ filters.q }}" class="form-control-clean" placeholder="Client, #ID...">
+                </div>
+            </div>
+
+            <div class="col-lg-2 col-md-12 d-flex align-items-end gap-2 pb-1">
+                <button type="submit" class="liquid-btn btn-primary-pro w-100">
+                    <span>Filtrer</span>
+                </button>
+                <a href="{% url 'provider_orders_list' %}" class="btn-reset" title="Réinitialiser">
+                    <i class="bi bi-arrow-counterclockwise"></i>
+                </a>
+            </div>
+        </form>
+    </div>
+
+    {% if orders_page and orders_page.object_list %}
+    <div class="table-container shadow-sm reveal-on-scroll">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="ps-4 text-muted small text-uppercase">#ID</th>
+                        <th class="text-muted small text-uppercase">Service</th>
+                        <th class="text-muted small text-uppercase">Client</th>
+                        <th class="text-muted small text-uppercase">Échéance</th>
+                        <th class="text-muted small text-uppercase">Montant</th>
+                        <th class="text-muted small text-uppercase">Statut</th>
+                        <th class="text-end pe-4 text-muted small text-uppercase">Action</th>
+                    </tr>
+                </thead>
+                <tbody class="border-top-0">
+                    {% for order in orders_page %}
+                    <tr>
+                        <td class="ps-4 fw-bold text-secondary">#{{ order.id }}</td>
+                        <td>
+                            <div class="fw-bold text-dark">{{ order.service.title|truncatechars:30 }}</div>
+                            <div class="small text-muted">{{ order.created_at|date:"d M Y" }}</div>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="avatar-sm bg-primary-subtle text-primary">
+                                    {{ order.client.username|slice:":1"|upper }}
+                                </div>
+                                <div>
+                                    <div class="text-dark fw-500">{{ order.client.username }}</div>
+                                    {% if order.is_urgent %}
+                                        <span class="badge bg-danger-subtle text-danger rounded-pill" style="font-size: 0.6rem;">URGENT</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            {% if order.due_date %}
+                                <span class="{% if order.is_late %}text-danger fw-bold{% else %}text-muted{% endif %}">
+                                    {{ order.due_date|date:"d M" }}
+                                </span>
+                                {% if order.is_late %}
+                                    <i class="bi bi-exclamation-circle-fill text-danger small ms-1" title="En retard"></i>
+                                {% endif %}
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+    <div class="fw-bold text-dark">
+        {% if order.computed_total_price %}
+            {{ order.computed_total_price }} 
+            <small class="text-muted fw-normal">{{ order.currency }}</small>
+            
+        {% elif order.agreed_price %}
+            {{ order.agreed_price }} 
+            <small class="text-muted fw-normal">{{ order.currency }}</small>
+            
+        {% else %}
+            <span class="badge bg-light text-secondary border" style="font-weight: 500;">
+                Discuté
+            </span>
+        {% endif %}
+    </div>
+</td>
+                        <td>
+                            {% if order.status == 'pending' %}
+                                <span class="badge-status pending">En attente</span>
+                            {% elif order.status == 'in_progress' %}
+                                <span class="badge-status active">En cours</span>
+                            {% elif order.status == 'completed' %}
+                                <span class="badge-status success">Terminé</span>
+                            {% elif order.status == 'cancelled' %}
+                                <span class="badge-status danger">Annulé</span>
+                            {% else %}
+                                <span class="badge-status default">{{ order.get_status_display }}</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end pe-4">
+                            <a href="{% url 'service_order_detail' order.id %}" class="btn-icon-sm" title="Voir détails">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="d-flex justify-content-center border-top p-3 bg-white">
+            <div class="btn-group">
+                {% if orders_page.has_previous %}
+                    <a href="?page={{ orders_page.previous_page_number }}&status={{ filters.status }}" class="btn btn-sm btn-outline-light text-dark border">Précédent</a>
+                {% endif %}
+                <span class="btn btn-sm btn-light border disabled fw-bold">{{ orders_page.number }} / {{ orders_page.paginator.num_pages }}</span>
+                {% if orders_page.has_next %}
+                    <a href="?page={{ orders_page.next_page_number }}&status={{ filters.status }}" class="btn btn-sm btn-outline-light text-dark border">Suivant</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    {% else %}
+    <div class="empty-state reveal-on-scroll">
+        <div class="empty-icon-box">
+            <i class="bi bi-inbox"></i>
+        </div>
+        <h4 class="text-dark mt-3">Aucune commande trouvée</h4>
+        <p class="text-muted">Il n'y a aucune prestation correspondant à vos critères.</p>
+        <a href="{% url 'provider_orders_list' %}" class="liquid-btn btn-outline-pro mt-2">
+            <span>Tout effacer</span>
+        </a>
+    </div>
+    {% endif %}
+
+</div>
+
+<script>
+    // --- 1. LOGIQUE DROPDOWN SERVICE ---
+    function selectService(id, title) {
+        document.getElementById('input_service').value = id;
+        document.getElementById('service_selected_label').innerText = title;
+        // event is implicitly passed in modern browsers or use e passed from inline
+    }
+
+    document.getElementById('serviceSearchInput').addEventListener('keyup', function() {
+        let filter = this.value.toLowerCase();
+        let options = document.querySelectorAll('.service-option');
+        let hasVisible = false;
+
+        options.forEach(option => {
+            let title = option.getAttribute('data-title');
+            if (title && title.includes(filter)) {
+                option.style.display = ""; hasVisible = true;
+            } else if (title) { 
+                option.style.display = "none";
+            }
+        });
+        document.getElementById('noServiceResults').style.display = hasVisible ? "none" : "block";
+    });
+    
+    document.getElementById('serviceSearchInput').addEventListener('click', e => e.stopPropagation());
+
+    // --- 2. LOADER & REVEAL ---
+    document.addEventListener("DOMContentLoaded", function() {
+        // Loader
+        const loader = document.getElementById("pageLoader");
+        if(loader) {
+            setTimeout(() => {
+                loader.style.opacity = "0";
+                setTimeout(() => { loader.style.display = "none"; }, 600);
+            }, 800);
+        }
+
+        // Reveal
+        const revealObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                }
+            });
+        }, { threshold: 0.1 });
+        document.querySelectorAll('.reveal-on-scroll').forEach(el => revealObserver.observe(el));
+        
+        // Buttons Effect
+        document.querySelectorAll(".liquid-btn").forEach(btn => {
+            btn.addEventListener("mousemove", e => {
+                const rect = btn.getBoundingClientRect();
+                btn.style.transform = `translate(${(e.clientX - rect.left - rect.width/2)/10}px, ${(e.clientY - rect.top - rect.height/2)/10}px)`;
+            });
+            btn.addEventListener("mouseleave", () => btn.style.transform = "translate(0,0)");
+        });
+    });
+</script>
+{% endblock %}

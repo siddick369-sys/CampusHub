@@ -1,0 +1,234 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Messagerie – CampusHub{% endblock %}
+
+{% block content %}
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+
+<div id="pageLoader" class="page-loader">
+    <div class="loader-content">
+        <div class="logo-placeholder mb-4">
+            <div class="main-spinner"></div>
+            <i class="bi bi-chat-right-dots-fill spinner-icon text-primary"></i>
+        </div>
+        <div class="loader-text-wrap">
+            <h5 class="fw-bold text-dark mb-1">CampusHub Connect</h5>
+            <div class="progress-bar-wrap"><div class="progress-bar-fill"></div></div>
+            <small class="text-muted mt-2 d-block">Sécurisation de la connexion...</small>
+        </div>
+    </div>
+</div>
+
+<div class="desktop-bg-animation">
+    <div class="shape-blob shape-1"></div>
+    <div class="shape-blob shape-2"></div>
+</div>
+
+<div class="container py-5 relative-z">
+    
+    <div class="row align-items-center mb-5 reveal-on-scroll">
+        <div class="col-lg-6">
+            <h1 class="fw-bold text-dark h2 mb-1">Messagerie</h1>
+            <p class="text-muted mb-0">Échangez avec vos partenaires et suivez vos projets.</p>
+        </div>
+        <div class="col-lg-6 text-lg-end mt-3 mt-lg-0">
+            <div class="d-inline-flex bg-white p-1 rounded-pill shadow-sm border">
+                <a href="{% url 'messaging_inbox' %}" class="nav-tab {% if not show_archived %}active{% endif %}">
+                    Actives
+                </a>
+                <a href="{% url 'messaging_inbox' %}?archived=1" class="nav-tab {% if show_archived %}active{% endif %}">
+                    Archivées
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="search-wrapper mb-4 reveal-on-scroll">
+        <i class="bi bi-search search-icon"></i>
+        <input type="text" id="searchInput" class="search-input" placeholder="Rechercher un contact, un stage ou un challenge...">
+        <div id="searchLoader" class="spinner-border text-primary spinner-border-sm d-none ms-2"></div>
+    </div>
+
+    <div id="conversationsContainer" class="row g-3">
+        {% for conv in conversations %}
+    <div class="col-12 conversation-item reveal-on-scroll" style="display: none;">
+        <div class="card-pro p-3 p-md-4">
+            <div class="row align-items-center">
+                
+                {% if user.id == conv.student.id %}
+                    {% with partner=conv.company %}
+                        {% include "stages/partials/_conv_row.html" %}
+                    {% endwith %}
+                {% else %}
+                    {% with partner=conv.student %}
+                        {% include "stages/partials/_conv_row.html" %}
+                    {% endwith %}
+                {% endif %}
+
+            </div>
+        </div>
+    </div>
+{% endfor %}
+    </div>
+
+    <div id="paginationControls" class="d-flex justify-content-center gap-2 mt-5"></div>
+
+</div>
+
+<div id="backToTop" class="back-to-top shadow-lg"><i class="bi bi-arrow-up"></i></div>
+
+<style>
+/* === DESIGN SYSTEM === */
+:root {
+    --primary: #2563eb; --danger: #ef4444; --success: #10b981; --info: #0ea5e9; --warning: #f59e0b;
+    --text-dark: #0f172a; --text-muted: #64748b; --border: #e2e8f0;
+}
+body { background: #f8fafc; font-family: 'Inter', sans-serif; }
+h1, h2, h6 { font-family: 'Outfit', sans-serif; }
+
+/* === TABS NÉO-BRUTALISTES === */
+.nav-tab {
+    padding: 8px 24px; border-radius: 50px; text-decoration: none;
+    font-size: 0.85rem; font-weight: 600; color: var(--text-muted); transition: 0.3s;
+}
+.nav-tab.active { background: var(--primary); color: #fff; box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2); }
+
+/* === CARDS MESSSAGERIE === */
+.card-pro { 
+    background: #fff; border-radius: 20px; border: 1px solid var(--border); transition: 0.3s;
+    position: relative; overflow: hidden;
+}
+.card-pro:hover { transform: translateX(5px); border-left: 4px solid var(--primary); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
+
+.avatar-box { width: 45px; height: 45px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.2rem; }
+
+/* === SEARCH BAR === */
+.search-wrapper { position: relative; max-width: 500px; display: flex; align-items: center; }
+.search-input { 
+    width: 100%; padding: 12px 20px 12px 45px; border-radius: 50px; 
+    border: 1px solid var(--border); background: #fff; transition: 0.3s;
+}
+.search-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.08); }
+.search-icon { position: absolute; left: 18px; color: var(--text-muted); }
+
+/* === BADGES TOPICS === */
+.badge-topic { padding: 4px 10px; border-radius: 6px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; background-opacity: 0.1; }
+.bg-info.text-info { background: rgba(14, 165, 233, 0.1); }
+.bg-success.text-success { background: rgba(16, 185, 129, 0.1); }
+.bg-warning.text-warning { background: rgba(245, 158, 11, 0.1); }
+.unread-pill { background: var(--danger); color: #fff; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 700; animation: pulse 2s infinite; }
+
+@keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
+
+/* === LIQUID BUTTONS === */
+.btn-liquid {
+    position: relative; display: inline-flex; align-items: center; justify-content: center;
+    padding: 8px 20px; border-radius: 50px; overflow: hidden; border: none;
+    text-decoration: none; font-weight: 700; font-size: 0.85rem; transition: 0.4s;
+    background: #f1f5f9; color: var(--text-dark); z-index: 1;
+}
+.btn-liquid.btn-sm { padding: 8px 15px; }
+.btn-liquid span { position: relative; z-index: 2; transition: 0.4s; }
+.btn-liquid::before {
+    content: ''; position: absolute; top: 100%; left: 0; width: 100%; height: 100%;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 1;
+}
+.btn-liquid:hover::before { top: 0; }
+.btn-liquid:hover span { color: #fff; }
+.btn-liquid.primary::before { background: var(--primary); }
+.btn-liquid.danger::before { background: var(--danger); }
+.btn-liquid.secondary::before { background: var(--text-dark); }
+
+/* === PAGINATION JS === */
+.page-btn {
+    width: 40px; height: 40px; border-radius: 12px; border: 1px solid var(--border);
+    background: #fff; color: var(--text-dark); font-weight: 600; cursor: pointer; transition: 0.3s;
+}
+.page-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+.page-btn:hover:not(.active) { background: #f1f5f9; transform: translateY(-2px); }
+
+/* === UI UTILS === */
+.fw-600 { font-weight: 600; } .fw-500 { font-weight: 500; } .x-small { font-size: 0.75rem; }
+.relative-z { position: relative; z-index: 10; }
+.page-loader { position: fixed; inset: 0; background: #fff; z-index: 10000; display: flex; align-items: center; justify-content: center; }
+.main-spinner { width: 80px; height: 80px; border: 4px solid #f1f5f9; border-top: 4px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
+@keyframes spin { 100% { transform: rotate(360deg); } }
+
+.back-to-top {
+    position: fixed; bottom: 30px; right: 30px; width: 45px; height: 45px;
+    background: var(--primary); color: white; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; opacity: 0; visibility: hidden; transition: 0.4s; z-index: 1000;
+}
+.back-to-top.show { opacity: 1; visibility: visible; }
+
+/* Background */
+.desktop-bg-animation { position: fixed; inset: 0; z-index: -1; pointer-events: none; }
+.shape-blob { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.3; }
+.shape-1 { top: -10%; left: -10%; width: 500px; height: 500px; background: rgba(37, 99, 235, 0.1); }
+.shape-2 { bottom: -10%; right: -10%; width: 400px; height: 400px; background: rgba(16, 185, 129, 0.1); }
+</style>
+
+<script>
+// --- PAGINATION JS (6 par page) ---
+const itemsPerPage = 6;
+let currentPage = 1;
+const convItems = document.querySelectorAll('.conversation-item');
+const paginationContainer = document.getElementById('paginationControls');
+
+function displayPage(page) {
+    currentPage = page;
+    const start = (page - 1) * itemsPerPage;
+    const end = start + itemsPerPage;
+
+    convItems.forEach((item, index) => {
+        item.style.display = (index >= start && index < end) ? 'block' : 'none';
+    });
+
+    updatePaginationButtons();
+}
+
+function updatePaginationButtons() {
+    const totalPages = Math.ceil(convItems.length / itemsPerPage);
+    paginationContainer.innerHTML = '';
+    if (totalPages <= 1) return;
+
+    for (let i = 1; i <= totalPages; i++) {
+        const btn = document.createElement('button');
+        btn.innerText = i;
+        btn.classList.add('page-btn');
+        if (i === currentPage) btn.classList.add('active');
+        btn.onclick = () => { displayPage(i); window.scrollTo({top: 0, behavior: 'smooth'}); };
+        paginationContainer.appendChild(btn);
+    }
+}
+
+// --- SEARCH LOGIC ---
+const searchInput = document.getElementById('searchInput');
+searchInput.onkeyup = function() {
+    const term = this.value.toLowerCase();
+    convItems.forEach(item => {
+        const text = item.innerText.toLowerCase();
+        item.style.display = text.includes(term) ? 'block' : 'none';
+    });
+    if(term === "") displayPage(1); // Reset pagination if search is cleared
+};
+
+// --- LOADER & BTT ---
+window.addEventListener('load', () => {
+    setTimeout(() => {
+        document.getElementById('pageLoader').style.opacity = '0';
+        setTimeout(() => document.getElementById('pageLoader').style.visibility = 'hidden', 600);
+    }, 800);
+    displayPage(1);
+});
+
+const btt = document.getElementById('backToTop');
+window.onscroll = () => {
+    if (window.scrollY > 300) btt.classList.add('show');
+    else btt.classList.remove('show');
+};
+btt.onclick = () => window.scrollTo({top: 0, behavior: 'smooth'});
+</script>
+{% endblock %}

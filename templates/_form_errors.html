@@ -1,0 +1,26 @@
+{# _form_errors.html #}
+{% if form.errors %}
+<div id="animated-form-errors" class="global-form-errors mt-3">
+
+    {# Compteur d’erreurs #}
+    {% with total_errors=form.errors|length %}
+      <div class="error-counter-pill">
+        <svg viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="12" r="10" stroke="#1e1e1e" stroke-width="1.5"/>
+          <path d="M12 7v6" stroke="#1e1e1e" stroke-width="1.7" stroke-linecap="round"/>
+          <circle cx="12" cy="16.5" r="1.1" fill="#1e1e1e"/>
+        </svg>
+        <span>{{ total_errors }} erreur{% if total_errors > 1 %}s{% endif %} à corriger</span>
+      </div>
+    {% endwith %}
+
+    {# Badges individuels #}
+    {% for field, errors in form.errors.items %}
+        {% for error in errors %}
+            <div class="badge-error-animated js-error-badge" data-field-name="{{ field }}">
+                {{ error }}
+            </div>
+        {% endfor %}
+    {% endfor %}
+</div>
+{% endif %}

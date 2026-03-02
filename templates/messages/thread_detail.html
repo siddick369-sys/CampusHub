@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Conversation #{{ thread.id }}{% endblock %}
+
+{% block content %}
+<section class="ch-section">
+    <h1>Conversation</h1>
+
+    <div class="ch-messages-list">
+        {% for msg in thread.messages.all %}
+            <div class="ch-message {% if msg.sender == me %}me{% else %}other{% endif %}">
+                <p class="ch-message-author">{{ msg.sender.full_name }}</p>
+                <p class="ch-message-content">{{ msg.content }}</p>
+                <small>{{ msg.created_at|date:"d/m/Y H:i" }}</small>
+            </div>
+        {% empty %}
+            <p>Aucun message pour le moment.</p>
+        {% endfor %}
+    </div>
+
+    <form method="post" action="{% url 'thread_send' thread.pk %}" class="ch-form ch-message-form">
+        {% csrf_token %}
+        <textarea name="content" rows="3" placeholder="Écrire un message…" required></textarea>
+        <button type="submit" class="ch-btn ch-btn-primary">Envoyer</button>
+    </form>
+</section>
+{% endblock %}

@@ -1,0 +1,61 @@
+<article class="card-pro h-100 d-flex flex-column overflow-hidden border bg-white shadow-sm" style="border-radius: 16px; transition: transform 0.3s;">
+    
+    <div class="p-3 bg-light border-bottom d-flex justify-content-between align-items-center">
+        <span class="text-muted small fw-bold">
+            <i class="bi bi-calendar3 me-1"></i> {{ order.created_at|date:"d M Y" }}
+        </span>
+        {% if order.status == 'pending' %}
+            <span class="badge bg-warning text-dark">En attente</span>
+        {% elif order.status == 'in_progress' %}
+            <span class="badge bg-primary text-white">En cours</span>
+        {% elif order.status == 'delivered' %}
+            <span class="badge bg-success text-white">Livrée</span>
+        {% elif order.status == 'completed' %}
+            <span class="badge bg-dark text-white">Terminée</span>
+        {% elif order.status == 'cancelled' %}
+            <span class="badge bg-danger text-white">Annulée</span>
+        {% else %}
+            <span class="badge bg-secondary">{{ order.get_status_display }}</span>
+        {% endif %}
+    </div>
+
+    <div class="p-4 flex-grow-1 d-flex flex-column">
+        
+        <div class="d-flex align-items-center mb-3">
+            <div class="avatar-sm bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center me-2 fw-bold" style="width:36px; height:36px;">
+                {{ order.provider.username|slice:":1"|upper }}
+            </div>
+            <div>
+                <span class="text-muted small d-block" style="line-height:1;">Prestataire</span>
+                <strong class="text-dark">{{ order.provider.username }}</strong>
+            </div>
+        </div>
+
+        <h5 class="fw-bold text-dark mb-2">
+            <a href="{% url 'service_order_detail' order.id %}" class="text-decoration-none text-dark stretched-link">
+                {{ order.service_title_snapshot|truncatechars:35 }}
+            </a>
+        </h5>
+
+        <div class="mb-3 text-secondary small">
+            Prix total : <span class="fw-bold text-primary">{{ order.total_price|default:order.computed_total_price }} {{ order.currency }}</span>
+        </div>
+
+        <div class="mt-auto pt-3 border-top border-light d-flex justify-content-between align-items-center position-relative" style="z-index: 2;">
+            <a href="{% url 'service_order_detail' order.id %}" class="btn btn-sm btn-outline-primary rounded-pill fw-600 px-3">
+                Gérer
+            </a>
+
+            {% if can_delete %}
+                <button type="button" class="btn btn-sm btn-light text-danger border hover-bg-danger rounded-circle" 
+                        style="width:32px; height:32px;"
+                        title="Supprimer de l'historique"
+                        data-bs-toggle="modal" 
+                        data-bs-target="#deleteOrderModal"
+                        onclick="prepareDeleteOrder('{% url 'client_order_delete' order.id %}', '{{ order.service_title_snapshot|escapejs }}')">
+                    <i class="bi bi-trash3"></i>
+                </button>
+            {% endif %}
+        </div>
+    </div>
+</article>

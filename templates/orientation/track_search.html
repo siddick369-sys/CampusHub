@@ -1,0 +1,228 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Explorer les Filières{% endblock %}
+{% block content %}
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+    /* --- FOND ANIMÉ --- */
+    body {
+        background-color: #050505;
+        font-family: 'Poppins', sans-serif;
+        color: #ffffff;
+        min-height: 100vh;
+        overflow-x: hidden;
+    }
+    .background-anim {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
+        background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+        background-size: 400% 400%;
+        animation: gradientBG 15s ease infinite;
+    }
+    @keyframes gradientBG {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+
+    /* --- FORMULAIRE DE RECHERCHE (GLASS) --- */
+    .search-panel {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 16px;
+        padding: 2rem;
+        margin-bottom: 3rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        position: relative;
+        overflow: hidden;
+    }
+    /* Barre néon décorative */
+    .search-panel::before {
+        content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 2px;
+        background: linear-gradient(90deg, transparent, #00f7ff, transparent);
+    }
+
+    .form-label { color: #00f7ff; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.5rem; }
+    
+    .custom-input, .custom-select {
+        background-color: rgba(0, 0, 0, 0.3) !important;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: #fff !important;
+        border-radius: 8px;
+        padding: 0.8rem;
+        transition: 0.3s;
+    }
+    .custom-input:focus, .custom-select:focus {
+        border-color: #00f7ff;
+        box-shadow: 0 0 15px rgba(0, 247, 255, 0.2);
+        outline: none;
+    }
+
+    .btn-search {
+        background: linear-gradient(45deg, #00f7ff, #008cff);
+        color: #000; border: none; font-weight: 700; border-radius: 50px;
+        padding: 0.8rem 2rem; width: 100%; text-transform: uppercase; transition: 0.3s;
+        box-shadow: 0 0 15px rgba(0, 247, 255, 0.3);
+    }
+    .btn-search:hover {
+        transform: scale(1.02);
+        box-shadow: 0 0 25px rgba(0, 247, 255, 0.6);
+    }
+
+    /* --- CARTES RÉSULTATS (TRACK CARD) --- */
+    .track-card {
+        background: #121212;
+        border-radius: 12px;
+        overflow: hidden;
+        position: relative;
+        height: 100%;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        transition: transform 0.3s, box-shadow 0.3s;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .track-card:hover {
+        transform: translateY(-5px);
+        border-color: #ff0055;
+        box-shadow: 0 10px 30px rgba(255, 0, 85, 0.15);
+    }
+
+    /* Effet néon au hover sur la bordure */
+    .track-card::after {
+        content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 3px;
+        background: #ff0055; opacity: 0; transition: 0.3s;
+    }
+    .track-card:hover::after { opacity: 1; box-shadow: 0 0 15px #ff0055; }
+
+    .card-body { padding: 1.5rem; flex-grow: 1; display: flex; flex-direction: column; }
+
+    .track-title { font-size: 1.2rem; font-weight: 700; color: #fff; margin-bottom: 0.5rem; }
+    .track-domain { font-size: 0.8rem; color: #00f7ff; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1rem; }
+    
+    .track-desc { font-size: 0.9rem; color: rgba(255,255,255,0.6); margin-bottom: 1.5rem; flex-grow: 1; }
+
+    .badges-container { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 1.5rem; }
+    .neon-badge { 
+        font-size: 0.7rem; padding: 4px 8px; border-radius: 4px; 
+        background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2); color: #ccc; 
+    }
+
+    .btn-view-track {
+        margin-top: auto;
+        border: 1px solid #ff0055; color: #ff0055; background: transparent;
+        width: 100%; padding: 0.6rem; border-radius: 50px; text-align: center;
+        text-transform: uppercase; font-size: 0.8rem; font-weight: 600; text-decoration: none;
+        transition: 0.3s;
+    }
+    .btn-view-track:hover {
+        background: #ff0055; color: #fff; box-shadow: 0 0 15px rgba(255, 0, 85, 0.4);
+    }
+
+</style>
+
+<div class="background-anim"></div>
+
+<div class="container py-5">
+    
+    <h2 class="text-center fw-bold text-white mb-5" style="text-shadow: 0 0 15px rgba(255,255,255,0.2);">
+        TROUVER MA FILIÈRE
+    </h2>
+
+    <div class="search-panel">
+        <form method="get" class="row g-3 align-items-end">
+            
+            <div class="col-md-5">
+                <label class="form-label"><i class="bi bi-search me-2"></i>Mots-clés</label>
+                <input type="text" name="q" class="form-control custom-input" 
+                       placeholder="Ex : Informatique, Droit, Marketing..." 
+                       value="{{ request.GET.q|default:'' }}">
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label"><i class="bi bi-grid me-2"></i>Domaine</label>
+                <select name="domain" class="form-select custom-select">
+                    <option value="">Tous les domaines</option>
+                    <option value="stem" {% if request.GET.domain == 'stem' %}selected{% endif %}>Sciences & Tech</option>
+                    <option value="business" {% if request.GET.domain == 'business' %}selected{% endif %}>Business & Management</option>
+                    <option value="health" {% if request.GET.domain == 'health' %}selected{% endif %}>Santé</option>
+                    <option value="social" {% if request.GET.domain == 'social' %}selected{% endif %}>Sciences Sociales</option>
+                    <option value="arts" {% if request.GET.domain == 'arts' %}selected{% endif %}>Arts & Design</option>
+                    <option value="other" {% if request.GET.domain == 'other' %}selected{% endif %}>Autre</option>
+                </select>
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label"><i class="bi bi-bar-chart me-2"></i>Difficulté</label>
+                <select name="difficulty" class="form-select custom-select">
+                    <option value="">Toutes</option>
+                    <option value="1" {% if request.GET.difficulty == '1' %}selected{% endif %}>⭐ Accessible</option>
+                    <option value="2" {% if request.GET.difficulty == '2' %}selected{% endif %}>⭐⭐ Modérée</option>
+                    <option value="3" {% if request.GET.difficulty == '3' %}selected{% endif %}>⭐⭐⭐ Exigeante</option>
+                    <option value="4" {% if request.GET.difficulty == '4' %}selected{% endif %}>⭐⭐⭐⭐ Très exigeante</option>
+                    <option value="5" {% if request.GET.difficulty == '5' %}selected{% endif %}>⭐⭐⭐⭐⭐ Élite</option>
+                </select>
+            </div>
+
+            <div class="col-md-2">
+                <button type="submit" class="btn-search">
+                    Filtrer
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <div class="row g-4">
+        {% for track in tracks %}
+            <div class="col-md-6 col-lg-4">
+                <div class="track-card">
+                    <div class="card-body">
+                        <div class="track-domain">
+                            {% if track.icon %}
+                                <i class="{{ track.icon }} me-1"></i>
+                            {% endif %}
+                            {{ track.get_domain_display }}
+                        </div>
+                        
+                        <h3 class="track-title">{{ track.name }}</h3>
+                        
+                        <div class="badges-container">
+                            <span class="neon-badge">
+                                <i class="bi bi-clock me-1"></i>{{ track.typical_duration_years }} ans
+                            </span>
+                            <span class="neon-badge" style="border-color: 
+                                {% if track.difficulty <= 2 %}#00ff88
+                                {% elif track.difficulty == 3 %}#ffcc00
+                                {% else %}#ff0055{% endif %}; color: #fff;">
+                                Difficulté : {{ track.get_difficulty_display }}
+                            </span>
+                        </div>
+
+                        <p class="track-desc">
+                            {{ track.description|truncatechars:120 }}
+                        </p>
+
+                        <a href="{% url 'track_detail' track.slug %}" class="btn-view-track">
+                            Découvrir le cursus
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="col-12">
+                <div class="text-center py-5" style="border: 2px dashed rgba(255,255,255,0.1); border-radius: 12px;">
+                    <i class="bi bi-search text-muted fs-1 mb-3"></i>
+                    <h4 class="text-white">Aucune filière trouvée</h4>
+                    <p class="text-muted">Essayez de modifier vos critères de recherche.</p>
+                    <a href="{% url 'track_search' %}" class="btn btn-outline-light btn-sm mt-2 rounded-pill">
+                        Réinitialiser les filtres
+                    </a>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+</div>
+{% endblock %}

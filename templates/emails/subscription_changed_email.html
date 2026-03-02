@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <title>Abonnement mis à jour</title>
+</head>
+<body style="font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
+  <div style="max-width: 600px; margin: 0 auto; padding: 16px;">
+    <h2 style="margin-bottom: 8px;">
+      Ton abonnement a été mis à jour ✅
+    </h2>
+
+    <p>Bonjour {{ user.get_username }},</p>
+
+    <p>
+      Ton abonnement prestataire sur <strong>{{ site_name }}</strong> a été mis à jour.
+    </p>
+
+    <p>
+      <strong>Ancien plan :</strong> {{ old_plan.name }} ({{ old_plan.code }})<br>
+      <strong>Nouveau plan :</strong> {{ new_plan.name }} ({{ new_plan.code }})
+    </p>
+
+    <table style="width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 14px;">
+      <thead>
+        <tr>
+          <th style="text-align: left; border-bottom: 1px solid #ddd; padding: 6px;">Fonctionnalité</th>
+          <th style="border-bottom: 1px solid #ddd; padding: 6px;">Avant</th>
+          <th style="border-bottom: 1px solid #ddd; padding: 6px;">Après</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="padding: 6px;">Services actifs autorisés</td>
+          <td style="padding: 6px; text-align: center;">{{ old_plan.max_active_services }}</td>
+          <td style="padding: 6px; text-align: center;"><strong>{{ new_plan.max_active_services }}</strong></td>
+        </tr>
+        <tr>
+          <td style="padding: 6px;">Services mis en avant</td>
+          <td style="padding: 6px; text-align: center;">{{ old_plan.max_featured_services }}</td>
+          <td style="padding: 6px; text-align: center;"><strong>{{ new_plan.max_featured_services }}</strong></td>
+        </tr>
+        <tr>
+          <td style="padding: 6px;">Commandes urgentes / jour</td>
+          <td style="padding: 6px; text-align: center;">{{ old_plan.max_urgent_orders_per_day }}</td>
+          <td style="padding: 6px; text-align: center;"><strong>{{ new_plan.max_urgent_orders_per_day }}</strong></td>
+        </tr>
+        <tr>
+          <td style="padding: 6px;">Créneaux horaires max</td>
+          <td style="padding: 6px; text-align: center;">{{ old_plan.max_time_slots }}</td>
+          <td style="padding: 6px; text-align: center;"><strong>{{ new_plan.max_time_slots }}</strong></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p style="font-size: 13px; color: #666;">
+      Si tu n’es pas à l’origine de ce changement, contacte immédiatement le support.
+    </p>
+
+    <p>Cordialement,<br>L’équipe {{ site_name }}</p>
+  </div>
+</body>
+</html>

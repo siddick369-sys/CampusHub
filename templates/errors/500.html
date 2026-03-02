@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}500 - Erreur Système{% endblock %}
+
+{% block content %}
+<style>
+    /* On reprend le style de base mais en ROUGE */
+    .error-container-500 {
+        min-height: 80vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+    }
+    .error-code-crit {
+        font-family: 'Orbitron', sans-serif;
+        font-size: 8rem;
+        font-weight: 900;
+        color: #ff0000; /* Rouge */
+        text-shadow: 0 0 20px rgba(255, 0, 0, 0.8);
+        animation: pulse 2s infinite;
+    }
+    @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+
+    .error-msg-crit {
+        color: #fff;
+        font-family: 'Rajdhani', sans-serif;
+        font-size: 1.8rem;
+        margin-bottom: 2rem;
+    }
+    .btn-emergency {
+        background: #ff0000; color: #000; padding: 15px 40px;
+        font-weight: bold; text-decoration: none; font-family: 'Orbitron', sans-serif;
+    }
+    .btn-emergency:hover { background: #fff; box-shadow: 0 0 20px #ff0000; }
+</style>
+
+<div class="error-container-500">
+    <div class="error-code-crit">500</div>
+    <h2 class="text-uppercase fw-bold text-white">CRITICAL FAILURE</h2>
+    <div class="error-msg-crit">
+        Nos serveurs surchauffent. Une équipe de maintenance a été déployée.
+    </div>
+    <a href="/" class="btn-emergency">
+        <i class="bi bi-arrow-counterclockwise me-2"></i> ÉVACUATION (RETOUR)
+    </a>
+</div>
+{% endblock %}

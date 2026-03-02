@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Aide & Fonctionnement - CampusHub{% endblock %}
+
+{% block content %}
+<style>
+    .faq-wrapper { background-color: #050505; color: #fff; font-family: 'Rajdhani', sans-serif; overflow-x: hidden; }
+    
+    /* HERO AVEC IMAGE DE FOND */
+    .faq-hero {
+        position: relative; padding: 6rem 1rem; text-align: center;
+        background: url('https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=2070&auto=format&fit=crop') no-repeat center center/cover;
+    }
+    .faq-hero::before {
+        content: ''; position: absolute; inset: 0;
+        background: linear-gradient(to bottom, rgba(5,5,5,0.3), #050505);
+    }
+    .hero-content { position: relative; z-index: 2; }
+    .faq-title {
+        font-family: 'Orbitron', sans-serif; font-size: 3.5rem; text-transform: uppercase;
+        text-shadow: 0 0 20px #00f7ff; margin-bottom: 1rem;
+    }
+
+    /* SECTION PROCESS (Zig-Zag) */
+    .process-section { padding: 4rem 0; }
+    .cyber-img-container {
+        position: relative; border: 1px solid #333; padding: 10px;
+        background: rgba(255,255,255,0.05); transform: skewX(-5deg);
+    }
+    .cyber-img { width: 100%; height: auto; display: block; border: 1px solid #00f7ff; }
+    .process-text { padding: 2rem; }
+    .process-step { color: #00f7ff; font-family: 'Orbitron', sans-serif; font-size: 1.5rem; margin-bottom: 1rem; }
+    .process-desc { font-size: 1.1rem; line-height: 1.6; color: #ccc; }
+
+    /* FAQ STYLE (Gardé identique) */
+    .cyber-accordion-item { border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.02); margin-bottom: 1rem; }
+    .cyber-accordion-btn { width: 100%; padding: 1.2rem; background: transparent; border: none; color: #fff; font-weight: 700; display: flex; justify-content: space-between; cursor: pointer; }
+    .cyber-accordion-body { display: none; padding: 1.2rem; color: #aaa; border-top: 1px dashed rgba(255,255,255,0.1); }
+    .cyber-accordion-item.active .cyber-accordion-body { display: block; }
+    .cyber-accordion-item.active { border-color: #00f7ff; }
+</style>
+
+<div class="faq-wrapper">
+    
+    <div class="faq-hero">
+        <div class="hero-content">
+            <h1 class="faq-title">PROTOCOLES D'AIDE</h1>
+            <p class="lead text-white-50">Maîtrisez le réseau CampusHub.</p>
+        </div>
+    </div>
+
+    <div class="container my-5">
+        
+        <div class="row align-items-center process-section">
+            <div class="col-lg-6 mb-4 mb-lg-0">
+                <div class="cyber-img-container">
+                    <img src="https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?q=80&w=1000&auto=format&fit=crop" class="cyber-img" alt="Orientation">
+                </div>
+            </div>
+            <div class="col-lg-6 process-text">
+                <div class="process-step">01. ORIENTATION IA</div>
+                <h3 class="text-white mb-3">Analysez votre potentiel</h3>
+                <p class="process-desc">
+                    Notre algorithme parcourt vos compétences et vos intérêts pour vous suggérer les filières académiques optimales. 
+                    Accédez à des fiches détaillées sur les écoles et universités partenaires.
+                </p>
+            </div>
+        </div>
+
+        <div class="row align-items-center process-section flex-row-reverse">
+            <div class="col-lg-6 mb-4 mb-lg-0">
+                <div class="cyber-img-container" style="border-color: #ff0055;">
+                    <img src="https://images.unsplash.com/photo-1555949963-ff9fe0c870eb?q=80&w=1000&auto=format&fit=crop" class="cyber-img" style="border-color: #ff0055;" alt="Freelance">
+                </div>
+            </div>
+            <div class="col-lg-6 process-text">
+                <div class="process-step" style="color: #ff0055;">02. FREELANCE & SERVICES</div>
+                <h3 class="text-white mb-3">Monétisez vos talents</h3>
+                <p class="process-desc">
+                    Ne vous contentez pas d'étudier. Devenez "Prestataire" et vendez vos services (Design, Code, Rédaction) à la communauté. 
+                    Chaque mission réussie augmente votre <strong>Trust Score</strong>.
+                </p>
+            </div>
+        </div>
+
+        <div class="mt-5 max-w-800 mx-auto">
+            <h2 class="text-center text-white mb-4" style="font-family: 'Orbitron', sans-serif;">BASE DE DONNÉES (FAQ)</h2>
+            
+            <div class="cyber-accordion-item">
+                <button class="cyber-accordion-btn">Comment retirer mes gains ? <i class="bi bi-plus-lg"></i></button>
+                <div class="cyber-accordion-body">
+                    Les fonds sont disponibles une fois la commande marquée "Terminée". Virement via Mobile Money ou Banque.
+                </div>
+            </div>
+            <div class="cyber-accordion-item">
+                <button class="cyber-accordion-btn">L'inscription est-elle payante ? <i class="bi bi-plus-lg"></i></button>
+                <div class="cyber-accordion-body">
+                    Non, l'inscription est gratuite pour les étudiants. Une commission est prélevée uniquement sur les ventes réalisées.
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    const items = document.querySelectorAll('.cyber-accordion-item');
+    items.forEach(item => {
+        item.querySelector('.cyber-accordion-btn').addEventListener('click', () => {
+            item.classList.toggle('active');
+        });
+    });
+</script>
+{% endblock %}

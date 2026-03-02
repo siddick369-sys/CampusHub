@@ -1,0 +1,260 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Confirmer l'abonnement{% endblock %}
+
+{% block content %}
+
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+
+<div id="pageLoader" class="loader-overlay">
+    <div class="loader-content">
+        <div class="spinner-rings">
+            <div class="ring-1"></div>
+            <div class="ring-2"></div>
+            <div class="ring-3"></div>
+        </div>
+        <p class="loader-text">Préparation du changement...</p>
+    </div>
+</div>
+
+<div class="desktop-bg-animation">
+    <div class="shape-blob shape-1"></div>
+    <div class="shape-blob shape-2"></div>
+</div>
+
+<div class="container py-5 relative-z">
+  <div class="row justify-content-center">
+    <div class="col-lg-9">
+
+      <div class="text-center mb-5 reveal-on-scroll">
+          <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 rounded-pill px-3 py-2 mb-3">
+              Mise à niveau
+          </span>
+          <h2 class="fw-bold text-dark text-uppercase ls-1">Confirmer le changement</h2>
+          <p class="text-muted">Vérifiez les détails avant d'activer votre nouveau plan.</p>
+      </div>
+
+      <div class="card-pro reveal-on-scroll">
+        
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-4 mb-5">
+            
+            <div class="plan-card current flex-fill text-center">
+                <div class="text-muted small mb-2 text-uppercase fw-bold ls-1">Actuel</div>
+                <h4 class="fw-bold text-dark mb-1">{{ current_plan.name }}</h4>
+                <p class="mb-0 text-muted small">
+                    {% if current_plan.monthly_price > 0 %}
+                        {{ current_plan.monthly_price }} {{ current_plan.currency }}/mois
+                    {% else %}
+                        Gratuit
+                    {% endif %}
+                </p>
+            </div>
+
+            <div class="arrow-icon">
+                <i class="bi bi-arrow-right d-none d-md-block"></i>
+                <i class="bi bi-arrow-down d-block d-md-none"></i>
+            </div>
+
+            <div class="plan-card target flex-fill text-center">
+                <div class="text-primary small mb-2 text-uppercase fw-bold ls-1">Nouveau</div>
+                <h4 class="fw-bold text-primary mb-1">{{ target_plan.name }}</h4>
+                <p class="mb-0 text-dark fw-500 small">
+                    {% if target_plan.monthly_price > 0 %}
+                        {{ target_plan.monthly_price }} {{ target_plan.currency }}/mois
+                    {% else %}
+                        Gratuit
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+
+        <div class="mb-5">
+            <h5 class="mb-4 fw-bold text-dark border-start border-4 border-primary ps-3">Détails des améliorations</h5>
+            
+            <div class="table-responsive">
+                <table class="table custom-table align-middle">
+                    <thead>
+                        <tr>
+                            <th class="ps-3 text-muted text-uppercase small fw-bold" style="width: 40%;">Fonctionnalité</th>
+                            <th class="text-center text-muted text-uppercase small fw-bold" style="width: 30%;">Ancien</th>
+                            <th class="text-center text-primary text-uppercase small fw-bold" style="width: 30%;">Nouveau</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="ps-3 fw-600 text-dark">Services actifs</td>
+                            <td class="text-center text-muted">{{ current_plan.max_active_services }}</td>
+                            <td class="text-center text-primary fw-bold bg-primary-subtle rounded">{{ target_plan.max_active_services }}</td>
+                        </tr>
+                        <tr>
+                            <td class="ps-3 fw-600 text-dark">Services en avant</td>
+                            <td class="text-center text-muted">{{ current_plan.max_featured_services }}</td>
+                            <td class="text-center text-primary fw-bold bg-primary-subtle rounded">{{ target_plan.max_featured_services }}</td>
+                        </tr>
+                        <tr>
+                            <td class="ps-3 fw-600 text-dark">Commandes urgentes /j</td>
+                            <td class="text-center text-muted">{{ current_plan.max_urgent_orders_per_day }}</td>
+                            <td class="text-center text-primary fw-bold bg-primary-subtle rounded">{{ target_plan.max_urgent_orders_per_day }}</td>
+                        </tr>
+                        <tr>
+                            <td class="ps-3 fw-600 text-dark">Créneaux horaires</td>
+                            <td class="text-center text-muted">{{ current_plan.max_time_slots }}</td>
+                            <td class="text-center text-primary fw-bold bg-primary-subtle rounded">{{ target_plan.max_time_slots }}</td>
+                        </tr>
+                        <tr>
+                            <td class="ps-3 fw-600 text-dark">Priorité recherche</td>
+                            <td class="text-center">
+                                {% if current_plan.highlight_in_search %}
+                                    <i class="bi bi-check-circle-fill text-secondary"></i>
+                                {% else %}
+                                    <i class="bi bi-dash-lg text-muted opacity-25"></i>
+                                {% endif %}
+                            </td>
+                            <td class="text-center bg-primary-subtle rounded">
+                                {% if target_plan.highlight_in_search %}
+                                    <i class="bi bi-check-circle-fill text-primary"></i>
+                                {% else %}
+                                    <i class="bi bi-dash-lg text-muted opacity-50"></i>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="ps-3 fw-600 text-dark">Export rapports</td>
+                            <td class="text-center">
+                                {% if current_plan.can_export_reports %}
+                                    <i class="bi bi-check-circle-fill text-secondary"></i>
+                                {% else %}
+                                    <i class="bi bi-dash-lg text-muted opacity-25"></i>
+                                {% endif %}
+                            </td>
+                            <td class="text-center bg-primary-subtle rounded">
+                                {% if target_plan.can_export_reports %}
+                                    <i class="bi bi-check-circle-fill text-primary"></i>
+                                {% else %}
+                                    <i class="bi bi-dash-lg text-muted opacity-50"></i>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="pt-4 border-top border-light">
+            <form method="post" class="text-center">
+                {% csrf_token %}
+                
+                <div class="alert alert-light border border-light-subtle d-inline-block text-start mb-4">
+                    <div class="d-flex">
+                        <i class="bi bi-info-circle-fill text-primary me-2 mt-1"></i>
+                        <div class="small text-muted">
+                            En confirmant, votre abonnement actuel sera clôturé immédiatement et le plan 
+                            <strong class="text-dark">« {{ target_plan.name }} »</strong> débutera aujourd'hui.
+                            <br>Le changement est immédiat.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex flex-column flex-sm-row justify-content-center gap-3">
+                    <a href="{% url 'subscription_upgrade' %}" class="btn btn-outline-secondary rounded-pill fw-600 px-4 py-2">
+                        Annuler
+                    </a>
+                    <button type="submit" class="liquid-btn btn-primary-pro px-5">
+                        <span>Confirmer et Activer</span> <i class="bi bi-lightning-charge-fill ms-2"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+      </div> 
+    </div>
+  </div>
+</div>
+
+<style>
+/* Variables */
+:root {
+    --primary: #2563eb;
+    --primary-dark: #1e40af;
+    --light-bg: #f8fafc;
+    --white: #ffffff;
+    --text-dark: #0f172a;
+    --text-muted: #64748b;
+    --border: #e2e8f0;
+    --radius: 20px;
+}
+
+body { background-color: var(--light-bg); color: var(--text-dark); font-family: 'Inter', sans-serif; overflow-x: hidden; }
+h2, h4, h5 { font-family: 'Outfit', sans-serif; }
+
+/* Loader */
+.loader-overlay { position: fixed; inset: 0; background: var(--white); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: opacity 0.6s ease; }
+.spinner-rings { position: relative; width: 80px; height: 80px; }
+.spinner-rings div { position: absolute; border-radius: 50%; border: 3px solid transparent; border-top-color: var(--primary); animation: spin 1.5s linear infinite; }
+.ring-1 { top: 0; left: 0; width: 100%; height: 100%; border-top-color: var(--primary); animation-duration: 2s; }
+.ring-2 { top: 10px; left: 10px; width: 60px; height: 60px; border-top-color: #60a5fa; animation-duration: 1.5s; animation-direction: reverse; }
+.ring-3 { top: 20px; left: 20px; width: 40px; height: 40px; border-top-color: #93c5fd; animation-duration: 3s; }
+.loader-text { margin-top: 25px; font-family: 'Outfit', sans-serif; font-weight: 600; color: var(--primary); letter-spacing: 1px; font-size: 0.9rem; animation: pulse 1.5s infinite; }
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+@keyframes pulse { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
+
+/* Card Pro */
+.card-pro { 
+    background: var(--white); border-radius: var(--radius); border: 1px solid var(--border); 
+    padding: 3rem; box-shadow: 0 10px 40px -5px rgba(0, 0, 0, 0.05); 
+}
+
+/* Plan Cards */
+.plan-card {
+    padding: 2rem; border-radius: 16px; border: 1px solid var(--border); background: #fff;
+    transition: 0.3s;
+}
+.plan-card.current { background: #f8fafc; border-style: dashed; }
+.plan-card.target { 
+    background: #eff6ff; border: 1px solid #bfdbfe; 
+    box-shadow: 0 10px 20px -5px rgba(37, 99, 235, 0.1); 
+    transform: scale(1.02);
+}
+.arrow-icon i { font-size: 1.5rem; color: #cbd5e1; }
+
+/* Table */
+.custom-table th { border-bottom: 2px solid var(--border); padding-bottom: 1rem; }
+.custom-table td { padding: 1rem 0.5rem; border-bottom: 1px solid var(--border); }
+.custom-table tr:last-child td { border-bottom: none; }
+.bg-primary-subtle { background-color: #eff6ff !important; }
+
+/* Button */
+.liquid-btn { 
+    position: relative; display: flex; justify-content: center; align-items: center; 
+    padding: 12px 24px; border: none; border-radius: 50px; background: var(--primary); 
+    color: white; font-weight: 700; text-transform: uppercase; font-size: 0.9rem; 
+    transition: 0.3s; overflow: hidden; box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3); 
+}
+.liquid-btn:hover { transform: translateY(-2px); background: var(--primary-dark); }
+
+/* Animation */
+.desktop-bg-animation { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; }
+.shape-blob { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.5; animation: float 10s infinite alternate; }
+.shape-1 { top: -10%; left: -10%; width: 500px; height: 500px; background: rgba(37, 99, 235, 0.1); }
+.shape-2 { bottom: -10%; right: -10%; width: 400px; height: 400px; background: rgba(147, 197, 253, 0.2); }
+@keyframes float { 0% { transform: translate(0,0); } 100% { transform: translate(30px, 30px); } }
+
+.reveal-on-scroll { animation: fadeInUp 0.6s ease-out; }
+@keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const loader = document.getElementById("pageLoader");
+    if(loader) {
+        setTimeout(() => {
+            loader.style.opacity = "0";
+            setTimeout(() => { loader.style.display = "none"; }, 600);
+        }, 600);
+    }
+});
+</script>
+
+{% endblock %}

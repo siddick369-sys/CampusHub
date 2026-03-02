@@ -1,0 +1,293 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Améliorer mon abonnement{% endblock %}
+
+{% block content %}
+
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+
+<div class="desktop-bg-animation">
+    <div class="shape-blob shape-1"></div>
+    <div class="shape-blob shape-2"></div>
+</div>
+
+<div class="container py-5 relative-z">
+
+    <div class="text-center mb-5 reveal-on-scroll">
+        <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 rounded-pill px-3 py-2 mb-3">
+            Offres & Tarifs
+        </span>
+        <h2 class="fw-bold text-dark text-uppercase ls-1">Niveaux d'Abonnement</h2>
+        <p class="text-muted">Choisissez le plan adapté à vos ambitions.</p>
+    </div>
+
+    <div class="card-pro mb-5 reveal-on-scroll">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-center p-4">
+            <div>
+                <div class="text-uppercase text-muted small fw-bold mb-1 ls-1">Votre Plan Actif</div>
+                <h3 class="fw-bold mb-1 text-primary">{{ current_plan.name }}</h3>
+                <p class="text-muted mb-0">
+                    {% if current_plan.price > 0 %}
+                    <span class="fs-5 text-dark fw-bold">{{ current_plan.price }}</span> XAF/mois
+                    {% else %}
+                    Gratuit
+                    {% endif %}
+                </p>
+            </div>
+            <div class="mt-3 mt-md-0">
+                <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-3 py-2 rounded-pill">
+                    <i class="bi bi-shield-check me-2"></i>Opérationnel
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <div class="card-pro p-0 overflow-hidden reveal-on-scroll">
+        <div class="table-responsive">
+            <table class="table custom-table mb-0 align-middle">
+                <thead>
+                    <tr>
+                        <th class="ps-4 py-4 bg-light text-muted text-uppercase small fw-bold" style="width: 30%;">Fonctionnalités</th>
+                        {% for plan in plans %}
+                        <th class="py-4 text-center bg-light">
+                            <span class="d-block fw-bold text-dark fs-5 mb-1">{{ plan.name }}</span>
+                            {% if plan.code == current_plan.code %}
+                            <span class="badge bg-secondary rounded-pill small">Actuel</span>
+                            {% endif %}
+                        </th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="ps-4 fw-600 text-dark"><i class="bi bi-tag-fill me-2 text-primary"></i>Tarif Mensuel</td>
+                        {% for plan in plans %}
+                        <td class="text-center">
+                            {% if plan.price > 0 %}
+                            <span class="fw-bold text-dark fs-5">{{ plan.price }}</span> <small class="text-muted">XAF</small>
+                            {% else %}
+                            <span class="text-muted text-uppercase small fw-bold">Gratuit</span>
+                            {% endif %}
+                        </td>
+                        {% endfor %}
+                    </tr>
+
+                    <tr>
+                        <td class="ps-4 text-muted"><i class="bi bi-briefcase me-2 text-primary"></i>Services Actifs</td>
+                        {% for plan in plans %}
+                        <td class="text-center fw-bold text-dark">{{ plan.max_services_active }}</td>
+                        {% endfor %}
+                    </tr>
+
+                    <tr>
+                        <td class="ps-4 text-muted"><i class="bi bi-star me-2 text-warning"></i>Mis en avant</td>
+                        {% for plan in plans %}
+                        <td class="text-center fw-bold text-dark">{{ plan.max_featured_services }}</td>
+                        {% endfor %}
+                    </tr>
+
+                    <tr>
+                        <td class="ps-4 text-muted"><i class="bi bi-lightning-charge me-2 text-danger"></i>Commandes Urgentes</td>
+                        {% for plan in plans %}
+                        <td class="text-center">
+                            {% if plan.max_urgent_orders_per_day > 0 %}
+                            <span class="text-dark fw-bold">{{ plan.max_urgent_orders_per_day }}</span> <span class="text-muted small">/ jour</span>
+                            {% else %}
+                            <span class="text-muted">—</span>
+                            {% endif %}
+                        </td>
+                        {% endfor %}
+                    </tr>
+
+                    <tr>
+                        <td class="ps-4 text-muted"><i class="bi bi-graph-up-arrow me-2 text-success"></i>Badge Premium</td>
+                        {% for plan in plans %}
+                        <td class="text-center">
+                            {% if plan.has_premium_badge %}
+                            <i class="bi bi-check-circle-fill text-success fs-5"></i>
+                            {% else %}
+                            <span class="text-muted">—</span>
+                            {% endif %}
+                        </td>
+                        {% endfor %}
+                    </tr>
+
+                    <tr>
+                        <td class="ps-4 text-muted"><i class="bi bi-file-earmark-bar-graph me-2 text-info"></i>Analyses & Stats</td>
+                        {% for plan in plans %}
+                        <td class="text-center">
+                            {% if plan.has_analytics %}
+                            <i class="bi bi-check-circle-fill text-success fs-5"></i>
+                            {% else %}
+                            <span class="text-muted">—</span>
+                            {% endif %}
+                        </td>
+                        {% endfor %}
+                    </tr>
+
+                    <tr class="bg-light">
+                        <td class="border-0"></td>
+                        {% for plan in plans %}
+                        <td class="border-0 text-center py-4">
+                            {% if plan.code == current_plan.code %}
+                            <button class="btn btn-outline-secondary rounded-pill px-4 py-2 fw-600 disabled" disabled>
+                                Plan Actuel
+                            </button>
+                            {% else %}
+                            <a href="{% url 'subscription_upgrade_confirm' plan.code %}" class="liquid-btn btn-primary-pro px-4 py-2 text-decoration-none d-inline-block">
+                                Choisir
+                            </a>
+                            {% endif %}
+                        </td>
+                        {% endfor %}
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<style>
+    /* Variables */
+    :root {
+        --primary: #2563eb;
+        --primary-dark: #1e40af;
+        --light-bg: #f8fafc;
+        --white: #ffffff;
+        --text-dark: #0f172a;
+        --text-muted: #64748b;
+        --border: #e2e8f0;
+        --radius: 20px;
+    }
+
+    body {
+        background-color: var(--light-bg);
+        color: var(--text-dark);
+        font-family: 'Inter', sans-serif;
+        overflow-x: hidden;
+    }
+
+    h2,
+    h3 {
+        font-family: 'Outfit', sans-serif;
+    }
+
+    /* Card Pro */
+    .card-pro {
+        background: var(--white);
+        border-radius: var(--radius);
+        border: 1px solid var(--border);
+        box-shadow: 0 10px 40px -5px rgba(0, 0, 0, 0.05);
+    }
+
+    /* Table */
+    .custom-table th {
+        border-bottom: 2px solid var(--border);
+        letter-spacing: 0.5px;
+    }
+
+    .custom-table td {
+        border-bottom: 1px solid var(--border);
+        padding: 1rem 0.5rem;
+    }
+
+    .custom-table tr:hover td {
+        background-color: #f8fafc;
+    }
+
+    /* Button Liquid */
+    .liquid-btn {
+        position: relative;
+        border: none;
+        border-radius: 50px;
+        background: var(--primary);
+        color: white;
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        transition: 0.3s;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+    }
+
+    .liquid-btn:hover {
+        transform: translateY(-2px);
+        background: var(--primary-dark);
+        color: white;
+    }
+
+    /* Animation */
+    .desktop-bg-animation {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+        pointer-events: none;
+    }
+
+    .shape-blob {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(80px);
+        opacity: 0.5;
+        animation: float 10s infinite alternate;
+    }
+
+    .shape-1 {
+        top: -10%;
+        left: -10%;
+        width: 500px;
+        height: 500px;
+        background: rgba(37, 99, 235, 0.1);
+    }
+
+    .shape-2 {
+        bottom: -10%;
+        right: -10%;
+        width: 400px;
+        height: 400px;
+        background: rgba(147, 197, 253, 0.2);
+    }
+
+    @keyframes float {
+        0% {
+            transform: translate(0, 0);
+        }
+
+        100% {
+            transform: translate(30px, 30px);
+        }
+    }
+
+    .reveal-on-scroll {
+        animation: fadeInUp 0.6s ease-out;
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => { if (entry.isIntersecting) entry.target.style.animationPlayState = "running"; });
+        });
+        document.querySelectorAll(".reveal-on-scroll").forEach(el => observer.observe(el));
+    });
+</script>
+
+{% endblock %}

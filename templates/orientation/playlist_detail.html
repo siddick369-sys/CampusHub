@@ -1,0 +1,327 @@
+<!-- templates/orientation/playlist_detail.html -->
+{% extends 'base.html' %}
+
+{% block title %}{{ playlist.title }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <!-- Contenu principal -->
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-body">
+                    <!-- En-tête -->
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            {% if playlist.thumbnail_url %}
+                            <img src="{{ playlist.thumbnail_url }}" class="img-fluid rounded" alt="{{ playlist.title }}">
+                            {% else %}
+                            <div class="bg-light rounded d-flex align-items-center justify-content-center" style="height: 200px;">
+                                <i class="fas fa-video fa-3x text-muted"></i>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-8">
+                            <h1 class="h3">{{ playlist.title }}</h1>
+                            <p class="text-muted mb-2">
+                                <i class="fas fa-user"></i> 
+                                {% if playlist.channel_url %}
+                                <a href="{{ playlist.channel_url }}" target="_blank" class="text-decoration-none">
+                                    {{ playlist.channel_name }}
+                                </a>
+                                {% else %}
+                                {{ playlist.channel_name }}
+                                {% endif %}
+                            </p>
+                            
+                            <div class="mb-3">
+                                <span class="badge bg-primary">{{ playlist.get_difficulty_display }}</span>
+                                <span class="badge bg-secondary">{{ playlist.estimated_hours }}h</span>
+                                <span class="badge bg-info">{{ playlist.get_language_display }}</span>
+                                {% if playlist.is_free %}
+                                <span class="badge bg-success">Gratuit</span>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="d-flex flex-wrap gap-1 mb-3">
+                                {% for track in playlist.tracks.all %}
+                                <a href="{% url 'track_detail' track.slug %}" class="badge bg-light text-dark text-decoration-none">
+                                    {{ track.name }}
+                                </a>
+                                {% endfor %}
+                            </div>
+                            
+                            <div class="d-grid gap-2 d-md-flex">
+                                <a href="{{ playlist.youtube_url }}" target="_blank" class="btn btn-danger btn-lg">
+                                    <i class="fab fa-youtube"></i> Voir sur YouTube
+                                </a>
+                                <button class="btn btn-outline-primary btn-lg" onclick="openPreview()">
+                                    <i class="fas fa-eye"></i> Aperçu
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Description -->
+                    {% if playlist.description %}
+                    <div class="mb-4">
+                        <h5>Description</h5>
+                        <p class="card-text">{{ playlist.description|linebreaks }}</p>
+                    </div>
+                    {% endif %}
+
+                    <!-- Détails techniques -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h5>Informations</h5>
+                            <ul class="list-unstyled">
+                                <li><strong>Durée estimée:</strong> {{ playlist.display_duration }}</li>
+                                <li><strong>Nombre de vidéos:</strong> {{ playlist.video_count }}</li>
+                                <li><strong>Niveau:</strong> {{ playlist.get_difficulty_display }}</li>
+                                <li><strong>Langue:</strong> {{ playlist.get_language_display }}</li>
+                                {% if playlist.last_verified %}
+                                <li><strong>Dernière vérification:</strong> {{ playlist.last_verified }}</li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Progression utilisateur -->
+                    {% if user.is_authenticated and user_progress %}
+                    <div class="card bg-light">
+                        <div class="card-body">
+                            <h5>Votre progression</h5>
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span>Avancement:</span>
+                                <strong>{{ user_progress.progress_percentage|floatformat:0 }}%</strong>
+                            </div>
+                            <div class="progress mb-3" style="height: 10px;">
+                                <div class="progress-bar" style="width: {{ user_progress.progress_percentage }}%"></div>
+                            </div>
+                            <div class="row text-center">
+                                <div class="col-4">
+                                    <small class="text-muted">Vidéos vues</small>
+                                    <div class="h5 mb-0">{{ user_progress.completed_videos }}/{{ user_progress.total_videos }}</div>
+                                </div>
+                                <div class="col-4">
+                                    <small class="text-muted">Temps passé</small>
+                                    <div class="h5 mb-0">{{ user_progress.time_spent_minutes }}min</div>
+                                </div>
+                                <div class="col-4">
+                                    <small class="text-muted">Statut</small>
+                                    <div class="h5 mb-0">
+                                        {% if user_progress.is_completed %}
+                                        <span class="badge bg-success">Terminé</span>
+                                        {% else %}
+                                        <span class="badge bg-warning">En cours</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Actions rapides -->
+            {% if user.is_authenticated %}
+            <div class="card mb-4">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0">Mes Actions</h6>
+                </div>
+                <div class="card-body">
+                    {% if not user_progress %}
+                    <button class="btn btn-success w-100 mb-2" onclick="startPlaylist({{ playlist.id }})">
+                        <i class="fas fa-play"></i> Commencer
+                    </button>
+                    {% else %}
+                    <button class="btn btn-primary w-100 mb-2" onclick="updateProgress({{ playlist.id }})">
+                        <i class="fas fa-sync"></i> Mettre à jour
+                    </button>
+                    {% endif %}
+                    
+                    <button class="btn btn-outline-secondary w-100" onclick="showNotes({{ playlist.id }})">
+                        <i class="fas fa-edit"></i> Notes personnelles
+                    </button>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Playlists similaires -->
+            {% if similar_playlists %}
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0">Playlists similaires</h6>
+                </div>
+                <div class="card-body">
+                    {% for similar in similar_playlists %}
+                    <div class="d-flex mb-3 pb-2 border-bottom">
+                        {% if similar.thumbnail_url %}
+                        <img src="{{ similar.thumbnail_url }}" class="rounded me-3" style="width: 60px; height: 45px; object-fit: cover;">
+                        {% else %}
+                        <div class="bg-light rounded me-3 d-flex align-items-center justify-content-center" style="width: 60px; height: 45px;">
+                            <i class="fas fa-video text-muted"></i>
+                        </div>
+                        {% endif %}
+                        <div class="flex-grow-1">
+                            <h6 class="mb-0 small">{{ similar.title|truncatewords:5 }}</h6>
+                            <small class="text-muted">{{ similar.channel_name }}</small>
+                            <br>
+                            <a href="{% url 'playlist_detail' similar.id %}" class="btn btn-sm btn-outline-primary mt-1">
+                                Voir
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+<div class="modal fade" id="previewModal" tabindex="-1" aria-labelledby="previewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="previewModalLabel">Aperçu : {{ playlist.title }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0">
+                <div class="ratio ratio-16x9">
+                    {% if playlist.playlist_id %}
+                    <iframe src="https://www.youtube.com/embed/videoseries?list={{ playlist.playlist_id }}" 
+                            frameborder="0" 
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                            allowfullscreen>
+                    </iframe>
+                    {% else %}
+                    <div class="d-flex align-items-center justify-content-center h-100 bg-light">
+                        <div class="text-center">
+                            <i class="fas fa-exclamation-triangle fa-2x text-warning mb-3"></i>
+                            <p class="mb-0">Aperçu non disponible</p>
+                            <small class="text-muted">L'ID de la playlist n'est pas configuré</small>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="modal-footer">
+                <a href="{{ playlist.youtube_url }}" target="_blank" class="btn btn-danger">
+                    <i class="fab fa-youtube"></i> Voir sur YouTube
+                </a>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal des notes (existant) -->
+<div class="modal fade" id="notesModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">📝 Notes personnelles</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <textarea id="notesTextarea" class="form-control" rows="6" placeholder="Ajoutez vos notes personnelles..."></textarea>
+                <input type="hidden" id="currentPlaylistId">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-primary" onclick="saveNotes()">Enregistrer</button>
+            </div>
+        </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// CORRECTION : Suppression de la fonction openPreview() problématique
+// Les fonctions restantes pour la progression
+function startPlaylist(playlistId) {
+    // Démarrer le suivi de progression
+    fetch("{% url 'update_progress' %}", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify({
+            playlist_id: playlistId,
+            completed_videos: 0,
+            time_spent_minutes: 0
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            location.reload();
+        }
+    });
+}
+
+function updateProgress(playlistId) {
+    const completed = prompt("Combien de vidéos avez-vous terminées?", "{{ user_progress.completed_videos }}");
+    if (completed !== null) {
+        fetch("{% url 'update_progress' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                playlist_id: playlistId,
+                completed_videos: parseInt(completed),
+                time_spent_minutes: {{ user_progress.time_spent_minutes }}
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                location.reload();
+            }
+        });
+    }
+}
+
+function showNotes(playlistId) {
+    // Ouvrir le modal de notes
+    $('#currentPlaylistId').val(playlistId);
+    $('#notesTextarea').val('{{ user_progress.personal_notes|default:""|escapejs }}');
+    $('#notesModal').modal('show');
+}
+
+function saveNotes() {
+    const playlistId = $('#currentPlaylistId').val();
+    const notes = $('#notesTextarea').val();
+    
+    // Envoyer les notes via AJAX
+    fetch("{% url 'api_save_playlist_note' %}", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify({
+            playlist_id: playlistId,
+            notes: notes
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            $('#notesModal').modal('hide');
+            // Optionnel: afficher un message de succès
+            alert('Notes enregistrées avec succès!');
+        }
+    });
+}
+</script>
+{% endblock %}

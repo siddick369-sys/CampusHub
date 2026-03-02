@@ -1,0 +1,42 @@
+{# templates/includes/_services_main_menu.html #}
+{% load static %}
+
+<li class="nav-item dropdown">
+  <a class="nav-link dropdown-toggle" href="#" id="servicesMenuDropdown" role="button"
+     data-bs-toggle="dropdown" aria-expanded="false">
+    Services
+  </a>
+  <ul class="dropdown-menu" aria-labelledby="servicesMenuDropdown">
+
+    {# Lien vers la recherche de services (toujours visible) #}
+    <li>
+      <a class="dropdown-item" href="{% url 'service_list' %}">Rechercher un service</a>
+    </li>
+
+    {% if request.user.is_authenticated %}
+      <li><hr class="dropdown-divider"></li>
+
+      {# Dashboard prestataire si l'utilisateur est provider/autorisé #}
+      {% with profile=request.user.profile %}
+        {% if profile and profile.is_service_provider_verified %}
+          <li>
+            <a class="dropdown-item" href="{% url 'provider_dashboard' %}">
+              Mon tableau de bord prestataire
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item" href="{% url 'service_create' %}">
+              Publier un service
+            </a>
+          </li>
+        {% endif %}
+      {% endwith %}
+
+      <li>
+        <a class="dropdown-item" href="{% url 'service_search_alert_list' %}">
+          Mes alertes de services
+        </a>
+      </li>
+    {% endif %}
+  </ul>
+</li>

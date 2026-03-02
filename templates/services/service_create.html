@@ -1,0 +1,721 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Créer un Service{% endblock %}
+
+{% block content %}
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+<style>
+/* --- VARIABLES --- */
+:root {
+    --primary: #2563eb; /* Royal Blue */
+    --primary-dark: #1e40af;
+    --dark: #0f172a; /* Slate Dark */
+    --light: #f8fafc; /* Slate Light background */
+    --text: #334155; /* Slate Text */
+    --text-muted: #64748b;
+    --border: #e2e8f0;
+    --radius: 16px;
+    --success: #10b981; /* Green */
+}
+
+body { background: var(--light); color: var(--text); font-family: 'Inter', sans-serif; }
+h1, h4, h6 { font-family: 'Outfit', sans-serif; font-weight: 700; color: var(--dark); }
+.fw-500 { font-weight: 500; } .fw-600 { font-weight: 600; }
+.text-primary { color: var(--primary) !important; }
+
+/* --- HEADER --- */
+.badge-header { background: #eff6ff; color: var(--primary); padding: 6px 14px; border-radius: 30px; font-size: 0.85rem; font-weight: 600; text-transform: uppercase; margin-bottom: 15px; display: inline-block; letter-spacing: 0.5px; }
+
+/* --- STEPPER (PROGRESS BAR) --- */
+.stepper-wrapper {
+    display: flex; justify-content: space-between; margin-bottom: 40px; position: relative; padding: 0 20px;
+}
+/* Ligne connectrice */
+.stepper-wrapper::before {
+    content: ''; position: absolute; top: 20px; left: 5%; width: 90%; height: 3px;
+    background: #e2e8f0; z-index: 0;
+}
+.stepper-item {
+    position: relative; z-index: 1; text-align: center; display: flex; flex-direction: column; align-items: center; flex: 1;
+}
+.step-counter {
+    width: 40px; height: 40px; border-radius: 50%; background: white; border: 3px solid #e2e8f0;
+    color: var(--text-muted); font-weight: 700; display: flex; align-items: center; justify-content: center;
+    margin-bottom: 10px; transition: 0.3s ease-in-out; font-family: 'Outfit', sans-serif;
+}
+.step-name { font-size: 0.9rem; color: var(--text-muted); font-weight: 500; transition: 0.3s; }
+
+/* Active Step */
+.stepper-item.active .step-counter { 
+    background: var(--primary); border-color: var(--primary); color: white; 
+    box-shadow: 0 0 0 5px rgba(37, 99, 235, 0.15); transform: scale(1.1);
+}
+.stepper-item.active .step-name { color: var(--primary); font-weight: 700; }
+
+/* Completed Step */
+.stepper-item.completed .step-counter { background: var(--success); border-color: var(--success); color: white; }
+.stepper-item.completed .step-name { color: var(--success); }
+
+/* --- FORM CARD --- */
+.form-card { background: white; border-radius: 24px; border: 1px solid #f1f5f9; overflow: hidden; }
+.step-content { 
+    display: none; /* Caché par défaut */
+    padding: 40px 50px; 
+    animation: slideUp 0.4s ease-out; 
+}
+/* SEULEMENT celui qui est active est visible */
+.step-content.active { display: block; }
+
+.step-header { margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
+.step-title { margin-bottom: 5px; font-size: 1.5rem; }
+
+/* Inputs Styling (Adaptation des widgets Django) */
+.form-label-pro { font-weight: 600; font-size: 0.95rem; color: var(--dark); margin-bottom: 8px; display: block; }
+.input-icon-wrapper { position: relative; }
+.input-icon-wrapper i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--text-muted); z-index: 2; font-size: 1.1rem; }
+
+/* Ciblage large pour attraper les widgets Django */
+input[type="text"], input[type="number"], input[type="url"], textarea, select {
+    width: 100%; padding: 14px 15px; border: 1px solid var(--border); border-radius: 10px;
+    background: #f8fafc; color: var(--dark); transition: all 0.2s; font-size: 1rem; font-family: 'Inter', sans-serif;
+}
+.input-icon-wrapper input, .input-icon-wrapper select { padding-left: 45px; }
+
+input:focus, textarea:focus, select:focus {
+    border-color: var(--primary); background: white; outline: none; box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+}
+.form-text { margin-top: 8px; color: var(--text-muted); font-size: 0.85rem; }
+
+/* Urgency Box */
+.urgency-box { background: #fffbeb; border: 1px solid #fcd34d; border-radius: 16px; padding: 25px; }
+.icon-box-sm { width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; }
+
+/* --- FOOTER & BUTTONS --- */
+.card-footer-custom { padding: 25px 50px; background: #f8fafc; border-top: 1px solid var(--border); display: flex; align-items: center; }
+
+.liquid-btn {
+    position: relative; display: inline-flex; justify-content: center; align-items: center;
+    padding: 14px 35px; font-weight: 700; border-radius: 50px; overflow: hidden;
+    transition: all 0.4s ease; cursor: pointer; border: none; z-index: 1; text-decoration: none; font-size: 1rem;
+}
+.btn-primary-pro { background: var(--primary); color: white; }
+.btn-primary-pro::before { content: ''; position: absolute; top: 0; left: 0; width: 0; height: 100%; background: var(--primary-dark); z-index: -1; transition: width 0.4s ease; }
+.liquid-btn:hover::before { width: 100%; }
+.btn-success-pro { background: var(--success); color: white; }
+.btn-success-pro::before { content: ''; position: absolute; top: 0; left: 0; width: 0; height: 100%; background: #059669; z-index: -1; transition: width 0.4s ease; }
+
+/* Animations */
+@keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+.reveal-on-scroll { opacity: 0; transform: translateY(30px); transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
+.reveal-on-scroll.active { opacity: 1; transform: translateY(0); }
+
+/* Responsive */
+@media (max-width: 768px) {
+    .stepper-wrapper { padding: 0; }
+    .step-name { display: none; } /* Cache les noms sur mobile pour gagner de la place */
+    .step-content { padding: 25px; }
+    .card-footer-custom { padding: 20px 25px; flex-direction: column-reverse; gap: 15px; }
+    .card-footer-custom .ms-auto { margin-left: 0 !important; width: 100%; display: flex; flex-direction: column; gap: 15px; }
+    #prevBtn, #nextBtn, #cancelBtn { width: 100%; text-align: center; }
+    .display-5 { font-size: 2rem; }
+}
+/* --- CUSTOM CHOICES.JS (Style Corporate) --- */
+
+/* 1. Le conteneur principal (Champ de saisie) */
+.choices__inner {
+    background-color: #f8fafc !important; /* Gris clair */
+    border: 1px solid var(--border) !important;
+    border-radius: 10px !important;
+    padding: 5px 10px !important;
+    min-height: 48px !important;
+    display: flex;
+    align-items: center;
+    transition: 0.3s;
+}
+
+/* Focus (Bordure bleue) */
+.choices.is-focused .choices__inner {
+    border-color: var(--primary) !important;
+    background-color: white !important;
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1) !important;
+}
+
+/* 2. Les Tags sélectionnés (Badges) */
+.choices__list--multiple .choices__item {
+    background-color: #eff6ff !important; /* Fond Bleu très clair */
+    color: var(--primary) !important;     /* Texte Bleu Roi */
+    border: 1px solid #bfdbfe !important;
+    border-radius: 6px !important;
+    font-size: 0.85rem !important;
+    font-weight: 600 !important;
+    padding: 4px 8px !important;
+    margin-right: 5px !important;
+}
+
+/* La croix de suppression sur le tag */
+.choices__list--multiple .choices__item .choices__button {
+    border-left: 1px solid #bfdbfe !important;
+    margin-left: 8px !important;
+    filter: invert(36%) sepia(93%) saturate(1385%) hue-rotate(203deg) brightness(91%) contrast(93%); /* Rend l'icône bleue */
+}
+
+/* 3. Le Menu Déroulant */
+.choices__list--dropdown {
+    border: 1px solid var(--border) !important;
+    border-radius: 10px !important;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1) !important;
+    margin-top: 5px !important;
+    z-index: 100 !important;
+    background: white !important;
+}
+
+/* Option dans le menu */
+.choices__list--dropdown .choices__item {
+    padding: 10px 15px !important;
+    font-size: 0.95rem !important;
+    color: var(--text) !important;
+}
+
+/* Option au survol */
+.choices__list--dropdown .choices__item--selectable.is-highlighted {
+    background-color: #eff6ff !important;
+    color: var(--primary) !important;
+}
+
+/* Input de recherche dans le dropdown (si affiché) ou inline */
+.choices__input {
+    background-color: transparent !important;
+    margin-bottom: 0 !important;
+    font-size: 0.95rem !important;
+}
+</style>
+<div class="main-container">
+    <div class="container pt-5 pb-3">
+        <div class="text-center mb-5 reveal-on-scroll">
+            <span class="badge-header">Nouveau Service</span>
+            <h1 class="fw-bold text-dark display-5">Publier une <span class="text-primary">Offre</span></h1>
+            <p class="text-muted lead">Remplissez les informations étape par étape pour proposer vos services.</p>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-lg-9 col-xl-8">
+                
+                <div class="stepper-wrapper mb-5 reveal-on-scroll">
+                    <div class="stepper-item active" id="step-indicator-0">
+                        <div class="step-counter">1</div>
+                        <div class="step-name">Général</div>
+                    </div>
+                    <div class="stepper-item" id="step-indicator-1">
+                        <div class="step-counter">2</div>
+                        <div class="step-name">Détails</div>
+                    </div>
+                    <div class="stepper-item" id="step-indicator-2">
+                        <div class="step-counter">3</div>
+                        <div class="step-name">Offre</div>
+                    </div>
+                    <div class="stepper-item" id="step-indicator-3">
+                        <div class="step-counter">4</div>
+                        <div class="step-name">Finitions</div>
+                    </div>
+                </div>
+
+                <div class="form-card shadow-lg reveal-on-scroll" data-delay="100">
+                    <form method="post" id="wizardForm" enctype="multipart/form-data">
+                        {% csrf_token %}
+
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger mx-4 mt-4">
+                                {{ form.non_field_errors }}
+                            </div>
+                        {% endif %}
+
+                        <div class="step-content active" id="step-0">
+                            <div class="step-header">
+                                <h4 class="step-title">Informations de base</h4>
+                                <p class="text-muted small mb-0">Commençons par l'essentiel de votre service.</p>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label class="form-label-pro">Titre du service <span class="text-danger">*</span></label>
+                                {{ form.title }}
+                                <div class="form-text">Soyez clair et concis (ex: "Je vais créer votre logo vectoriel").</div>
+                            </div>
+
+                            <div class="row g-4">
+                                <div class="col-md-6">
+                                    <label class="form-label-pro">Catégorie <span class="text-danger">*</span></label>
+                                    <div class="input-icon-wrapper">
+                                        <i class="bi bi-grid text-muted"></i>
+                                        {{ form.category }}
+                                    </div>
+                                </div>
+      <div class="col-md-6">
+    <label class="form-label-pro">Tags (Compétences) <span class="text-danger">*</span></label>
+    
+    <div class="choices-container">
+        {{ form.tags }}
+    </div>
+    
+    <div class="form-text">Recherchez et ajoutez plusieurs compétences.</div>
+</div>
+                            </div>
+                        </div>
+
+                        <div class="step-content" id="step-1">
+                            <div class="step-header">
+                                <h4 class="step-title">Description du service</h4>
+                                <p class="text-muted small mb-0">Détaillez ce que vous proposez exactement.</p>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label-pro">Description courte <span class="text-danger">*</span></label>
+                                {{ form.short_description }}
+                                <div class="form-text">Une phrase d'accroche pour les résultats de recherche.</div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label-pro">Description complète <span class="text-danger">*</span></label>
+                                {{ form.description }}
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label-pro mb-2"><i class="bi bi-images me-2 text-primary"></i>Image de couverture</label>
+                                <div class="p-3 bg-light border rounded-3">
+                                    <input type="file" name="media_files" multiple class="form-control" id="id_media_files">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="step-content" id="step-2">
+                            <div class="step-header">
+                                <h4 class="step-title">Tarification & Livraison</h4>
+                                <p class="text-muted small mb-0">Définissez la valeur de votre travail.</p>
+                            </div>
+
+                            <div class="bg-light p-4 rounded-3 mb-4 border">
+                                <h6 class="fw-bold mb-3 text-primary"><i class="bi bi-coin me-2"></i>Prix</h6>
+                                <div class="row g-3">
+                                    <div class="col-md-4">
+                                        <label class="form-label-pro small">Prix Min</label>
+                                        {{ form.price_min }}
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label-pro small">Prix Max</label>
+                                        {{ form.price_max }}
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label-pro small">Devise</label>
+                                        {{ form.currency }}
+                                    </div>
+                                </div>
+                                
+                                <div class="form-check form-switch mt-3 pt-2 border-top">
+                                    {{ form.is_price_negotiable }}
+                                    <label class="form-check-label fw-500" for="{{ form.is_price_negotiable.id_for_label }}">Prix négociable avec le client ?</label>
+                                </div>
+                            </div>
+
+                            <div class="row g-4 mb-4">
+    <div class="col-md-6">
+        <label class="form-label-pro"><i class="bi bi-hourglass-split me-1 text-muted"></i>Délais estimés (Jours)</label>
+        
+        <div class="input-group mb-2">
+            <span class="input-group-text bg-white text-muted">Min</span>
+            {{ form.delivery_time_min_days }} <span class="input-group-text bg-white text-muted">Jours</span>
+        </div>
+
+        <div class="input-group">
+            <span class="input-group-text bg-white text-muted">Max</span>
+            {{ form.delivery_time_max_days }}
+            <span class="input-group-text bg-white text-muted">Jours</span>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <label class="form-label-pro"><i class="bi bi-arrow-repeat me-1 text-muted"></i>Révisions incluses</label>
+        {{ form.revisions_included }}
+    </div>
+</div>
+                        </div>
+
+                        <div class="step-content" id="step-3">
+                            <div class="step-header">
+                                <h4 class="step-title">Finitions</h4>
+                                <p class="text-muted small mb-0">Derniers réglages avant publication.</p>
+                            </div>
+
+                            <div class="row g-4 mb-4">
+                                <div class="col-md-6">
+                                    <label class="form-label-pro">Visibilité</label>
+                                    <div class="input-icon-wrapper">
+                                        <i class="bi bi-eye text-muted"></i>
+                                        {{ form.visibility }}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label-pro">Statut initial</label>
+                                    <div class="input-icon-wrapper">
+                                        <i class="bi bi-toggle-on text-muted"></i>
+                                        {{ form.status }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label-pro"><i class="bi bi-youtube me-2 text-danger"></i>Vidéo de présentation (URL)</label>
+                                {{ form.video_urls }}
+                                <div class="form-text">Lien YouTube ou Vimeo pour présenter votre service.</div>
+                            </div>
+
+                            <div class="urgency-box">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="icon-box-sm bg-warning-subtle text-warning me-3">
+                                        <i class="bi bi-lightning-charge-fill"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-0 fw-bold text-dark">Option Urgence</h6>
+                                        <small class="text-muted">Proposer une livraison express contre supplément.</small>
+                                    </div>
+                                </div>
+                                
+                                <div class="row align-items-center g-3">
+                                    <div class="col-md-7">
+                                        <div class="form-check form-switch ps-0">
+                                            <div class="d-flex align-items-center">
+                                                 {{ form.allow_urgent }}
+                                                <label class="form-check-label ms-3 fw-500" for="{{ form.allow_urgent.id_for_label }}">Activer l'option urgence</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-5">
+                                        <label class="form-label-pro small mb-1">Majoration (%)</label>
+                                        <div class="input-group input-group-sm">
+                                            {{ form.urgent_extra_percent }}
+                                            <span class="input-group-text bg-white text-muted border-start-0">%</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-footer-custom">
+                            <button type="button" class="btn btn-outline-secondary rounded-pill px-4 fw-600 py-2" id="prevBtn" onclick="nextPrev(-1)" style="display:none;">
+                                <i class="bi bi-arrow-left me-2"></i> Précédent
+                            </button>
+                            
+                            <div class="ms-auto d-flex align-items-center">
+                                <a href="{% url 'provider_dashboard' %}" class="btn btn-link text-muted text-decoration-none me-3 fw-600" id="cancelBtn">Annuler</a>
+                                
+                                <button type="button" class="liquid-btn btn-primary-pro" id="nextBtn" onclick="nextPrev(1)">
+                                    <span>Suivant <i class="bi bi-arrow-right ms-2"></i></span>
+                                </button>
+                            </div>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="validationModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+            
+            <div class="modal-header bg-danger text-white border-bottom-0">
+                <h5 class="modal-title fw-bold">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i> Action Requise
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body p-4">
+                <div class="text-center mb-3">
+                    <div class="icon-box-danger mx-auto mb-3 rounded-circle d-flex align-items-center justify-content-center" 
+                         style="width:60px; height:60px; background:#fef2f2; color:#ef4444; font-size:1.8rem; border:1px solid #fee2e2;">
+                        <i class="bi bi-hand-thumbs-down-fill"></i>
+                    </div>
+                    <h6 class="fw-bold text-dark" id="modalTitle">Formulaire incomplet ou invalide</h6>
+                </div>
+
+                <ul id="errorList" class="list-group list-group-flush rounded-3 border">
+                    </ul>
+                
+                <div id="moderationWarning" class="alert alert-warning mt-3 small d-none">
+                    <i class="bi bi-shield-lock-fill me-1"></i> 
+                    <strong>Rappel de sécurité :</strong> Les contenus illégaux, immoraux ou incitant à la haine sont strictement interdits et peuvent entraîner la suspension du compte.
+                </div>
+            </div>
+
+            <div class="modal-footer border-top-0 justify-content-center pb-4">
+                <button type="button" class="btn btn-danger rounded-pill px-5 fw-600" data-bs-dismiss="modal">
+                    Je corrige
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+// --- VARIABLES GLOBALES ---
+let currentTab = 0; 
+let steps, stepIndicators, prevBtn, nextBtn, cancelBtn;
+// Liste de mots interdits (Regex)
+const FORBIDDEN_REGEX = /(prostitution|drogue|stupéfiant|cocaïne|heroïne|tueur|agression|arme à feu|arme blanche|sexe|escort|sexuelle|pornographie|arnaque|braquage)/i;
+
+document.addEventListener("DOMContentLoaded", function() {
+    
+    // 1. Init Références
+    steps = document.getElementsByClassName("step-content");
+    stepIndicators = document.getElementsByClassName("stepper-item");
+    prevBtn = document.getElementById("prevBtn");
+    nextBtn = document.getElementById("nextBtn");
+    cancelBtn = document.getElementById("cancelBtn");
+
+    // 2. Init Choices.js
+    const tagSelectElement = document.getElementById('id_tags');
+    if (tagSelectElement) {
+        new Choices(tagSelectElement, {
+            removeItemButton: true,
+            searchEnabled: true,
+            searchPlaceholderValue: "Rechercher...",
+            placeholder: true,
+            placeholderValue: "Sélectionnez des tags",
+            noResultsText: 'Aucun résultat trouvé',
+            itemSelectText: '',
+        });
+    }
+
+    // 3. Affichage initial
+    if (steps.length > 0) showTab(currentTab);
+
+    // 4. Reveal & Button Logic (Gardé de ton script)
+    const revealObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('active'); });
+    });
+    document.querySelectorAll('.reveal-on-scroll').forEach(el => revealObserver.observe(el));
+    
+    const btn = document.querySelector(".liquid-btn");
+    if(btn) {
+        btn.addEventListener("mousemove", e => {
+            const rect = btn.getBoundingClientRect();
+            btn.style.transform = `translate(${(e.clientX - rect.left - rect.width/2)/10}px, ${(e.clientY - rect.top - rect.height/2)/10}px)`;
+        });
+        btn.addEventListener("mouseleave", () => btn.style.transform = "translate(0,0)");
+    }
+    
+    // --- GESTION DES ERREURS DJANGO (Serveur) ---
+    // Ce bloc n'existe que s'il y a des erreurs dans le formulaire renvoyé par la vue
+    {% if form.errors %}
+        let serverErrors = [];
+        
+        // On boucle sur les erreurs générées par Django
+        {% for field, error_list in form.errors.items %}
+            {% for error in error_list %}
+                // On prépare un message clair
+                // On essaie de traduire les noms de champs techniques en français si possible
+                let fieldName = "{{ field }}";
+                let label = fieldName;
+
+                // Petit mapping manuel pour rendre ça plus joli (optionnel)
+                const fieldLabels = {
+                    "delivery_time_min_days": "Délai minimum",
+                    "media_files": "Fichiers médias",
+                    "tags": "Tags",
+                    "title": "Titre",
+                    "category": "Catégorie"
+                };
+                
+                if (fieldLabels[fieldName]) {
+                    label = fieldLabels[fieldName];
+                }
+
+                // On ajoute l'erreur à la liste
+                serverErrors.push(`<strong>${label} :</strong> {{ error|escapejs }}`);
+            {% endfor %}
+        {% endfor %}
+
+        // On déclenche la modale que nous avons créée précédemment
+        // (Assure-toi que la fonction showErrorModal est bien définie dans ton script principal)
+        if (typeof showErrorModal === "function") {
+            showErrorModal(serverErrors, false); // false car ce n'est pas une erreur de modération éthique
+        } else {
+            console.error("Fonction showErrorModal introuvable", serverErrors);
+        }
+    {% endif %}
+});
+
+// --- FONCTIONS NAVIGATION ---
+
+function showTab(n) {
+    if (!steps || steps.length === 0) return;
+
+    for (let i = 0; i < steps.length; i++) {
+        steps[i].style.display = "none";
+        steps[i].classList.remove("active");
+    }
+    steps[n].style.display = "block";
+    setTimeout(() => steps[n].classList.add("active"), 10);
+
+    // Gestion Boutons
+    if (n == 0) {
+        prevBtn.style.display = "none";
+        cancelBtn.style.display = "inline-block";
+    } else {
+        prevBtn.style.display = "inline-flex";
+        cancelBtn.style.display = "none";
+    }
+
+    if (n == (steps.length - 1)) {
+        nextBtn.innerHTML = '<span><i class="bi bi-rocket-takeoff-fill me-2"></i> Publier</span>';
+        nextBtn.classList.remove("btn-primary-pro");
+        nextBtn.classList.add("btn-success-pro");
+    } else {
+        nextBtn.innerHTML = '<span>Suivant <i class="bi bi-arrow-right ms-2"></i></span>';
+        nextBtn.classList.remove("btn-success-pro");
+        nextBtn.classList.add("btn-primary-pro");
+    }
+
+    updateStepper(n);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function nextPrev(n) {
+    // Si on avance (n=1), on valide d'abord
+    if (n == 1 && !validateForm()) return false;
+
+    if (currentTab + n >= steps.length) {
+        // Dernière vérification globale avant soumission
+        if(validateForm()) {
+            document.getElementById("wizardForm").submit();
+        }
+        return false;
+    }
+
+    currentTab = currentTab + n;
+    showTab(currentTab);
+}
+
+// --- FONCTION DE VALIDATION AVANCÉE ---
+
+function validateForm() {
+    let valid = true;
+    let errors = []; // Tableau pour stocker les messages d'erreurs
+    let hasModerationError = false;
+
+    const currentInputs = steps[currentTab].querySelectorAll("input, select, textarea");
+
+    currentInputs.forEach(input => {
+        let isFieldValid = true;
+        let errorMessage = "";
+        
+        // Récupérer le Label associé pour le message d'erreur
+        let labelText = "Ce champ";
+        // On cherche le label dans le parent ou via l'attribut 'for'
+        const parentDiv = input.closest('div.mb-4') || input.closest('div.col-md-6') || input.closest('div');
+        if (parentDiv) {
+            const label = parentDiv.querySelector('label');
+            if (label) labelText = label.innerText.replace('*', '').trim();
+        }
+
+        // 1. VALIDATION CHOICES.JS (Select cachés)
+        if (input.tagName === "SELECT" && input.style.display === "none") {
+             if (input.hasAttribute('required') && (!input.value || input.value === "")) {
+                 isFieldValid = false;
+                 errorMessage = `Veuillez sélectionner une option pour : <strong>${labelText}</strong>`;
+                 // Style visuel sur le conteneur Choices
+                 const wrapper = input.closest('.choices');
+                 if(wrapper) wrapper.querySelector('.choices__inner').style.borderColor = "#dc3545";
+             } else {
+                 const wrapper = input.closest('.choices');
+                 if(wrapper) wrapper.querySelector('.choices__inner').style.borderColor = ""; 
+             }
+        } 
+        
+        // 2. VALIDATION STANDARD HTML5 (Required, Type, etc.)
+        else if (input.hasAttribute('required') && !input.checkValidity()) {
+            isFieldValid = false;
+            errorMessage = `Le champ <strong>${labelText}</strong> est obligatoire ou invalide.`;
+            input.classList.add('is-invalid');
+        } else {
+            input.classList.remove('is-invalid');
+        }
+
+        // 3. VALIDATION MODÉRATION (REGEX) - Uniquement sur Titre et Description
+        if (isFieldValid && (input.name === 'title' || input.name === 'description' || input.name === 'short_description')) {
+            if (FORBIDDEN_REGEX.test(input.value)) {
+                isFieldValid = false;
+                hasModerationError = true;
+                errorMessage = `Le contenu de <strong>${labelText}</strong> contient des termes interdits (Charte éthique).`;
+                input.classList.add('is-invalid');
+            }
+        }
+
+        // Si erreur détectée, on l'ajoute à la liste et on invalide le form
+        if (!isFieldValid) {
+            valid = false;
+            errors.push(errorMessage);
+        }
+    });
+
+    // --- GESTION DE LA MODALE D'ERREUR ---
+    if (!valid) {
+        showErrorModal(errors, hasModerationError);
+    }
+    
+    return valid;
+}
+
+function showErrorModal(errors, isModerationIssue) {
+    const modalElement = document.getElementById('validationModal');
+    const errorList = document.getElementById('errorList');
+    const modalTitle = document.getElementById('modalTitle');
+    const modWarning = document.getElementById('moderationWarning');
+    const header = modalElement.querySelector('.modal-header');
+
+    // Reset du contenu
+    errorList.innerHTML = "";
+    
+    // Remplissage de la liste
+    errors.forEach(err => {
+        const li = document.createElement('li');
+        li.className = "list-group-item text-danger bg-transparent border-bottom-0 py-2";
+        li.innerHTML = `<i class="bi bi-x-circle-fill me-2"></i> ${err}`;
+        errorList.appendChild(li);
+    });
+
+    // Customisation selon le type d'erreur
+    if (isModerationIssue) {
+        modalTitle.innerText = "Contenu Non Autorisé Détecté";
+        modWarning.classList.remove('d-none'); // Afficher le warning jaune
+        // On pourrait changer la couleur du header en noir/rouge foncé pour marquer le coup
+        header.className = "modal-header bg-dark text-white border-bottom-0";
+    } else {
+        modalTitle.innerText = "Il manque des informations";
+        modWarning.classList.add('d-none');
+        header.className = "modal-header bg-danger text-white border-bottom-0";
+    }
+
+    // Affichage Bootstrap
+    const bsModal = new bootstrap.Modal(modalElement);
+    bsModal.show();
+}
+
+function updateStepper(n) {
+    for (let i = 0; i < stepIndicators.length; i++) {
+        stepIndicators[i].classList.remove("active");
+        if (i < n) {
+            stepIndicators[i].classList.add("completed");
+            stepIndicators[i].querySelector(".step-counter").innerHTML = '<i class="bi bi-check-lg"></i>';
+        } else {
+            stepIndicators[i].classList.remove("completed");
+            stepIndicators[i].querySelector(".step-counter").innerText = i + 1;
+        }
+        if (i == n) stepIndicators[i].classList.add("active");
+    }
+}
+</script>
+{% endblock %}

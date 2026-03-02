@@ -1,0 +1,310 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Candidature – {{ application.student.username }} - CampusHub{% endblock %}
+
+{% block content %}
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+<div id="pageLoader" class="page-loader">
+    <div class="loader-content text-center">
+        <div class="logo-placeholder mb-4">
+            <div class="main-spinner"></div>
+            <i class="bi bi-person-badge spinner-icon text-primary"></i>
+        </div>
+        <div class="loader-text-wrap">
+            <h5 class="fw-bold text-dark mb-1">Analyse du Dossier</h5>
+            <div class="progress-bar-wrap mx-auto"><div class="progress-bar-fill"></div></div>
+            <small class="text-muted mt-2 d-block">Récupération des données candidat...</small>
+        </div>
+    </div>
+</div>
+
+<div class="premium-bg">
+    <div class="blob blob-primary"></div>
+    <div class="blob blob-secondary"></div>
+    <div class="tech-grid"></div>
+</div>
+
+<div class="cursor-theme d-none d-md-block"></div>
+
+<div class="container py-5 relative-z">
+
+    <header class="d-flex flex-column flex-md-row justify-content-between align-items-md-end mb-5 gap-4" data-aos="fade-down">
+        <div>
+            <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 rounded-pill px-3 py-2 mb-3 fw-600 x-small text-uppercase ls-1">
+                Dossier de candidature
+            </span>
+            <h1 class="fw-800 text-dark mb-1">
+                {{ application.student.profile.full_name|default:application.student.username }}
+            </h1>
+            <p class="text-muted mb-0 fw-500">
+                Postule pour : <span class="text-primary fw-700">{{ application.offer.title }}</span>
+            </p>
+        </div>
+        <div class="text-md-end">
+            <span class="text-muted x-small fw-bold text-uppercase ls-1 d-block mb-1">Reçue le</span>
+            <div class="date-badge bg-white shadow-sm border rounded-pill px-3 py-2 fw-600 small text-dark">
+                <i class="bi bi-calendar-check me-2 text-primary"></i>{{ application.created_at|date:"d F Y" }}
+            </div>
+        </div>
+    </header>
+
+    <div class="row g-4">
+        <div class="col-lg-7">
+            
+            <div class="card-pro shadow-sm border-0 bg-white p-4 p-md-5 mb-4" data-aos="fade-right">
+                <div class="d-flex align-items-center gap-3 mb-4">
+                    <div class="icon-box-sm bg-primary bg-opacity-10 text-primary rounded-3">
+                        <i class="bi bi-envelope-paper-heart"></i>
+                    </div>
+                    <h5 class="fw-800 text-dark mb-0">Lettre de Motivation</h5>
+                </div>
+                
+                <div class="motivation-content bg-light p-4 rounded-4 border">
+                    {% if application.motivation_letter %}
+                        <p class="text-dark-emphasis leading-relaxed mb-0" style="white-space: pre-wrap; font-family: 'Inter', sans-serif;">{{ application.motivation_letter }}</p>
+                    {% else %}
+                        <p class="text-muted italic mb-0">Aucune lettre de motivation fournie par le candidat.</p>
+                    {% endif %}
+                </div>
+
+                {% if application.cv %}
+                <div class="mt-4 pt-4 border-top">
+                    <h6 class="fw-bold text-dark mb-3">Document joint</h6>
+                    <a href="{% url 'student_document_download' application.cv.pk %}" target="_blank" class="btn btn-outline-primary rounded-pill px-4 fw-600 btn-sm">
+                        <i class="bi bi-file-earmark-pdf me-2"></i> Consulter le CV
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="card-pro shadow-sm border-0 bg-white p-4 p-md-5" data-aos="fade-right" data-aos-delay="200">
+                <h5 class="fw-800 text-dark mb-4">Gestion du Dossier</h5>
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-700 text-dark x-small text-uppercase ls-1">Statut décisionnel</label>
+                            <select name="status" class="form-select pro-input">
+                                {% for value, label in application.STATUS_CHOICES %}
+                                    <option value="{{ value }}" {% if application.status == value %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-700 text-dark x-small text-uppercase ls-1">Score d'évaluation (1-5)</label>
+                            <input type="number" name="rating" min="1" max="5" class="form-control pro-input" value="{{ application.rating }}">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-700 text-dark x-small text-uppercase ls-1">Note interne (Confidential RH)</label>
+                            <textarea name="company_note" rows="3" class="form-control pro-input" placeholder="Notes visibles uniquement par votre équipe...">{{ application.company_note }}</textarea>
+                        </div>
+                    </div>
+                    <div class="mt-4 d-flex justify-content-between align-items-center">
+                        <button type="submit" class="liquid-btn btn-primary-pro px-4 py-3">
+                            <span>ENREGISTRER LA DÉCISION</span>
+                        </button>
+                        <a href="{% url 'company_offer_applications' application.offer.slug %}" class="text-muted text-decoration-none fw-600 small hover-primary">
+                            <i class="bi bi-arrow-left me-1"></i>Retour à la liste
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="col-lg-5">
+            <div class="card-pro shadow-sm border-0 bg-white p-4 text-center candidate-card mb-4" data-aos="fade-left">
+                <div class="position-relative d-inline-block mb-4">
+                    <img src="{{ application.student.profile.avatar.url|default:'/static/img/default_avatar.png' }}"
+                         class="rounded-circle profile-photo shadow-sm border border-4 border-white"
+                         style="width:130px; height:130px; object-fit:cover; cursor:pointer;"
+                         alt="Candidat"
+                         id="candidatePhoto">
+                    <div class="online-indicator"></div>
+                </div>
+
+                <h5 class="fw-800 text-dark mb-1">{{ application.student.profile.full_name|default:application.student.username }}</h5>
+                <p class="text-primary small fw-600 mb-3">{{ application.student.email }}</p>
+                
+                <div class="candidate-info-pills d-flex flex-wrap justify-content-center gap-2 mb-4">
+                    <span class="badge bg-light text-dark border rounded-pill px-3 py-2 fw-500 x-small">
+                        <i class="bi bi-mortarboard-fill me-1 text-primary"></i>{{ application.student.profile.student_school|default:"Non spécifié" }}
+                    </span>
+                    <span class="badge bg-light text-dark border rounded-pill px-3 py-2 fw-500 x-small">
+                        <i class="bi bi-cpu-fill me-1 text-primary"></i>{{ application.student.profile.student_field|default:"Filière" }}
+                    </span>
+                </div>
+
+                <div id="reviewBadge" class="badge-scroll-info" style="display:none;">
+                    <div class="alert alert-primary bg-primary bg-opacity-10 border-primary border-opacity-25 rounded-4 py-2 px-3 x-small fw-700 text-primary animate-pulse">
+                        ✨ Cliquez sur la photo pour donner un avis
+                    </div>
+                </div>
+
+                <div id="reviewForm" class="mt-4" style="display:none;">
+                    <div class="p-4 rounded-4 bg-light border text-start">
+                        <h6 class="fw-800 text-dark mb-3 small text-uppercase ls-1">Votre avis sur le profil</h6>
+                        <form method="post" action="{% url 'company_feedback' application.id %}">
+                            {% csrf_token %}
+                            <textarea name="content" rows="3" class="form-control pro-input mb-3 x-small" placeholder="Pertinence, aisance technique..." required></textarea>
+                            <button type="submit" class="btn btn-primary w-100 rounded-pill fw-700 py-2 btn-sm">
+                                <i class="bi bi-chat-dots-fill me-2"></i>Envoyer le feedback
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-pro shadow-sm border-0 bg-white overflow-hidden" data-aos="fade-left" data-aos-delay="200">
+                <div class="p-4 border-bottom bg-light bg-opacity-50">
+                    <h6 class="fw-800 text-dark mb-0 x-small text-uppercase ls-1">Portfolio & Confiance</h6>
+                </div>
+                <div class="p-4">
+                    {% if public_docs %}
+                        <div class="list-group list-group-flush gap-2">
+                            {% for doc in public_docs %}
+                            <a href="{{ doc.file.url }}" target="_blank" class="list-group-item list-group-item-action border rounded-4 d-flex justify-content-between align-items-center p-3 transition-all">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="icon-box-xs bg-primary bg-opacity-10 text-primary rounded-2">
+                                        <i class="bi bi-file-earmark-code"></i>
+                                    </div>
+                                    <div>
+                                        <span class="d-block fw-700 text-dark small">{{ doc.title|default:doc.file.name }}</span>
+                                        <span class="x-small text-muted">{{ doc.get_doc_type_display }}</span>
+                                    </div>
+                                </div>
+                                <i class="bi bi-arrow-up-right text-muted small"></i>
+                            </a>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="bi bi-folder-x text-muted opacity-25 fs-1"></i>
+                            <p class="text-muted small mt-2 mb-0">Aucun document public.</p>
+                        </div>
+                    {% endif %}
+
+                    <div class="trust-score-box mt-5 p-4 rounded-4 text-center border">
+                        <div class="x-small fw-800 text-muted text-uppercase ls-1 mb-3">Indice de Confiance CampusHub</div>
+                        <div class="score-radial mx-auto mb-2">
+                            <span class="fs-2 fw-900 text-primary">{{ application.student.profile.trust_score }}</span>
+                            <span class="text-muted small">/100</span>
+                        </div>
+                        <div class="progress mb-3" style="height: 6px;">
+                            <div class="progress-bar {% if application.student.profile.trust_score >= 80 %}bg-success{% elif application.student.profile.trust_score >= 50 %}bg-primary{% else %}bg-warning{% endif %}" 
+                                 style="width: {{ application.student.profile.trust_score }}%"></div>
+                        </div>
+                        <p class="x-small text-muted mb-0 leading-relaxed">Basé sur le respect des engagements et la qualité des échanges passés.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<button id="btnBackToTop" class="btn-back-to-top"><i class="bi bi-arrow-up"></i></button>
+
+<style>
+:root { --primary: #2563eb; --primary-dark: #1e40af; --accent: #0ea5e9; --bg-light: #f8fafc; --white: #ffffff; --text-dark: #0f172a; --border: #e2e8f0; --radius: 24px; }
+
+body { background-color: var(--bg-light); color: var(--text-dark); font-family: 'Inter', sans-serif; overflow-x: hidden; }
+h1, h4, h5, h6 { font-family: 'Outfit', sans-serif; }
+
+/* Loader & Background */
+.page-loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 9999; display: flex; align-items: center; justify-content: center; transition: 0.6s ease; }
+.main-spinner { width: 80px; height: 80px; border: 4px solid #f1f5f9; border-top: 4px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
+@keyframes spin { 100% { transform: rotate(360deg); } }
+.premium-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; background: #f8fafc; }
+.tech-grid { position: absolute; width: 100%; height: 100%; background-image: radial-gradient(var(--border) 1px, transparent 1px); background-size: 40px 40px; opacity: 0.4; }
+.blob { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.12; animation: floatBlob 20s infinite alternate; }
+.blob-primary { width: 600px; height: 600px; background: var(--primary); top: -100px; left: -100px; }
+.blob-secondary { width: 400px; height: 400px; background: var(--accent); bottom: -100px; right: -100px; }
+@keyframes floatBlob { 0% { transform: translate(0, 0); } 100% { transform: translate(40px, 60px); } }
+
+/* Cards & Elements */
+.card-pro { border-radius: var(--radius); transition: 0.3s ease; border: 1px solid var(--border); }
+.pro-input { background: #f8fafc !important; border: 1px solid var(--border) !important; padding: 12px 18px; border-radius: 12px; font-size: 0.9rem; transition: 0.3s; }
+.pro-input:focus { background: white !important; border-color: var(--primary) !important; box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); outline: none; }
+
+.profile-photo { transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+.profile-photo:hover { transform: scale(1.05); }
+
+.online-indicator { position: absolute; bottom: 8px; right: 25%; width: 22px; height: 22px; background: #10b981; border: 4px solid white; border-radius: 50%; }
+
+/* Buttons */
+.liquid-btn {
+    position: relative; background: var(--primary); color: white; border: none; border-radius: 50px; font-weight: 800; text-transform: uppercase; font-family: 'Outfit'; letter-spacing: 1px; transition: 0.4s; overflow: hidden; z-index: 1; display: flex; align-items: center; justify-content: center;
+}
+.liquid-btn::after { content: ''; position: absolute; top: 100%; left: 0; width: 100%; height: 200%; background: var(--primary-dark); transition: 0.6s; z-index: -1; border-radius: 40%; }
+.liquid-btn:hover::after { transform: translateY(-150%) rotate(180deg); }
+.liquid-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(37, 99, 235, 0.3); color: white; }
+
+.btn-back-to-top { position: fixed; bottom: 30px; right: 30px; width: 50px; height: 50px; background: var(--primary); color: white; border: none; border-radius: 50%; opacity: 0; visibility: hidden; transition: 0.3s; z-index: 1000; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+.btn-back-to-top.show { opacity: 1; visibility: visible; }
+
+/* Utils */
+.icon-box-sm { width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; }
+.icon-box-xs { width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; }
+.ls-1 { letter-spacing: 1px; }
+.x-small { font-size: 0.7rem; }
+.leading-relaxed { line-height: 1.8; }
+.italic { font-style: italic; }
+
+.cursor-theme { position: fixed; width: 15px; height: 15px; background: var(--primary); border-radius: 50%; pointer-events: none; z-index: 10000; mix-blend-mode: color-dodge; transition: transform 0.1s ease; transform: translate(-50%, -50%); }
+.hovering .cursor-theme { transform: translate(-50%, -50%) scale(2.5); opacity: 0.5; }
+
+@keyframes pulse { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
+.animate-pulse { animation: pulse 2s infinite ease-in-out; }
+</style>
+
+<script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        AOS.init({ duration: 800, once: true });
+
+        // --- 1. LOADER ---
+        window.addEventListener("load", () => {
+            const loader = document.getElementById("pageLoader");
+            setTimeout(() => { loader.style.opacity = "0"; setTimeout(() => loader.style.display = "none", 600); }, 1000);
+        });
+
+        // --- 2. CURSEUR ---
+        const cursor = document.querySelector(".cursor-theme");
+        document.addEventListener("mousemove", e => {
+            cursor.style.left = e.clientX + "px"; cursor.style.top = e.clientY + "px";
+        });
+        document.querySelectorAll("a, button, .profile-photo").forEach(el => {
+            el.addEventListener("mouseenter", () => document.body.classList.add("hovering"));
+            el.addEventListener("mouseleave", () => document.body.classList.remove("hovering"));
+        });
+
+        // --- 3. BACK TO TOP ---
+        const btt = document.getElementById("btnBackToTop");
+        window.addEventListener("scroll", () => { btt.classList.toggle("show", window.scrollY > 400); });
+        btt.onclick = () => window.scrollTo({ top: 0, behavior: "smooth" });
+
+        // --- 4. LOGIQUE BADGE SCROLL (IntersectionObserver) ---
+        const badge = document.getElementById("reviewBadge");
+        const observer = new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) badge.style.display = "block";
+            });
+        }, { threshold: 0.5 });
+        observer.observe(document.querySelector(".candidate-card"));
+
+        // --- 5. AFFICHAGE FORMULAIRE CLIC ---
+        const photo = document.getElementById("candidatePhoto");
+        const reviewForm = document.getElementById("reviewForm");
+        photo.addEventListener("click", () => {
+            reviewForm.style.display = reviewForm.style.display === "none" ? "block" : "none";
+            badge.style.display = "none";
+            if(reviewForm.style.display === "block") {
+                reviewForm.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+        });
+    });
+</script>
+{% endblock %}

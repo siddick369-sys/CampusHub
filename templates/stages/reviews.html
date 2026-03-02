@@ -1,0 +1,319 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container py-5" style="max-width: 950px;">
+
+    <div class="row align-items-center mb-5 g-4">
+        <div class="col-lg-6">
+            <h1 class="fw-bold font-outfit display-5 mb-3">La voix de notre <span class="text-primary">Communauté</span></h1>
+            <p class="text-muted fs-5">Découvrez les retours d'expérience des étudiants et des entreprises qui font grandir CampusHub chaque jour.</p>
+        </div>
+        <div class="col-lg-6 text-center">
+            <div class="bg-white shadow-sm border rounded-4 p-4 d-inline-block">
+                <div class="d-flex align-items-center gap-4">
+                    <div class="text-start">
+                        <h2 class="mb-0 fw-bold text-dark">{{ avg_rating|default:"0.0" }}<small class="fs-6 text-muted">/5</small></h2>
+                        <div class="text-warning mb-1">
+                            {% for i in "12345" %}
+                            <i class="bi {% if forloop.counter <= avg_rating %}bi-star-fill{% else %}bi-star{% endif %}"></i>
+                            {% endfor %}
+                        </div>
+                        <small class="text-muted fw-medium">{{ total_reviews }} avis vérifiés</small>
+                    </div>
+                    <div class="vr mx-2"></div>
+                    <div class="text-center">
+                        <div class="bg-primary-soft rounded-circle p-3 mb-2">
+                            <i class="bi bi-shield-check text-primary fs-4"></i>
+                        </div>
+                        <small class="d-block fw-bold text-uppercase" style="font-size: 0.6rem; letter-spacing: 1px;">100% Authentique</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-5">
+        <div class="col-lg-5">
+            <div class="card border-0 shadow-sm rounded-4 sticky-top" style="top: 100px; z-index: 10;">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold font-outfit mb-3">Votre avis nous aide</h5>
+
+                    <form action="{% url 'submit_review' %}" method="POST" id="reviewForm">
+                        {% csrf_token %}
+
+                        <div class="mb-4 text-center bg-light rounded-4 py-3 border border-dashed">
+                            <label class="form-label d-block small fw-bold text-muted mb-2">Notez votre expérience</label>
+                            <div class="d-flex justify-content-center gap-2 fs-3" id="star-rating">
+                                <i class="bi bi-star star-btn" data-value="1"></i>
+                                <i class="bi bi-star star-btn" data-value="2"></i>
+                                <i class="bi bi-star star-btn" data-value="3"></i>
+                                <i class="bi bi-star star-btn" data-value="4"></i>
+                                <i class="bi bi-star star-btn" data-value="5"></i>
+                            </div>
+                            <input type="hidden" name="rating" id="rating-value" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">Commentaire</label>
+                            <textarea name="comment" class="form-control border-0 bg-light rounded-4 p-3" rows="4" placeholder="Dites-nous ce que vous pensez de la plateforme..." required></textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 rounded-pill py-2 fw-bold shadow-sm transition-base">
+                            Publier mon témoignage
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-7">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="font-outfit fw-bold mb-0">Derniers retours</h5>
+                <span class="badge bg-white border text-muted rounded-pill px-3">{{ total_reviews }} avis</span>
+            </div>
+
+            <div id="reviewsContainer">
+                {% for review in reviews %}
+                <div class="card border-0 shadow-sm rounded-4 mb-4 review-card-item transition-base">
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="avatar-sm bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold">
+                                    {{ review.user.username|slice:":1"|upper }}
+                                </div>
+                                <div>
+                                    <h6 class="mb-0 fw-bold">{{ review.user.get_full_name|default:review.user.username }}</h6>
+                                    {% if review.role_at_review == 'company' %}
+                                    <span class="badge bg-info-soft text-info rounded-pill" style="font-size: 0.65rem;">Entreprise</span>
+                                    {% elif review.role_at_review == 'provider' %}
+                                    <span class="badge bg-success-soft text-success rounded-pill" style="font-size: 0.65rem;">Prestataire</span>
+                                    {% else %}
+                                    <span class="badge bg-primary-soft text-primary rounded-pill" style="font-size: 0.65rem;">Étudiant</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="text-end">
+                                <div class="text-warning small mb-1">
+                                    {% for i in "12345" %}
+                                    <i class="bi {% if forloop.counter <= review.rating %}bi-star-fill{% else %}bi-star text-light-gray{% endif %}"></i>
+                                    {% endfor %}
+                                </div>
+
+                                {% if review.user == request.user %}
+                                <button type="button" class="btn btn-link text-danger p-0 small text-decoration-none btn-delete-trigger" data-url="{% url 'delete_review' review.id %}" data-bs-toggle="modal" data-bs-target="#deleteReviewModal">
+                                    <i class="bi bi-trash3"></i>
+                                </button>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <p class="text-secondary" style="font-size: 0.95rem; line-height: 1.6;">"{{ review.comment }}"</p>
+
+                        <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top border-light">
+                            <small class="text-muted italic">{{ review.created_at|date:"d M Y" }}</small>
+                            {% if not review.is_approved %}
+                            <span class="badge bg-warning-soft text-warning small rounded-pill"><i class="bi bi-clock me-1"></i>En modération</span>
+                            {% endif %}
+                        </div>
+
+                        {% if review.admin_response %}
+                        <div class="mt-4 p-3 bg-light rounded-4 border-start border-primary border-4">
+                            <div class="d-flex align-items-center gap-2 mb-1">
+                                <i class="bi bi-patch-check-fill text-primary small"></i>
+                                <span class="fw-bold" style="font-size: 0.8rem;">Réponse de CampusHub</span>
+                            </div>
+                            <p class="small text-muted mb-0">{{ review.admin_response }}</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% empty %}
+                <div class="text-center py-5 bg-white rounded-4 shadow-sm">
+                    <img src="{% static 'img/empty-reviews.svg' %}" class="mb-3" width="120">
+                    <p class="text-muted">Aucun avis publié pour le moment.</p>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div id="paginationControls" class="d-flex justify-content-center gap-2 mt-4"></div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="deleteReviewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 400px;">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-body p-4 text-center">
+                <div class="bg-danger-soft rounded-circle p-3 d-inline-block mb-3">
+                    <i class="bi bi-exclamation-triangle text-danger fs-3"></i>
+                </div>
+                <h5 class="fw-bold font-outfit mb-2">Supprimer votre avis ?</h5>
+                <p class="text-muted small">Cette action est irréversible. Votre témoignage disparaîtra de la plateforme.</p>
+
+                <form id="deleteReviewForm" method="POST" action="">
+                    {% csrf_token %}
+                    <div class="d-grid gap-2 mt-4">
+                        <button type="submit" class="btn btn-danger rounded-pill fw-bold py-2">Supprimer définitivement</button>
+                        <button type="button" class="btn btn-light rounded-pill fw-bold py-2" data-bs-dismiss="modal">Annuler</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .bg-danger-soft {
+        background-color: rgba(220, 53, 69, 0.1);
+    }
+</style>
+<style>
+    :root {
+        --primary-soft: rgba(13, 110, 253, 0.08);
+    }
+
+    .font-outfit {
+        font-family: 'Outfit', sans-serif;
+    }
+
+    .bg-primary-soft {
+        background-color: var(--primary-soft);
+    }
+
+    .bg-info-soft {
+        background-color: rgba(13, 202, 240, 0.08);
+    }
+
+    .bg-warning-soft {
+        background-color: rgba(255, 193, 7, 0.08);
+    }
+
+    .text-light-gray {
+        color: #e9ecef;
+    }
+
+    .avatar-sm {
+        width: 42px;
+        height: 42px;
+        font-size: 0.9rem;
+    }
+
+    .transition-base {
+        transition: all 0.3s ease;
+    }
+
+    /* Étoiles interactives */
+    .star-btn {
+        cursor: pointer;
+        color: #dee2e6;
+        transition: 0.2s;
+    }
+
+    .star-btn:hover {
+        transform: scale(1.2);
+        color: #ffc107;
+    }
+
+    .star-btn.active {
+        color: #ffc107;
+    }
+
+    .border-dashed {
+        border-style: dashed !important;
+    }
+
+    .review-card-item:hover {
+        transform: translateY(-3px);
+    }
+
+    /* Pagination Styling */
+    .page-btn {
+        width: 35px;
+        height: 35px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        border: 1px solid #dee2e6;
+        background: white;
+        color: #6c757d;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+
+    .page-btn.active {
+        background: #0d6efd;
+        color: white;
+        border-color: #0d6efd;
+        box-shadow: 0 4px 10px rgba(13, 110, 253, 0.3);
+    }
+</style>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // 1. GESTION DES ÉTOILES
+        const stars = document.querySelectorAll(".star-btn");
+        const ratingInput = document.getElementById("rating-value");
+
+        stars.forEach(star => {
+            star.addEventListener("click", function () {
+                const val = this.dataset.value;
+                ratingInput.value = val;
+                stars.forEach(s => {
+                    s.classList.toggle("active", parseInt(s.dataset.value) <= parseInt(val));
+                    s.classList.toggle("bi-star-fill", parseInt(s.dataset.value) <= parseInt(val));
+                    s.classList.toggle("bi-star", parseInt(s.dataset.value) > parseInt(val));
+                });
+            });
+        });
+
+        // 2. PAGINATION JAVASCRIPT
+        const itemsPerPage = 6;
+        const container = document.getElementById("reviewsContainer");
+        const items = Array.from(container.getElementsByClassName("review-card-item"));
+        const paginationControls = document.getElementById("paginationControls");
+        const totalPages = Math.ceil(items.length / itemsPerPage);
+
+        function showPage(page) {
+            items.forEach((item, index) => {
+                item.style.display = (index >= (page - 1) * itemsPerPage && index < page * itemsPerPage) ? "block" : "none";
+            });
+            renderControls(page);
+        }
+
+        function renderControls(currentPage) {
+            paginationControls.innerHTML = "";
+            if (totalPages <= 1) return;
+
+            for (let i = 1; i <= totalPages; i++) {
+                const btn = document.createElement("button");
+                btn.innerText = i;
+                btn.className = `page-btn ${i === currentPage ? 'active' : ''}`;
+                btn.onclick = () => {
+                    showPage(i);
+                    window.scrollTo({ top: container.offsetTop - 100, behavior: 'smooth' });
+                };
+                paginationControls.appendChild(btn);
+            }
+        }
+
+        if (items.length > 0) showPage(1);
+        // GESTION DU MODAL DE SUPPRESSION
+        const deleteModal = document.getElementById('deleteReviewModal');
+        const deleteForm = document.getElementById('deleteReviewForm');
+
+        if (deleteModal) {
+            // On écoute le clic sur n'importe quel bouton de suppression
+            document.querySelectorAll('.btn-delete-trigger').forEach(button => {
+                button.addEventListener('click', function () {
+                    // On récupère l'URL de suppression propre à cet avis
+                    const url = this.getAttribute('data-url');
+                    // On l'injecte dans le formulaire du modal
+                    deleteForm.setAttribute('action', url);
+                });
+            });
+        }
+    });
+</script>
+{% endblock %}

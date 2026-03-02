@@ -1,0 +1,398 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ projet.titre }} - Incubation CampusHub{% endblock %}
+
+{% block content %}
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+<div id="pageLoader" class="page-loader">
+    <div class="loader-content">
+        <div class="logo-placeholder mb-4">
+            <div class="main-spinner"></div>
+            <i class="bi bi-rocket-takeoff-fill spinner-icon text-primary"></i>
+        </div>
+        <div class="loader-text-wrap">
+            <h5 class="fw-bold text-dark mb-1">CampusHub Incubation</h5>
+            <div class="progress-bar-wrap"><div class="progress-bar-fill"></div></div>
+            <small class="text-muted mt-2 d-block">Chargement de l'innovation...</small>
+        </div>
+    </div>
+</div>
+
+<div class="desktop-bg-animation">
+    <div class="shape-blob shape-1"></div>
+    <div class="shape-blob shape-2"></div>
+    <div class="shape-blob shape-3"></div>
+</div>
+
+<div class="container py-5 relative-z">
+
+    <div class="mb-4" data-aos="fade-right">
+        <a href="{% url 'liste_projets' %}" class="btn btn-link text-muted text-decoration-none p-0 fw-600">
+            <i class="bi bi-arrow-left me-2"></i>Retour à l'incubateur
+        </a>
+    </div>
+
+    <div class="card-pro overflow-hidden mb-5 shadow-lg border-0" data-aos="fade-down">
+        <div class="ratio ratio-21x9 bg-dark overflow-hidden position-relative">
+            <img src="{% if projet.image_couverture %}{{ projet.image_couverture.url }}{% else %}{% static 'img/default-cover.jpg' %}{% endif %}" 
+                 class="object-fit-cover w-100 h-100" style="opacity: 0.9;" alt="Cover">
+            <div class="position-absolute top-0 start-0 w-100 h-100 bg-gradient-dark"></div>
+        </div>
+        
+        <div class="card-body p-4 p-md-5">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <div class="d-flex flex-wrap gap-2 mb-3">
+                        <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-10 px-3 py-2 rounded-pill fw-600">
+                            <i class="bi bi-tag me-1"></i> {{ projet.get_secteur_display }}
+                        </span>
+                        <span class="badge badge-stade-custom px-3 py-2 rounded-pill fw-600">
+                            <i class="bi bi-lightbulb me-1"></i> {{ projet.get_stade_display }}
+                        </span>
+                    </div>
+                    <h1 class="fw-bold text-dark display-5 mb-3">{{ projet.titre }}</h1>
+                    <p class="text-muted fs-5 leading-relaxed">{{ projet.description_courte }}</p>
+                </div>
+                
+                <div class="col-lg-4 text-lg-end mt-4 mt-lg-0">
+                    <div class="d-flex flex-column align-items-lg-end gap-3">
+                        <button id="like-btn" data-slug="{{ projet.slug }}" class="btn-like-pro {% if a_like %}liked{% endif %}">
+                            <i class="bi {% if a_like %}bi-heart-fill{% else %}bi-heart{% endif %} me-2"></i>
+                            <span id="like-count" class="fw-bold">{{ projet.total_likes }}</span>
+                        </button>
+                        
+                        <div class="d-flex align-items-center gap-3 text-muted small">
+                            <span><i class="bi bi-eye me-1"></i> {{ projet.vues }} vues</span>
+                            <span><i class="bi bi-calendar3 me-1"></i> {{ projet.created_at|date:"d M Y" }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="card-pro mb-4" data-aos="fade-up">
+                <div class="card-body p-4 p-md-5">
+                    <h4 class="fw-bold text-dark mb-4 d-flex align-items-center">
+                        <i class="bi bi-info-circle me-3 text-primary"></i>À propos du projet
+                    </h4>
+                    <div class="description-text text-muted leading-relaxed">
+                        {{ projet.description_complete|linebreaks }}
+                    </div>
+
+                    {% if projet.video_demo %}
+                    <div class="mt-5">
+                        <a href="{{ projet.video_demo }}" target="_blank" class="liquid-btn btn-primary-pro w-100 py-3">
+                            <span><i class="bi bi-play-circle me-2"></i>Voir la vidéo de présentation</span>
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if projet.est_en_recrutement or projet.cherche_financement %}
+            <div class="row g-4 mb-4">
+                {% if projet.est_en_recrutement %}
+                <div class="col-md-6" data-aos="fade-up">
+                    <div class="card-pro h-100 border-primary border-opacity-10 bg-primary bg-opacity-5">
+                        <div class="card-body p-4">
+                            <h5 class="fw-bold text-small mb-3"><i class="bi bi-person-plus me-2"></i>Recrutement</h5>
+                            <div class="d-flex flex-wrap gap-2">
+                                {% for comp in projet.competences_recherchees.all %}
+                                    <span class="badge bg-white text-primary border fw-500">{{ comp.nom }}</span>
+                                {% empty %}
+                                    <span class="text-muted small">Profils passionnés recherchés.</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if projet.cherche_financement %}
+                <div class="col-md-6" data-aos="fade-up" data-aos-delay="100">
+                    <div class="card-pro h-100 border-warning border-opacity-25 bg-warning bg-opacity-5">
+                        <div class="card-body p-4">
+                            <h5 class="fw-bold text-warning-emphasis mb-3"><i class="bi bi-cash-coin me-2"></i>Financement</h5>
+                            <p class="text-muted small mb-0">{{ projet.besoins|truncatechars:150 }}</p>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            <div class="card-pro mb-4" data-aos="fade-up">
+                <div class="card-header bg-white border-bottom p-4 d-flex justify-content-between align-items-center">
+                    <h5 class="fw-bold text-dark mb-0"><i class="bi bi-journal-text me-2 text-primary"></i>Journal de bord</h5>
+                    {% if request.user.profile == projet.porteur %}
+                        <a href="{% url 'ajouter_actualite' projet.slug %}" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-600">
+                            + Actualité
+                        </a>
+                    {% endif %}
+                </div>
+                <div class="card-body p-4">
+                    <div class="modern-timeline">
+                        {% for update in projet.actualites.all %}
+                        <div class="timeline-item mb-5 position-relative">
+                            <div class="timeline-date">
+                                <span class="day">{{ update.created_at|date:"d" }}</span>
+                                <span class="month">{{ update.created_at|date:"M" }}</span>
+                            </div>
+                            <div class="timeline-content ps-5">
+                                <h6 class="fw-bold text-dark mb-2">{{ update.titre }}</h6>
+                                <p class="text-muted small mb-3">{{ update.contenu }}</p>
+                                {% if update.image %}
+                                    <img src="{{ update.image.url }}" class="rounded-3 img-fluid border shadow-sm" style="max-height: 250px;">
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% empty %}
+                            <div class="text-center py-5">
+                                <i class="bi bi-clock-history text-muted opacity-25 fs-1 mb-2 d-block"></i>
+                                <p class="text-muted small">Aucune actualité publiée.</p>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="sticky-top-pro">
+                <div class="card-pro mb-4 text-center p-4" data-aos="fade-left">
+                    <div class="avatar-wrapper mx-auto mb-3">
+                        {% if projet.porteur.user.profile.photo %}
+                            <img src="{{ projet.porteur.user.profile.photo.url }}" class="rounded-circle border p-1" width="100" height="100">
+                        {% else %}
+                            <div class="avatar-placeholder rounded-circle mx-auto">{{ projet.porteur.full_name|slice:":1" }}</div>
+                        {% endif %}
+                    </div>
+                    <h5 class="fw-bold text-dark mb-1">{{ projet.porteur.full_name }}</h5>
+                    <p class="text-primary small fw-600 mb-4">{{ projet.porteur.student_school|default:"Étudiant" }}</p>
+                    
+                    {% if projet.lien_whatsapp %}
+                    <a href="{{ projet.lien_whatsapp }}" target="_blank" class="btn btn-success w-100 rounded-pill py-2 fw-600 shadow-sm">
+                        <i class="bi bi-whatsapp me-2"></i>Contacter le porteur
+                    </a>
+                    {% endif %}
+                </div>
+
+                <div class="card-pro p-4" data-aos="fade-left" data-aos-delay="100">
+                    <h6 class="fw-bold text-dark mb-4">Documents & Ressources</h6>
+                    <div class="d-grid gap-2">
+                        {% if projet.site_web %}
+                            <a href="{{ projet.site_web }}" target="_blank" class="link-item">
+                                <i class="bi bi-globe text-primary"></i> <span>Site officiel</span>
+                            </a>
+                        {% endif %}
+                        {% if projet.lien_linkedin %}
+                            <a href="{{ projet.lien_linkedin }}" target="_blank" class="link-item">
+                                <i class="bi bi-linkedin text-primary"></i> <span>Profil LinkedIn</span>
+                            </a>
+                        {% endif %}
+                        
+                        <hr class="border-light my-3">
+
+                        {% if projet.dossier_projet %}
+                            <a href="{{ projet.dossier_projet.url }}" target="_blank" class="link-item premium">
+                                <i class="bi bi-file-earmark-pdf-fill text-danger"></i> <span>Dossier Projet (PDF)</span>
+                            </a>
+                        {% endif %}
+                        
+                        <a href="{% url 'generer_affiche_qr' projet.slug %}" target="_blank" class="link-item premium">
+                            <i class="bi bi-qr-code text-dark"></i> <span>Générer l'affiche QR</span>
+                        </a>
+
+                        {% if request.user.profile == projet.porteur %}
+                            <div class="mt-4 pt-4 border-top">
+                                <a href="{% url 'modifier_projet' projet.slug %}" class="liquid-btn btn-primary-pro w-100 py-2">
+                                    <span><i class="bi bi-pencil-square me-2"></i>Modifier le projet</span>
+                                </a>
+                            </div>
+                            {% if request.user.profile == projet.porteur %}
+<div class="card-pro p-4 mt-4 border-danger border-opacity-25 bg-danger bg-opacity-5" data-aos="fade-left" data-aos-delay="500">
+    <h6 class="fw-bold text-danger mb-2">
+        <i class="bi bi-shield-exclamation me-2"></i>Zone de Danger
+    </h6>
+    <p class="x-small text-muted mb-3 leading-tight">
+        Efface définitivement le projet, le journal de bord et toutes les statistiques associées.
+    </p>
+    <a href="{% url 'supprimer_projet' projet.slug %}" class="liquid-btn btn-danger-pro w-100 py-2">
+        <span><i class="bi bi-trash3 me-2"></i>Supprimer mon projet</span>
+    </a>
+</div>
+{% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<button id="btnBackToTop" class="btn-back-to-top"><i class="bi bi-arrow-up"></i></button>
+
+<style>
+:root { --primary: #2563eb; --primary-dark: #1e40af; --light-bg: #f8fafc; --white: #ffffff; --text-dark: #0f172a; --text-muted: #64748b; --border: #e2e8f0; --radius: 16px; }
+
+body { background-color: var(--light-bg); color: var(--text-dark); font-family: 'Inter', sans-serif; overflow-x: hidden; }
+h1, h4, h5, h6 { font-family: 'Outfit', sans-serif; }
+
+/* FIX BADGE STADE : BLEU CLAIR */
+.badge-stade-custom { background: #e0f2fe !important; color: #0369a1 !important; border: 1px solid #bae6fd !important; }
+
+/* IMAGE DE COUVERTURE GRAND PLAN */
+.object-fit-cover { object-fit: cover; }
+.bg-gradient-dark { background: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.4) 100%); }
+
+/* BOUTON LIKE PRO */
+.btn-like-pro { 
+    background: #f1f5f9; border: none; padding: 10px 22px; border-radius: 50px; 
+    font-weight: 600; color: var(--text-muted); transition: 0.3s; 
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+}
+.btn-like-pro:hover { transform: scale(1.05); background: #fee2e2; color: #ef4444; }
+.btn-like-pro.liked { background: #ef4444; color: #fff; box-shadow: 0 5px 15px rgba(239, 68, 68, 0.4); }
+
+/* Loader & Layout Utils */
+.page-loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 9999; display: flex; align-items: center; justify-content: center; transition: 0.6s; }
+.main-spinner { width: 60px; height: 60px; border: 4px solid #f1f5f9; border-top: 4px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
+@keyframes spin { 100% { transform: rotate(360deg); } }
+.progress-bar-wrap { height: 4px; width: 200px; background: #f1f5f9; border-radius: 10px; overflow: hidden; margin-top: 15px; }
+.progress-bar-fill { height: 100%; width: 0%; background: var(--primary); animation: loadProgress 1.5s forwards; }
+@keyframes loadProgress { 100% { width: 100%; } }
+
+.card-pro { background: var(--white); border-radius: var(--radius); border: 1px solid var(--border); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
+.liquid-btn { background: var(--primary); color: white; border: none; border-radius: 50px; font-weight: 700; text-transform: uppercase; transition: 0.3s; display: flex; align-items: center; justify-content: center; text-decoration: none; }
+.liquid-btn:hover { background: var(--primary-dark); transform: translateY(-2px); color: white; }
+
+.modern-timeline { border-left: 2px solid var(--border); }
+.timeline-item::before { content: ''; position: absolute; left: -10px; top: 0; width: 18px; height: 18px; background: var(--primary); border-radius: 50%; border: 4px solid white; box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); }
+.timeline-date { position: absolute; left: -75px; top: -5px; width: 50px; text-align: center; }
+.timeline-date .day { display: block; font-weight: 800; font-size: 1.2rem; color: var(--text-dark); }
+.timeline-date .month { display: block; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); }
+
+.sticky-top-pro { position: sticky; top: 100px; }
+.avatar-placeholder { width: 100px; height: 100px; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; font-weight: 700; }
+.link-item { display: flex; align-items: center; gap: 12px; padding: 12px 15px; border-radius: 12px; background: #f8fafc; color: var(--text-dark); text-decoration: none; transition: 0.3s; font-size: 0.9rem; font-weight: 600; }
+.link-item:hover { background: #f1f5f9; transform: translateX(5px); }
+.link-item.premium { background: rgba(37, 99, 235, 0.05); }
+
+.btn-back-to-top { position: fixed; bottom: 30px; right: 30px; width: 50px; height: 50px; background: var(--primary); color: white; border: none; border-radius: 50%; opacity: 0; visibility: hidden; transition: 0.3s; z-index: 1000; display: flex; align-items: center; justify-content: center; }
+.btn-back-to-top.show { opacity: 1; visibility: visible; }
+
+.desktop-bg-animation { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; }
+.shape-blob { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.4; animation: float 10s infinite alternate; }
+.shape-1 { top: -10%; left: -10%; width: 600px; height: 600px; background: rgba(37, 99, 235, 0.15); }
+.shape-2 { bottom: -10%; right: -10%; width: 500px; height: 500px; background: rgba(16, 185, 129, 0.1); }
+@keyframes float { 100% { transform: translate(40px, 40px); } }
+
+.leading-relaxed { line-height: 1.8; }
+.fw-600 { font-weight: 600; }
+/* Style spécifique pour le bouton de suppression liquide */
+.btn-danger-pro {
+    position: relative;
+    background: #ef4444; /* Rouge danger */
+    color: white !important;
+    border: none;
+    border-radius: 50px;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 1px;
+    transition: 0.3s;
+    overflow: hidden;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+}
+
+.btn-danger-pro span {
+    position: relative;
+    z-index: 2;
+}
+
+.btn-danger-pro::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    height: 200%;
+    background: #dc2626; /* Rouge plus sombre au survol */
+    transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1;
+    border-radius: 40%;
+}
+
+.btn-danger-pro:hover::after {
+    transform: translateY(-150%) rotate(180deg);
+}
+
+.btn-danger-pro:hover {
+    box-shadow: 0 8px 20px rgba(239, 68, 68, 0.3);
+}
+
+.leading-tight { line-height: 1.3; }
+</style>
+
+
+<script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script>
+    // Loader Logic
+    window.addEventListener('load', () => {
+        const loader = document.getElementById('pageLoader');
+        setTimeout(() => { loader.style.opacity = '0'; setTimeout(() => loader.style.visibility = 'hidden', 600); }, 1000);
+    });
+
+    document.addEventListener("DOMContentLoaded", function () {
+        AOS.init({ duration: 800, once: true });
+
+        // Back to top
+        const btt = document.getElementById("btnBackToTop");
+        window.addEventListener("scroll", () => { btt.classList.toggle("show", window.scrollY > 400); });
+        btt.onclick = () => window.scrollTo({ top: 0, behavior: "smooth" });
+
+        // === LOGIQUE LIKE / DISLIKE AJAX ===
+        const likeBtn = document.getElementById('like-btn');
+        if (likeBtn) {
+            likeBtn.addEventListener('click', function() {
+                const slug = this.getAttribute('data-slug');
+                const url = `/incubation/projets/${slug}/like/`; // Construit selon ton path
+
+                fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'Content-Type': 'application/json',
+                    },
+                })
+                .then(res => res.json())
+                .then(data => {
+                    const icon = this.querySelector('i');
+                    const countSpan = document.getElementById('like-count');
+                    
+                    if (data.liked) {
+                        this.classList.add('liked');
+                        icon.className = 'bi bi-heart-fill me-2';
+                    } else {
+                        this.classList.remove('liked');
+                        icon.className = 'bi bi-heart me-2';
+                    }
+                    countSpan.textContent = data.count;
+                })
+                .catch(err => console.error("Erreur AJAX Like:", err));
+            });
+        }
+    });
+</script>
+{% endblock %}
