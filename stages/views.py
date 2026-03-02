@@ -1561,8 +1561,8 @@ def company_offer_applications_view(request, slug):
     for app in submitted_apps:
         old_status = app.status
         app.status = 'viewed'
-        app.status_changed_at = timezone.now()
-        app.save(update_fields=['status', 'status_changed_at'])
+        app.viewed_at = timezone.now()
+        app.save(update_fields=['status', 'status_changed_at', 'viewed_at'])
         # envoie notif + email à l'étudiant
         send_application_status_notification(app, old_status, 'viewed')
 

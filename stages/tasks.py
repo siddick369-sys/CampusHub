@@ -14,7 +14,7 @@ from .views import notify_company_offer_closed  # on réutilise ton helper
 # 1️⃣ FERMETURE AUTOMATIQUE DES OFFRES EXPIRÉES
 # -----------------------------------------------------------
 
-@shared_task(name="stages.tasks. close_expired_offers_task")
+@shared_task(name="stages.tasks.close_expired_offers_task")
 def close_expired_offers_task():
     """
     Tâche quotidienne :

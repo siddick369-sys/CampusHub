@@ -6,3 +6,4 @@ EMAIL_USE_SSL = False
 
 EMAIL_HOST_USER = 'siddick369@gmail.com'
 EMAIL_HOST_PASSWORD = 'mrjgidquimrcosxw'
+DEFAULT_FROM_EMAIL = 'siddick369@gmail.com'
