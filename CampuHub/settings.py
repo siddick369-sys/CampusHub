@@ -27,7 +27,7 @@ SECRET_KEY = 'django-insecure-x7u04l7m)+x=pyc(y!tr_b1wt3c=hw7)5)dxbpgoz)22ex6dw5
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['campuhub.site', 'www.campuhub.site', '62.171.158.152', 'localhost', '127.0.0.1']
 
 
 # Application definition
@@ -198,7 +198,7 @@ import os
 from celery.schedules import crontab
 
 # URL de ton site (pour les liens dans les emails, notifications, etc.)
-SITE_BASE_URL = "http://localhost:8000"  # à changer en prod: "https://campushub.cm" par ex.
+SITE_BASE_URL = "https://campuhub.site"
 
 # -------------------------------
 # PAIEMENTS (CinetPay & Flutterwave)
