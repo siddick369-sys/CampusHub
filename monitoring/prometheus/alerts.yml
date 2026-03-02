@@ -1,0 +1,59 @@
+groups:
+  - name: campushub_alerts
+    rules:
+      # Infrastructure alerts
+      - alert: HostHighCpuLoad
+        expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[2m])) * 100) > 85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Host High CPU load (instance {{ $labels.instance }})"
+          description: "CPU load is > 85%\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+
+      - alert: HostHighMemoryUsage
+        expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Host High Memory usage (instance {{ $labels.instance }})"
+          description: "Memory usage is > 85%\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+
+      # Container alerts
+      - alert: ContainerDown
+        expr: absent(container_last_seen{name!=""})
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Container Down"
+          description: "A container has disappeared from cAdvisor."
+
+      # Service alerts
+      - alert: PostgresDown
+        expr: pg_up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Postgres Down"
+          description: "Postgres exporter reporting Postgres is down."
+
+      - alert: RedisDown
+        expr: redis_up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Redis Down"
+          description: "Redis exporter reporting Redis is down."
+
+      - alert: DjangoTooMany500Errors
+        expr: rate(django_http_responses_total_by_status_view_method_count{status="500"}[5m]) > 0.1
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Django high 500 error rate"
+          description: "Django is returning too many 500 errors."

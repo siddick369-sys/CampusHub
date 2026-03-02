@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     'incubation',
     'ai_assistant',
     'payments',
+    'django_prometheus',
 ]
 CHANNEL_LAYERS = {
     "default": {
@@ -63,6 +64,7 @@ CHANNEL_LAYERS = {
 }
 
 MIDDLEWARE = [
+    'django_prometheus.middleware.PrometheusBeforeMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -72,6 +74,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'accounts.middleware.EmailVerificationRequiredMiddleware',
     'accounts.middleware.SubscriptionMiddleware',
+    'django_prometheus.middleware.PrometheusAfterMiddleware',
 ]
 
 ROOT_URLCONF = 'CampuHub.urls'
@@ -319,3 +322,41 @@ CACHES = {
 }
 
 # The CELERY settings are already defined above using os.getenv in lines 218-229.
+
+# -------------------------------
+# SECURITY LOGGING (Fintech Mode)
+# -------------------------------
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'security_file': {
+            'level': 'INFO',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join(BASE_DIR, 'logs', 'security.log'),
+            'maxBytes': 1024 * 1024 * 5,  # 5 MB
+            'backupCount': 30,  # 30 days retention
+            'formatter': 'verbose',
+        },
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'django.security': {
+            'handlers': ['security_file', 'console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+    },
+}
+
+# Ensure logs directory exists
+os.makedirs(os.path.join(BASE_DIR, 'logs'), exist_ok=True)

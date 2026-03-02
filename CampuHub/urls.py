@@ -78,8 +78,7 @@ urlpatterns = [
     path('terms/', views.terms_conditions_view, name='terms_conditions'),
     path('legal/', views.legal_notices_view, name='legal_notices'),
     path('help/', views.how_it_works_view, name='how_it_works'),
-
-    
+    path('', include('django_prometheus.urls')),
 ]
 
 if settings.DEBUG:
