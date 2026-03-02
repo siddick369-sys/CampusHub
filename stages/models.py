@@ -64,6 +64,9 @@ class StageOffer(TimeStampedModel):
     ]
 
     
+    title = models.CharField(max_length=255)
+    slug = models.SlugField(blank=True, unique=True)
+
     company = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -275,11 +278,6 @@ class StageOffer(TimeStampedModel):
                 raise ValidationError("Votre entreprise doit être vérifiée pour publier une offre.")
 
     def save(self, *args, **kwargs):
-        # On s'assure que la validation est appelée quand on sauve
-        self.full_clean()  # peut lever ValidationError
-        super().save(*args, **kwargs)
-
-    def save(self, *args, **kwargs):
         # MAJ automatique avant d’enregistrer
         self._auto_update_status()
 
@@ -298,8 +296,7 @@ class StageOffer(TimeStampedModel):
             self.slug = slug
 
         # On s'assure que la validation est appelée quand on sauve
-        # Note: full_clean() peut lever ValidationError si les contraintes métier ne sont pas respectées
-        self.full_clean()
+        self.full_clean()  # peut lever ValidationError
         super().save(*args, **kwargs)
 
 # -------------------------------------------------------------------
