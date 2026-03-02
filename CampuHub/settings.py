@@ -29,6 +29,12 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['campuhub.site', 'www.campuhub.site', '62.171.158.152', 'localhost', '127.0.0.1']
 
+# Config SSL / CSRF pour la prod
+CSRF_TRUSTED_ORIGINS = ['https://campuhub.site', 'https://www.campuhub.site']
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+USE_X_FORWARDED_HOST = True
+USE_X_FORWARDED_PORT = True
+
 
 # Application definition
 
