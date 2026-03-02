@@ -280,30 +280,24 @@ class StageOffer(TimeStampedModel):
     def save(self, *args, **kwargs):
         # MAJ automatique avant d’enregistrer
         self._auto_update_status()
-        super().save(*args, **kwargs)
-    def __str__(self):
-        return f"{self.title} @ {self.company.username}"
 
-
-
-    title = models.CharField(max_length=255)
-    slug = models.SlugField(unique=True, blank=True)
-    # ... les autres champs ...
-
-    def save(self, *args, **kwargs):
         # Générer le slug seulement s'il est vide
         if not self.slug and self.title:
-            base_slug = slugify(self.title)[:50]  # limite de longueur si tu veux
+            base_slug = slugify(self.title)[:50]
             slug = base_slug
             counter = 2
 
             # Boucle tant qu'un StageOffer possède déjà ce slug
-            while StageOffer.objects.filter(slug=slug).exists():
+            # On utilise .exclude(pk=self.pk) au cas où ce soit un update (bien que slug soit vide ici)
+            while StageOffer.objects.filter(slug=slug).exclude(pk=self.pk).exists():
                 slug = f"{base_slug}-{counter}"
                 counter += 1
 
             self.slug = slug
 
+        # On s'assure que la validation est appelée quand on sauve
+        # Note: full_clean() peut lever ValidationError si les contraintes métier ne sont pas respectées
+        self.full_clean()
         super().save(*args, **kwargs)
 
 # -------------------------------------------------------------------
@@ -490,6 +484,21 @@ class Application(TimeStampedModel):
 
     class Meta:
         unique_together = ('offer', 'student')
+
+    def save(self, *args, **kwargs):
+        # Suivi automatique du changement de statut
+        if self.pk:
+            old_instance = Application.objects.get(pk=self.pk)
+            if old_instance.status != self.status:
+                self.status_changed_at = timezone.now()
+                
+                # Si l'entreprise consulte pour la première fois
+                if self.status == 'viewed' and not self.viewed_at:
+                    self.viewed_at = timezone.now()
+        else:
+            self.status_changed_at = timezone.now()
+
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"Candidature {self.student.username} → {self.offer.title}"

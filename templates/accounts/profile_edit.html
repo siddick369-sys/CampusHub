@@ -157,15 +157,24 @@
                         <h4 class="fw-bold text-dark mb-4"><i class="bi bi-gear-wide-connected text-primary me-2"></i>Services & Disponibilité</h4>
                         <div class="row g-4">
                             <div class="col-12">
-                                <div class="form-check form-switch p-3 mb-3 bg-primary bg-opacity-10 rounded-3 border border-primary">
-                                    {{ form.is_service_provider }}
-                                    <label class="form-check-label fw-bold text-primary ms-2" for="{{ form.is_service_provider.id_for_label }}">Je veux proposer des services sur la plateforme</label>
+                                <div class="p-4 mb-4 bg-primary bg-opacity-10 rounded-4 border-2 border border-primary">
+                                    <div class="form-check form-switch d-flex align-items-center">
+                                        {{ form.is_service_provider }}
+                                        <div class="ms-3">
+                                            <label class="form-check-label fw-bold text-primary h5 mb-0" for="{{ form.is_service_provider.id_for_label }}">
+                                                🚀 Activer mon profil Prestataire
+                                            </label>
+                                            <p class="text-muted small mb-0 mt-1">Cochez cette case pour pouvoir publier vos propres services et recevoir des commandes.</p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                             <div class="col-12">
                                 <div class="form-check form-switch p-3 bg-light rounded-3 border">
                                     {{ form.provider_is_available }}
-                                    <label class="form-check-label fw-600 ms-2" for="{{ form.provider_is_available.id_for_label }}">Disponible pour de nouvelles missions</label>
+                                    <label class="form-check-label fw-600 ms-2" for="{{ form.provider_is_available.id_for_label }}">
+                                        🟢 Afficher mon statut "Disponible" (pour les clients)
+                                    </label>
                                 </div>
                             </div>
                             <div class="col-md-6">
