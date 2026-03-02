@@ -6,6 +6,8 @@ from django.db import models
 from django.db import models
 from django.conf import settings
 from django.utils.text import slugify
+from CampuHub.image_utils import optimize_image
+from incubation.validators import valider_taille_image_2mo
 
 
 # -------------------------------------------------------------------
@@ -157,7 +159,7 @@ class School(TimeStampedModel):
 
     name = models.CharField(max_length=200)
     short_name = models.CharField(max_length=50, blank=True, null=True)
-    logo = models.ImageField(upload_to='schools/logos/', blank=True, null=True)
+    logo = models.ImageField(upload_to='schools/logos/', blank=True, null=True, validators=[valider_taille_image_2mo])
 
     school_type = models.CharField(
         max_length=20,
@@ -199,6 +201,11 @@ class School(TimeStampedModel):
         default=False,
         help_text="École partenaire officielle."
     )
+
+    def save(self, *args, **kwargs):
+        if self.logo:
+            self.logo = optimize_image(self.logo)
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.name

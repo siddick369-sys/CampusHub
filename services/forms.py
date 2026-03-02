@@ -138,7 +138,7 @@ class ServiceOfferForm(forms.ModelForm):
         files = self.files.getlist('media_files')
         
         # Configuration
-        MAX_SIZE_MB = 25
+        MAX_SIZE_MB = 2
         MAX_SIZE_BYTES = MAX_SIZE_MB * 1024 * 1024
         ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg']
 

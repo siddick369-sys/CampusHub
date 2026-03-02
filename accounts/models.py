@@ -2,6 +2,8 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.conf import settings
 from django.utils import timezone
+from CampuHub.image_utils import optimize_image
+from incubation.validators import valider_taille_image_2mo, valider_taille_fichier_5mo
 from django.forms import ValidationError
 from datetime import timedelta, time
 import uuid
@@ -35,7 +37,7 @@ class Profile(models.Model):
     address = models.CharField(max_length=255, blank=True, null=True)
     date_of_birth = models.DateField(blank=True, null=True)
     bio = models.TextField(blank=True, null=True)
-    avatar = models.ImageField(upload_to='avatars/', blank=True, null=True)
+    avatar = models.ImageField(upload_to='avatars/', blank=True, null=True, validators=[valider_taille_image_2mo])
     
     # État du compte
     email_verified = models.BooleanField(default=False)
@@ -50,7 +52,7 @@ class Profile(models.Model):
     # Confiance & KYC
     trust_score = models.IntegerField(default=50)
     last_trust_update = models.DateTimeField(blank=True, null=True)
-    kyc_document = models.FileField(upload_to="kyc_docs/", blank=True, null=True)
+    kyc_document = models.FileField(upload_to="kyc_docs/", blank=True, null=True, validators=[valider_taille_fichier_5mo])
     kyc_verified = models.BooleanField(default=False)
     
     # Spécifique Étudiant
@@ -131,6 +133,10 @@ class Profile(models.Model):
                 pass
 
     def save(self, *args, **kwargs):
+        # Optimisation de l'avatar
+        if self.avatar:
+            self.avatar = optimize_image(self.avatar)
+        
         self.full_clean()
         if self.full_name:
             parts = self.full_name.split(' ', 1)
@@ -270,9 +276,14 @@ class SuccessStory(models.Model):
     role = models.CharField(max_length=20, choices=CATEGORIES)
     title = models.CharField(max_length=200)
     story = models.TextField()
-    image = models.ImageField(upload_to='success_stories/', blank=True, null=True)
+    image = models.ImageField(upload_to='success_stories/', blank=True, null=True, validators=[valider_taille_image_2mo])
     date = models.DateField(default=timezone.now)
     featured = models.BooleanField(default=False)
+
+    def save(self, *args, **kwargs):
+        if self.image:
+            self.image = optimize_image(self.image)
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.name} - {self.title}"
@@ -282,9 +293,14 @@ class SuccessStory(models.Model):
 # -------------------------------------------------------------------
 class Badge(models.Model):
     nom = models.CharField(max_length=50)
-    image = models.ImageField(upload_to='badges/')
+    image = models.ImageField(upload_to='badges/', validators=[valider_taille_image_2mo])
     description = models.CharField(max_length=200)
     condition_obtention = models.CharField(max_length=100)
+
+    def save(self, *args, **kwargs):
+        if self.image:
+            self.image = optimize_image(self.image)
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.nom
@@ -303,7 +319,7 @@ class UserBadge(models.Model):
 class CompanyVerificationRequest(models.Model):
     STATUS_CHOICES = [("pending", "En attente"), ("approved", "Approuvée"), ("rejected", "Refusée")]
     company = models.ForeignKey(User, on_delete=models.CASCADE, related_name="verification_requests")
-    document = models.FileField(upload_to="companies/verification_documents/")
+    document = models.FileField(upload_to="companies/verification_documents/", validators=[valider_taille_fichier_5mo])
     message = models.TextField(blank=True, null=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
     admin_comment = models.TextField(blank=True, null=True)

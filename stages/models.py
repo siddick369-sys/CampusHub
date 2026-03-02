@@ -10,7 +10,9 @@ from django.conf import settings
 from django.utils.text import slugify
 from django.urls import reverse
 
-from orientation.models import Track  # pour lier les offres aux filières déjà créées
+from orientation.models import Track
+from CampuHub.image_utils import optimize_image
+from incubation.validators import valider_taille_image_2mo, valider_taille_fichier_5mo
 
 
 # -------------------------------------------------------------------
@@ -329,7 +331,7 @@ class StudentDocument(TimeStampedModel):
         default=True,
         help_text="Si coché, le fichier n'est accessible qu'à l'étudiant et aux personnes autorisées."
     )
-    file = models.FileField(upload_to='students/documents/')
+    file = models.FileField(upload_to='students/documents/', validators=[valider_taille_fichier_5mo])
 
     title = models.CharField(
         max_length=150,
@@ -890,6 +892,7 @@ class Message(TimeStampedModel):
         blank=True,
         null=True,
         max_length=255,
+        validators=[valider_taille_fichier_5mo],
         help_text="Fichier envoyé dans le chat (image, PDF, doc...)."
     )
     attachment_mime = models.CharField(
@@ -906,6 +909,12 @@ class Message(TimeStampedModel):
     msg_type = models.CharField(max_length=20,choices = MSG_TYPE_CHOICES,default="normal",help_text="Permet de distinguer les messages nirmaux des messages systeme"
     )
     
+
+    def save(self, *args, **kwargs):
+        if self.attachment:
+            # On tente l'optimisation (si c'est une image, optimize_image le fera, sinon il retourne l'original)
+            self.attachment = optimize_image(self.attachment)
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"Message {self.id} – {self.sender.username} ({self.created_at})"
@@ -1073,8 +1082,13 @@ from datetime import timedelta
 # models.py
 class OfferImage(models.Model):
     offer = models.ForeignKey(StageOffer, related_name='images', on_delete=models.CASCADE)
-    file = models.ImageField(upload_to='offers_images/')
+    file = models.ImageField(upload_to='offers_images/', validators=[valider_taille_image_2mo])
     caption = models.CharField(max_length=255, blank=True, null=True)
+
+    def save(self, *args, **kwargs):
+        if self.file:
+            self.file = optimize_image(self.file)
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"Image pour {self.offer.title}"

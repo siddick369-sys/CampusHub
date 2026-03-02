@@ -7,6 +7,8 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 from django.utils import timezone
 from django.utils.text import slugify
+from CampuHub.image_utils import optimize_image
+from incubation.validators import valider_taille_image_2mo, valider_taille_fichier_5mo
 
 
 # -------------------------------------------------------------------
@@ -384,11 +386,13 @@ class ServiceMedia(TimeStampedModel):
         upload_to="services/images/",
         blank=True,
         null=True,
+        validators=[valider_taille_image_2mo]
     )
     file = models.FileField(
         upload_to="services/files/",
         blank=True,
         null=True,
+        validators=[valider_taille_fichier_5mo]
     )
     video_url = models.URLField(blank=True,null=True,help_text="URL YOUTUBE,ETC")
 
@@ -400,6 +404,11 @@ class ServiceMedia(TimeStampedModel):
         verbose_name = "Média de service"
         verbose_name_plural = "Médias de services"
         ordering = ["sort_order", "created_at"]
+
+    def save(self, *args, **kwargs):
+        if self.image:
+            self.image = optimize_image(self.image)
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"Média {self.media_type} pour {self.service.title}"

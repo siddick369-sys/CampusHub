@@ -1,23 +1,10 @@
 from django.db import models
 from django.utils.text import slugify
-from django.core.validators import FileExtensionValidator # Import Django natif
-from .validators import valider_taille_fichier_5mo, valider_taille_image_2mo # Tes validateurs persos
-
-# Assure-toi d'importer ton modèle Profile correctement
-from accounts.models import Profile 
-
-
-from django.db import models
-from django.utils.text import slugify
 from django.core.validators import FileExtensionValidator
 from .validators import valider_taille_fichier_5mo, valider_taille_image_2mo
 from accounts.models import Profile 
-from django.db import models
-from django.utils.text import slugify
-from django.core.validators import FileExtensionValidator
-from .validators import valider_taille_fichier_5mo, valider_taille_image_2mo
-from accounts.models import Profile 
-import uuid # Important pour éviter les doublons d'URL
+from CampuHub.image_utils import optimize_image
+import uuid
 
 class ProjetInnovation(models.Model):
     # --- 1. CATÉGORIES ---
@@ -111,6 +98,8 @@ class ProjetInnovation(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def save(self, *args, **kwargs):
+        if self.image_couverture:
+            self.image_couverture = optimize_image(self.image_couverture)
         if not self.slug:
             # Génère un slug unique : "mon-projet-a1b2" pour éviter les bugs si 2 projets ont le même nom
             base_slug = slugify(self.titre)
@@ -221,6 +210,11 @@ class ChallengeEntreprise(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
 
+    def save(self, *args, **kwargs):
+        if self.image_illustration:
+            self.image_illustration = optimize_image(self.image_illustration)
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return f"{self.titre} - {self.entreprise.company_name}"
 class ParticipationChallenge(models.Model):
@@ -293,6 +287,11 @@ class ProjetUpdate(models.Model):
         ordering = ['-created_at'] # Les plus récentes en haut
         verbose_name = "Actualité du projet"
 
+    def save(self, *args, **kwargs):
+        if self.image:
+            self.image = optimize_image(self.image)
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return f"{self.titre} ({self.projet.titre})"
     
@@ -351,8 +350,13 @@ class EtudiantTalent(models.Model):
     moyenne_generale = models.FloatField(verbose_name="Moyenne Générale")
     
     # Champs pour le design (Photo et Tags)
-    photo = models.ImageField(upload_to='talents/', blank=True, null=True)
+    photo = models.ImageField(upload_to='talents/', blank=True, null=True, validators=[valider_taille_image_2mo])
     competences = models.ManyToManyField(Competence, blank=True)
+
+    def save(self, *args, **kwargs):
+        if self.photo:
+            self.photo = optimize_image(self.photo)
+        super().save(*args, **kwargs)
 
     class Meta:
         ordering = ['-moyenne_generale'] # Trie par les meilleurs notes en premier
