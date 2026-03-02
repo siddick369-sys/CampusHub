@@ -110,8 +110,8 @@ services:
       - campushub_net
 
 networks:
-  campushub_net:
-    driver: bridge
+  campuhub_net:
+    external: true
 
 volumes:
   postgres_data:

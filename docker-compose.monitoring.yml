@@ -19,7 +19,7 @@ services:
         limits:
           memory: 500M
     networks:
-      - campushub_network
+      - campuhub_net
     restart: unless-stopped
 
   grafana:
@@ -39,7 +39,7 @@ services:
         limits:
           memory: 400M
     networks:
-      - campushub_network
+      - campuhub_net
     restart: unless-stopped
 
   alertmanager:
@@ -54,7 +54,7 @@ services:
         limits:
           memory: 200M
     networks:
-      - campushub_network
+      - campuhub_net
     restart: unless-stopped
 
   loki:
@@ -69,7 +69,7 @@ services:
         limits:
           memory: 500M
     networks:
-      - campushub_network
+      - campuhub_net
     restart: unless-stopped
 
   promtail:
@@ -82,7 +82,7 @@ services:
       - ./logs:/app/logs
     command: -config.file=/etc/promtail/config.yml
     networks:
-      - campushub_network
+      - campuhub_net
     restart: unless-stopped
 
   node-exporter:
@@ -97,7 +97,7 @@ services:
       - '--path.sysfs=/host/sys'
       - '--collector.filesystem.ignored-mount-points=^/(sys|proc|dev|host|etc)($$|/)'
     networks:
-      - campushub_network
+      - campuhub_net
     restart: unless-stopped
 
   cadvisor:
@@ -110,7 +110,7 @@ services:
       - /var/lib/docker/:/var/lib/docker:ro
       - /dev/disk/:/dev/disk:ro
     networks:
-      - campushub_network
+      - campuhub_net
     restart: unless-stopped
 
   # Exporters
@@ -120,7 +120,7 @@ services:
     environment:
       DATA_SOURCE_NAME: "postgresql://${DB_USER}:${DB_PASSWORD}@postgres:5432/${DB_NAME}?sslmode=disable"
     networks:
-      - campushub_network
+      - campuhub_net
     restart: unless-stopped
 
   redis-exporter:
@@ -129,7 +129,7 @@ services:
     environment:
       REDIS_ADDR: "redis://redis:6379"
     networks:
-      - campushub_network
+      - campuhub_net
     restart: unless-stopped
 
   nginx-exporter:
@@ -138,11 +138,11 @@ services:
     command:
       - '-nginx.scrape-uri=http://nginx:80/nginx_status'
     networks:
-      - campushub_network
+      - campuhub_net
     restart: unless-stopped
 
 networks:
-  campushub_network:
+  campuhub_net:
     external: true
 
 volumes:
