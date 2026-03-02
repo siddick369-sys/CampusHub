@@ -66,6 +66,7 @@ CHANNEL_LAYERS = {
 MIDDLEWARE = [
     'django_prometheus.middleware.PrometheusBeforeMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'CampuHub.middleware.RateLimitMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -320,6 +321,11 @@ CACHES = {
         }
     }
 }
+
+# Rate Limiting configuration
+RATELIMIT_ENABLED = True
+RATELIMIT_MAX_REQUESTS = 30  # requests per window
+RATELIMIT_TIME_WINDOW = 60   # seconds
 
 # The CELERY settings are already defined above using os.getenv in lines 218-229.
 
