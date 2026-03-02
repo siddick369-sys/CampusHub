@@ -215,7 +215,7 @@ FLUTTERWAVE_SECRET_HASH = os.getenv("FLUTTERWAVE_SECRET_HASH", "mysupersecret")
 # -------------------------------
 
 # Le broker (Redis dans ton docker-compose)
-CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", "redis://lo:6379/0")
+CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", "redis://redis:6379/0")
 
 # Facultatif mais conseillé : backend pour stocker les résultats de tâches
 CELERY_RESULT_BACKEND = os.getenv("CELERY_RESULT_BACKEND", "redis://redis:6379/1")
@@ -301,21 +301,15 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-
-CELERY_BROKER_URL = "redis://localhost:6379/1"
-CELERY_RESULT_BACKEND = "redis://localhost:6379/1"
-
-
-
+# Redis/Cache Configuration for production (Docker)
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://localhost:6379/1",  # DB 1 pour le cache
+        "LOCATION": os.getenv("REDIS_CACHE_URL", f"redis://{os.getenv('REDIS_HOST', 'redis')}:{os.getenv('REDIS_PORT', '6379')}/1"),
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
         }
     }
 }
 
-CELERY_BROKER_URL = "redis://localhost:6379/1"
-CELERY_RESULT_BACKEND = "redis://localhost:6379/1"
+# The CELERY settings are already defined above using os.getenv in lines 218-229.
