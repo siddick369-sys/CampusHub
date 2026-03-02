@@ -229,7 +229,6 @@ def service_list_view(request):
     if not services.exists() and request.user.is_authenticated and (q or category_slug or min_price or max_price or provider_city):
         from accounts.services import UsageManager
         if UsageManager.is_action_allowed(request.user, 'search_alerts_count'):
-            from .models import ServiceSearchAlert, ServiceCategory
             category_obj = None
             if category_slug:
                 category_obj = ServiceCategory.objects.filter(slug=category_slug).first()
