@@ -1,5 +1,5 @@
 # --- Dockerfile (Production) ---
-FROM python:3.11-slim-bookworm as builder
+FROM python:3.11-bookworm as builder
 
 WORKDIR /app
 
@@ -7,13 +7,10 @@ ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Install system build dependencies
+# Install system build dependencies (only those not in bookworm full)
 RUN apt-get update && \
     apt-get install -y --no-install-recommends --fix-missing \
-    build-essential \
-    gcc \
     libpq-dev \
-    pkg-config \
     libcairo2-dev \
     libffi-dev \
     netcat-openbsd && \
