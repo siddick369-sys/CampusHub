@@ -10,12 +10,14 @@ ENV PYTHONUNBUFFERED 1
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     build-essential \
-    python3-dev \
+    gcc \
+
     libpq-dev \
     pkg-config \
     libcairo2-dev \
     libffi-dev \
     netcat-openbsd && \
+    && apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
 # Install python dependencies
