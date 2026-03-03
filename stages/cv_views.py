@@ -386,9 +386,9 @@ def cv_ai_enhance_api(request):
 
         # Check cache
         cache_key = hashlib.md5(prompt.encode()).hexdigest()
-        cached = AICachedResponse.objects.filter(prompt_hash=cache_key).first()
+        cached = AICachedResponse.objects.filter(question_normalisee=prompt).first()
         if cached:
-            return JsonResponse({'status': 'ok', 'enhanced_text': cached.response_text})
+            return JsonResponse({'status': 'ok', 'enhanced_text': cached.reponse})
 
         # Call AI (using settings-based API)
         try:
@@ -402,9 +402,9 @@ def cv_ai_enhance_api(request):
 
             # Cache the response
             AICachedResponse.objects.create(
-                prompt_hash=cache_key,
-                prompt_text=prompt[:500],
-                response_text=enhanced,
+                question_originale=prompt,
+                question_normalisee=prompt,
+                reponse=enhanced,
             )
 
             return JsonResponse({'status': 'ok', 'enhanced_text': enhanced})

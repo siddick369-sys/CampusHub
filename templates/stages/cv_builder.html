@@ -647,14 +647,105 @@
                     </div>
                 </div>
 
+                <!-- Template for empty formsets (Hidden) -->
+                <div id="empty-form-templates" style="display:none">
+                    <div id="exp-empty">
+                        <div class="formset-item">
+                            <button type="button" class="btn-delete-item" title="Supprimer"><i class="bi bi-x-lg"></i></button>
+                            <div class="form-row-2">
+                                <div><label class="form-label small">Poste</label>{{ exp_formset.empty_form.job_title }}</div>
+                                <div><label class="form-label small">Entreprise</label>{{ exp_formset.empty_form.company_name }}</div>
+                            </div>
+                            <div class="form-row-3 mt-2">
+                                <div><label class="form-label small">Lieu</label>{{ exp_formset.empty_form.location }}</div>
+                                <div><label class="form-label small">Début</label>{{ exp_formset.empty_form.start_date }}</div>
+                                <div><label class="form-label small">Fin</label>{{ exp_formset.empty_form.end_date }}</div>
+                            </div>
+                            <div class="form-check mt-2">
+                                {{ exp_formset.empty_form.is_current }}
+                                <label class="form-check-label small">En poste actuellement</label>
+                            </div>
+                            <div class="mt-2">
+                                <label class="form-label small">Description</label>
+                                {{ exp_formset.empty_form.description }}
+                                <button type="button" class="btn btn-sm btn-link p-0 mt-1" onclick="aiEnhanceFromEl(this, 'description')"><i class="bi bi-stars"></i> IA</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="edu-empty">
+                        <div class="formset-item">
+                            <button type="button" class="btn-delete-item" title="Supprimer"><i class="bi bi-x-lg"></i></button>
+                            <div class="form-row-2">
+                                <div><label class="form-label small">Diplôme</label>{{ edu_formset.empty_form.diploma }}</div>
+                                <div><label class="form-label small">Établissement</label>{{ edu_formset.empty_form.institution }}</div>
+                            </div>
+                            <div class="form-row-3 mt-2">
+                                <div><label class="form-label small">Lieu</label>{{ edu_formset.empty_form.location }}</div>
+                                <div><label class="form-label small">Début</label>{{ edu_formset.empty_form.start_date }}</div>
+                                <div><label class="form-label small">Fin</label>{{ edu_formset.empty_form.end_date }}</div>
+                            </div>
+                            <div class="mt-2"><label class="form-label small">Description</label>{{ edu_formset.empty_form.description }}</div>
+                        </div>
+                    </div>
+                    <div id="skill-empty">
+                        <div class="formset-item">
+                            <button type="button" class="btn-delete-item" title="Supprimer"><i class="bi bi-x-lg"></i></button>
+                            <div class="form-row-3">
+                                <div><label class="form-label small">Compétence</label>{{ skill_formset.empty_form.name }}</div>
+                                <div><label class="form-label small">Niveau</label>{{ skill_formset.empty_form.level }}</div>
+                                <div><label class="form-label small">Catégorie</label>{{ skill_formset.empty_form.category }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="lang-empty">
+                        <div class="formset-item">
+                            <button type="button" class="btn-delete-item" title="Supprimer"><i class="bi bi-x-lg"></i></button>
+                            <div class="form-row-2">
+                                <div><label class="form-label small">Langue</label>{{ lang_formset.empty_form.language }}</div>
+                                <div><label class="form-label small">Niveau</label>{{ lang_formset.empty_form.level }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="proj-empty">
+                        <div class="formset-item">
+                            <button type="button" class="btn-delete-item" title="Supprimer"><i class="bi bi-x-lg"></i></button>
+                            <div class="form-row-2">
+                                <div><label class="form-label small">Titre</label>{{ proj_formset.empty_form.title }}</div>
+                                <div><label class="form-label small">Technologies</label>{{ proj_formset.empty_form.technologies }}</div>
+                            </div>
+                            <div class="mt-2"><label class="form-label small">Description</label>{{ proj_formset.empty_form.description }}</div>
+                            <div class="mt-2"><label class="form-label small">URL</label>{{ proj_formset.empty_form.url }}</div>
+                        </div>
+                    </div>
+                    <div id="cert-empty">
+                        <div class="formset-item">
+                            <button type="button" class="btn-delete-item" title="Supprimer"><i class="bi bi-x-lg"></i></button>
+                            <div class="form-row-2">
+                                <div><label class="form-label small">Certification</label>{{ cert_formset.empty_form.name }}</div>
+                                <div><label class="form-label small">Organisme</label>{{ cert_formset.empty_form.issuer }}</div>
+                            </div>
+                            <div class="form-row-2 mt-2">
+                                <div><label class="form-label small">Date</label>{{ cert_formset.empty_form.date }}</div>
+                                <div><label class="form-label small">URL</label>{{ cert_formset.empty_form.url }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="interest-empty">
+                        <div class="formset-item">
+                            <button type="button" class="btn-delete-item" title="Supprimer"><i class="bi bi-x-lg"></i></button>
+                            <div><label class="form-label small">Centre d'intérêt</label>{{ interest_formset.empty_form.name }}</div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- ACTION BAR -->
                 <div class="cv-action-bar">
-                    <button type="submit" class="btn btn-primary">
+                    <button type="submit" class="btn btn-primary" onclick="return validateAndSubmit(event)">
                         <i class="bi bi-save me-1"></i> Sauvegarder
                     </button>
-                    <a href="{% url 'cv_download_pdf' %}?cv_id={{ cv.pk }}" class="btn btn-success">
+                    <button type="button" class="btn btn-success" onclick="validateAndDownload()">
                         <i class="bi bi-download me-1"></i> Télécharger PDF
-                    </a>
+                    </button>
                     <button type="button" class="btn btn-outline-primary" onclick="checkATSScore()">
                         <i class="bi bi-speedometer2 me-1"></i> Score ATS
                     </button>
@@ -734,18 +825,21 @@
 </div>
 
 <!-- ATS Score Modal -->
-<div class="modal fade" id="atsModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
+<div class="modal fade" id="validateModal" tabindex="-1">
+    <div class="modal-dialog">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title"><i class="bi bi-speedometer2 me-2"></i>Analyse ATS détaillée</h5>
+            <div class="modal-header bg-warning">
+                <h5 class="modal-title text-dark"><i class="bi bi-exclamation-triangle me-2"></i>Champs manquants</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body" id="atsModalBody">
-                <div class="text-center py-4">
-                    <div class="spinner-border text-primary"></div>
-                    <p class="mt-2">Analyse en cours...</p>
-                </div>
+            <div class="modal-body">
+                <p>Certains champs essentiels sont vides. Un CV professionnel doit au moins contenir :</p>
+                <ul id="validationErrorsList"></ul>
+                <p class="mb-0 text-muted small">Voulez-vous quand même continuer ?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Corriger</button>
+                <button type="button" class="btn btn-primary" id="continueSubmitBtn">Continuer quand même</button>
             </div>
         </div>
     </div>
@@ -842,12 +936,21 @@
 
     // AI Enhance
     function aiEnhance(type) {
-        const textarea = document.querySelector(`[name="summary"]`);
+        const textarea = document.querySelector(`[name="${type}"]`);
+        aiEnhanceCore(textarea, type);
+    }
+
+    function aiEnhanceFromEl(btn, type) {
+        const textarea = btn.closest('.formset-item').querySelector('textarea');
+        aiEnhanceCore(textarea, type);
+    }
+
+    function aiEnhanceCore(textarea, type) {
         if (!textarea || !textarea.value.trim()) {
             alert('Veuillez d\'abord rédiger un texte.');
             return;
         }
-
+        const originalText = textarea.value;
         textarea.disabled = true;
         fetch("{% url 'cv_ai_enhance' %}", {
             method: 'POST',
@@ -858,12 +961,65 @@
             .then(data => {
                 if (data.enhanced_text) {
                     textarea.value = data.enhanced_text;
+                    autoSave();
                 } else {
                     alert(data.message || 'Erreur');
                 }
             })
             .catch(() => alert('Erreur de connexion'))
             .finally(() => textarea.disabled = false);
+    }
+
+    // Validation
+    function validateCV() {
+        const errors = [];
+        const required = {
+            'first_name': 'Prénom',
+            'last_name': 'Nom',
+            'email': 'Email',
+            'summary': 'Résumé professionnel'
+        };
+        for (const [name, label] of Object.entries(required)) {
+            const el = document.querySelector(`[name="${name}"]`);
+            if (!el || !el.value.trim()) errors.push(label);
+        }
+        const hasExp = document.querySelectorAll('#exp-container .formset-item').length > 0;
+        if (!hasExp) errors.push('Au moins une expérience');
+
+        return errors;
+    }
+
+    function validateAndSubmit(e) {
+        const errors = validateCV();
+        if (errors.length > 0) {
+            e.preventDefault();
+            showValidationModal(() => document.getElementById('cvForm').submit());
+            return false;
+        }
+        return true;
+    }
+
+    function validateAndDownload() {
+        const errors = validateCV();
+        if (errors.length > 0) {
+            showValidationModal(() => window.location.href = "{% url 'cv_download_pdf' %}?cv_id={{ cv.pk }}");
+        } else {
+            window.location.href = "{% url 'cv_download_pdf' %}?cv_id={{ cv.pk }}";
+        }
+    }
+
+    function showValidationModal(onContinue) {
+        const errors = validateCV();
+        const list = document.getElementById('validationErrorsList');
+        list.innerHTML = '';
+        errors.forEach(e => list.innerHTML += `<li>${e}</li>`);
+
+        const modal = new bootstrap.Modal(document.getElementById('validateModal'));
+        document.getElementById('continueSubmitBtn').onclick = () => {
+            modal.hide();
+            onContinue();
+        };
+        modal.show();
     }
 
     // Auto-save (every 30 seconds)
@@ -885,6 +1041,7 @@
 
     function autoSave() {
         const status = document.getElementById('autosaveStatus');
+        if (!status) return;
         status.innerHTML = '<i class="bi bi-arrow-repeat spin"></i> Sauvegarde...';
         status.className = 'autosave-indicator saving';
 
@@ -922,20 +1079,16 @@
         const container = document.getElementById(`${prefix}-container`);
         const totalForms = document.querySelector(`#id_${prefix}-TOTAL_FORMS`);
         const count = parseInt(totalForms.value);
-        const lastItem = container.querySelector('.formset-item:last-child');
 
-        if (lastItem) {
-            const clone = lastItem.cloneNode(true);
+        // Use the hidden template
+        const template = document.getElementById(`${prefix}-empty`);
+        if (template) {
+            const clone = template.firstElementChild.cloneNode(true);
             // Update form indices
-            clone.innerHTML = clone.innerHTML.replace(
-                new RegExp(`${prefix}-(\\d+)-`, 'g'),
-                `${prefix}-${count}-`
-            );
-            // Clear values
-            clone.querySelectorAll('input:not([type="hidden"]):not([type="checkbox"]), textarea').forEach(el => el.value = '');
-            clone.querySelectorAll('input[type="checkbox"]').forEach(el => el.checked = false);
+            clone.innerHTML = clone.innerHTML.replace(/__prefix__/g, count);
             container.appendChild(clone);
             totalForms.value = count + 1;
+            refreshPreview();
         }
     }
 
@@ -950,6 +1103,7 @@
             } else {
                 item.remove();
             }
+            refreshPreview();
         }
     });
 
