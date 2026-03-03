@@ -552,14 +552,16 @@ class FavoriteService(TimeStampedModel):
         on_delete=models.CASCADE,
         related_name="favorited_by",
     )
+    last_notified_at = models.DateTimeField(blank=True, null=True, help_text="Pour ne pas spammer l'utilisateur")
 
     class Meta:
         verbose_name = "Service favori"
         verbose_name_plural = "Services favoris"
         unique_together = ("user", "service")
+        ordering = ["-created_at"]
 
     def __str__(self):
-        return f"{self.user.username} a mis en favori {self.service.title}"
+        return f"{self.user.username} ❤ {self.service.title}"
 
 class ServiceSearchAlert(TimeStampedModel):
     """
@@ -970,36 +972,6 @@ class ServiceOrderClientActionForm(forms.Form):
             self.order.change_status("cancelled", actor=actor, reason=reason)
             
             
-from django.conf import settings
-from django.db import models
-
-# ... tes autres imports et modèles (ServiceOffer, ServiceOrder, etc.)
-
-class FavoriteService(models.Model):
-    """
-    Service ajouté en favoris par un utilisateur (client).
-    """
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name="favorite_services",
-    )
-    service = models.ForeignKey(
-        "ServiceOffer",
-        on_delete=models.CASCADE,
-        related_name="favorited_by",
-    )
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    # Pour ne pas spammer l'utilisateur
-    last_notified_at = models.DateTimeField(blank=True, null=True)
-
-    class Meta:
-        unique_together = ("user", "service")
-        ordering = ["-created_at"]
-
-    def __str__(self):
-        return f"{self.user.username} ❤ {self.service.title}"
     
     
 from django.core.validators import MinValueValidator, MaxValueValidator

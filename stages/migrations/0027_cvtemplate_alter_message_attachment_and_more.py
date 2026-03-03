@@ -230,10 +230,24 @@ class Migration(migrations.Migration):
                 'unique_together': {('cv_profile', 'version_number')},
             },
         ),
-        migrations.DeleteModel(
-            name='CompanySubscription',
-        ),
-        migrations.DeleteModel(
-            name='CompanySubscriptionPlan',
+        migrations.SeparateDatabaseAndState(
+            state_operations=[
+                migrations.DeleteModel(
+                    name='CompanySubscription',
+                ),
+                migrations.DeleteModel(
+                    name='CompanySubscriptionPlan',
+                ),
+            ],
+            database_operations=[
+                migrations.RunSQL(
+                    sql="DROP TABLE IF EXISTS stages_companysubscription CASCADE;",
+                    reverse_sql=migrations.RunSQL.noop
+                ),
+                migrations.RunSQL(
+                    sql="DROP TABLE IF EXISTS stages_companysubscriptionplan CASCADE;",
+                    reverse_sql=migrations.RunSQL.noop
+                ),
+            ],
         ),
     ]
