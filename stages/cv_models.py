@@ -97,8 +97,10 @@ class CVProfile(models.Model):
 
     # --- State ---
     is_draft = models.BooleanField(default=True)
+    is_primary = models.BooleanField(default=False)
+    job_category = models.CharField(max_length=100, blank=True, null=True)
+    job_description = models.TextField(blank=True, null=True)
     version = models.PositiveIntegerField(default=1)
-    is_primary = models.BooleanField(default=False, help_text="CV principal de l'utilisateur")
 
     # --- Analytics ---
     download_count = models.PositiveIntegerField(default=0)
@@ -106,8 +108,6 @@ class CVProfile(models.Model):
     applications_used_count = models.PositiveIntegerField(default=0)
     last_ats_score = models.PositiveIntegerField(blank=True, null=True, help_text="Dernier score ATS (0-100)")
 
-    # --- Timestamps ---
-    created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:

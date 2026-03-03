@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <title>CV Premium Dark</title>
+    <style>
+        :root {
+            --primary: {
+                    {
+                    cv.primary_color|default: "#2563eb"
+                }
+            }
+
+            ;
+            --text-main: #f8fafc;
+            --bg-dark: #0f172a;
+            --bg-accent: #1e293b;
+        }
+
+        body {
+            font-family: '{{ cv.get_font_family_display|default:"Inter" }}',
+            sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            line-height: 1.5;
+        }
+
+        .container {
+            display: flex;
+            min-height: 297mm;
+        }
+
+        .sidebar {
+            width: 35%;
+            background-color: var(--bg-accent);
+            padding: 40px 30px;
+            border-right: 2px solid var(--primary);
+        }
+
+        .main {
+            width: 65%;
+            padding: 50px;
+        }
+
+        .photo-container {
+            width: 150px;
+            height: 150px;
+            margin-bottom: 30px;
+            overflow: hidden;
+            border: 4px solid var(--primary);
+
+                {
+                % if cv.photo_frame=='circle' %
+            }
+
+            border-radius: 50%;
+
+                {
+                % elif cv.photo_frame=='rounded' %
+            }
+
+            border-radius: 20px;
+
+                {
+                % endif %
+            }
+        }
+
+        .photo-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin: 0;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .job-title {
+            font-size: 1.2rem;
+            opacity: 0.8;
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            color: var(--primary);
+            border-bottom: 1px solid var(--primary);
+            padding-bottom: 5px;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            font-weight: bold;
+            font-size: 1rem;
+        }
+
+        .contact-item {
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+        }
+
+        .experience-item,
+        .education-item {
+            margin-bottom: 25px;
+        }
+
+        .item-header {
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .item-sub {
+            font-size: 0.9rem;
+            opacity: 0.7;
+            font-style: italic;
+            margin-bottom: 5px;
+        }
+
+        .skills-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .skill-tag {
+            background: var(--bg-dark);
+            border: 1px solid var(--primary);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+        }
+
+        .summary {
+            background: var(--bg-accent);
+            padding: 15px;
+            border-left: 4px solid var(--primary);
+            margin-bottom: 30px;
+            font-style: italic;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="sidebar">
+            {% if cv.photo %}
+            <div class="photo-container">
+                <img src="{{ cv.photo.url }}" alt="Photo">
+            </div>
+            {% endif %}
+
+            <div class="section-title">Contact</div>
+            <div class="contact-item">📧 {{ cv.email }}</div>
+            <div class="contact-item">📞 {{ cv.phone }}</div>
+            <div class="contact-item">📍 {{ cv.city }}, {{ cv.country }}</div>
+            {% if cv.linkedin_url %}<div class="contact-item">🔗 LinkedIn</div>{% endif %}
+
+            <div class="section-title" style="margin-top: 40px;">Compétences</div>
+            <div class="skills-grid">
+                {% for skill in skills %}
+                <div class="skill-tag">{{ skill.name }}</div>
+                {% endfor %}
+            </div>
+
+            <div class="section-title" style="margin-top: 40px;">Langues</div>
+            {% for lang in languages %}
+            <div class="contact-item">{{ lang.language }} — {{ lang.get_level_display }}</div>
+            {% endfor %}
+        </div>
+
+        <div class="main">
+            <h1>{{ cv.first_name }} {{ cv.last_name }}</h1>
+            <div class="job-title">{{ cv.professional_title }}</div>
+
+            <div class="summary">
+                {{ cv.summary|linebreaksbr }}
+            </div>
+
+            <div class="section-title">Expériences</div>
+            {% for exp in experiences %}
+            <div class="experience-item">
+                <div class="item-header">
+                    <span>{{ exp.job_title }}</span>
+                    <span>{{ exp.start_date }} - {{ exp.end_date|default:"Présent" }}</span>
+                </div>
+                <div class="item-sub">{{ exp.company_name }} | {{ exp.location }}</div>
+                <div class="description small">{{ exp.description|linebreaksbr }}</div>
+            </div>
+            {% endfor %}
+
+            <div class="section-title">Formation</div>
+            {% for edu in educations %}
+            <div class="education-item">
+                <div class="item-header">
+                    <span>{{ edu.diploma }}</span>
+                    <span>{{ edu.start_date }} - {{ edu.end_date }}</span>
+                </div>
+                <div class="item-sub">{{ edu.institution }}</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+
+</html>

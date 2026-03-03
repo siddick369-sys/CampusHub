@@ -30,15 +30,19 @@ WORKDIR /app
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Install runtime system dependencies
+# Install runtime system dependencies (Adding WeasyPrint requirements)
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     libpq-dev \
     libcairo2 \
     libpangocairo-1.0-0 \
+    libpango-1.0-0 \
+    libharfbuzz0b \
+    libpangoft2-1.0-0 \
     libffi8 \
     netcat-openbsd \
-    gettext && \
+    gettext \
+    shared-mime-info && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 

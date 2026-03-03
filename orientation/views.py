@@ -289,6 +289,7 @@ from django.contrib.auth.decorators import login_required
 from .models import School, Track
 
 
+
 @login_required
 def school_search_view(request):
     """
@@ -599,7 +600,7 @@ def ai_orientation_api(request):
         messages.append({"role": h["role"], "content": h["content"]})
 
     if is_final_request:
-        messages.append({"role": "system", "content": "IMPORTANT: L'utilisateur souhaite terminer le test maintenant. Analyse ses réponses précédentes et fournis IMMÉDIATEMENT ton bloc RESULTAT_FINAL avec tes conclusions."})
+        messages.append({"role": "system", "content": "IMPORTANT: L'utilisateur souhaite terminer le test maintenant. Analyse ses réponses précédentes et fournis IMMÉDIATEMENT ton bloc RESULTAT_FINAL with tes conclusions."})
     elif not is_start and user_message:
         messages.append({"role": "user", "content": user_message})
         session.history.append({"role": "user", "content": user_message})

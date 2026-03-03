@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <title>CV Professional Minimal</title>
+    <style>
+        body {
+            font-family: 'Inter', Helvetica, sans-serif;
+            color: #1e293b;
+            margin: 0;
+            padding: 50px;
+            line-height: 1.6;
+        }
+
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 30px;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            margin: 0;
+            color: #0f172a;
+        }
+
+        .subheader {
+            color: {
+                    {
+                    cv.primary_color|default: "#2563eb"
+                }
+            }
+
+            ;
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-top: 5px;
+        }
+
+        .contact-info {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            font-size: 0.85rem;
+            margin-top: 10px;
+            color: #64748b;
+        }
+
+        .section {
+            margin-bottom: 35px;
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: #0f172a;
+
+            border-left: 5px solid {
+                    {
+                    cv.primary_color|default: "#2563eb"
+                }
+            }
+
+            ;
+            padding-left: 15px;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+        }
+
+        .item {
+            margin-bottom: 20px;
+        }
+
+        .item-header {
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+        }
+
+        .item-sub {
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+        .skills-list {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 15px;
+        }
+
+        .skill-item {
+            font-size: 0.9rem;
+            border-bottom: 1px solid #f1f5f9;
+            padding-bottom: 3px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <h1>{{ cv.first_name }} {{ cv.last_name }}</h1>
+        <div class="subheader">{{ cv.professional_title }}</div>
+        <div class="contact-info">
+            <span>{{ cv.email }}</span> | <span>{{ cv.phone }}</span> | <span>{{ cv.city }}, {{ cv.country }}</span>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Profil</div>
+        <p>{{ cv.summary }}</p>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Expériences</div>
+        {% for exp in experiences %}
+        <div class="item">
+            <div class="item-header">
+                <span>{{ exp.job_title }} — {{ exp.company_name }}</span>
+                <span>{{ exp.start_date }} - {{ exp.end_date|default:"À ce jour" }}</span>
+            </div>
+            <div class="item-sub">{{ exp.location }}</div>
+            <div class="description" style="margin-top: 5px;">{{ exp.description|linebreaksbr }}</div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="section">
+        <div class="section-title">Formation</div>
+        {% for edu in educations %}
+        <div class="item">
+            <div class="item-header">
+                <span>{{ edu.diploma }}</span>
+                <span>{{ edu.start_date }} - {{ edu.end_date }}</span>
+            </div>
+            <div class="item-sub">{{ edu.institution }} | {{ edu.location }}</div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="section">
+        <div class="section-title">Compétences</div>
+        <div class="skills-list">
+            {% for skill in skills %}
+            <div class="skill-item"><strong>{{ skill.name }}</strong> ({{ skill.get_level_display }})</div>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+
+</html>

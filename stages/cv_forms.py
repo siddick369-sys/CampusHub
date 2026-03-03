@@ -31,6 +31,7 @@ class CVProfileForm(forms.ModelForm):
             'photo', 'summary',
             'primary_color', 'secondary_color', 'font_family',
             'photo_frame', 'skill_display',
+            'job_category', 'job_description',
         ]
         widgets = {
             'title': forms.TextInput(attrs={**_INPUT, 'placeholder': 'Mon CV'}),
@@ -50,6 +51,8 @@ class CVProfileForm(forms.ModelForm):
             'font_family': forms.Select(attrs=_SELECT),
             'photo_frame': forms.Select(attrs=_SELECT),
             'skill_display': forms.Select(attrs=_SELECT),
+            'job_category': forms.Select(attrs=_SELECT),
+            'job_description': forms.Textarea(attrs={**_TEXT, 'rows': 2, 'placeholder': "Détails de l'offre..."}),
         }
 
 

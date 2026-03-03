@@ -1,11 +1,12 @@
 """
-CV Generator Pro — Views
-========================
-Full-page builder, live preview, PDF generation (WeasyPrint),
-auto-save, AI enhance, scoring, duplication, versioning.
+CV Generator Pro — Views (Upgraded)
+===================================
+Full-page builder, live preview, PDF generation (WeasyPrint ONLY),
+auto-save, Groq AI enhance, intelligent scoring.
 """
 import json
 import io
+import hashlib
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, JsonResponse
 from django.contrib.auth.decorators import login_required
@@ -30,7 +31,7 @@ from .cv_forms import (
     CVSkillFormSet, CVLanguageFormSet, CVProjectFormSet,
     CVCertificationFormSet, CVInterestFormSet,
 )
-from .cv_score_engine import score_cv, score_cv_for_offer
+from .cv_score_engine import score_cv, score_cv_for_offer, _collect_all_text
 
 
 def _prefill_cv(cv, user, profile):
@@ -85,28 +86,6 @@ def _prefill_cv(cv, user, profile):
             order=0,
         )
 
-    # Pre-fill skills from orientation results
-    if not cv.skills.exists():
-        last_orientation = (
-            OrientationResult.objects
-            .filter(user=user)
-            .order_by('-created_at')
-            .first()
-        )
-        if last_orientation:
-            i = 0
-            for track in last_orientation.suggested_tracks.all()[:5]:
-                if track.main_skills:
-                    for skill_name in track.main_skills.split(',')[:3]:
-                        CVSkill.objects.create(
-                            cv_profile=cv,
-                            name=skill_name.strip(),
-                            level=3,
-                            category='technical',
-                            order=i,
-                        )
-                        i += 1
-
 
 def _get_cv_context(cv):
     """Build the template context for a CVProfile."""
@@ -153,16 +132,12 @@ def _save_version_snapshot(cv):
     cv.save(update_fields=['version'])
 
 
-# -------------------------------------------------------------------
-# MAIN BUILDER VIEW
-# -------------------------------------------------------------------
 @login_required
 @student_required
 def cv_builder_view(request):
     """Page principale du générateur de CV / éditeur."""
     profile = request.user.profile
 
-    # Get or create the primary CV
     cv = CVProfile.objects.filter(user=request.user, is_primary=True).first()
     if not cv:
         cv = CVProfile.objects.filter(user=request.user).first()
@@ -203,7 +178,6 @@ def cv_builder_view(request):
             cert_formset.save()
             interest_formset.save()
 
-            # Handle template selection
             template_slug = request.POST.get('template_slug')
             if template_slug:
                 tpl = CVTemplate.objects.filter(slug=template_slug, is_active=True).first()
@@ -246,290 +220,133 @@ def cv_builder_view(request):
     return render(request, 'stages/cv_builder.html', context)
 
 
-# -------------------------------------------------------------------
-# LIVE PREVIEW (iframe endpoint)
-# -------------------------------------------------------------------
 @login_required
 def cv_preview_view(request):
     """Rend la preview HTML du CV dans une iframe."""
     cv_id = request.GET.get('cv_id')
-    if cv_id:
-        cv = get_object_or_404(CVProfile, pk=cv_id, user=request.user)
-    else:
-        cv = CVProfile.objects.filter(user=request.user, is_primary=True).first()
-    if not cv:
-        return HttpResponse("<p style='padding:20px;color:#999;'>Aucun CV trouvé.</p>")
-
+    cv = get_object_or_404(CVProfile, pk=cv_id, user=request.user) if cv_id else CVProfile.objects.filter(user=request.user, is_primary=True).first()
+    if not cv: return HttpResponse("<p>Aucun CV trouvé.</p>")
     template_path = cv.get_template_path()
     context = _get_cv_context(cv)
-    html = render_to_string(template_path, context)
-    return HttpResponse(html)
+    return HttpResponse(render_to_string(template_path, context))
 
 
-# -------------------------------------------------------------------
-# PDF DOWNLOAD (WeasyPrint)
-# -------------------------------------------------------------------
 @login_required
 @student_required
 def cv_download_pdf_view(request):
-    """Génère et télécharge le PDF via WeasyPrint."""
+    """Génère le PDF via WeasyPrint EXCLUSIVEMENT pour une qualité premium."""
     cv_id = request.GET.get('cv_id')
-    if cv_id:
-        cv = get_object_or_404(CVProfile, pk=cv_id, user=request.user)
-    else:
-        cv = CVProfile.objects.filter(user=request.user, is_primary=True).first()
+    cv = get_object_or_404(CVProfile, pk=cv_id, user=request.user) if cv_id else CVProfile.objects.filter(user=request.user, is_primary=True).first()
     if not cv:
         messages.error(request, "Aucun CV trouvé.")
         return redirect('cv_builder')
 
-    # Quota check
     if not UsageManager.is_action_allowed(request.user, 'cv_ia'):
         messages.warning(request, "Quota de téléchargement CV atteint.")
         return redirect('cv_builder')
 
     try:
         from weasyprint import HTML
-
-        template_path = cv.get_template_path()
-        context = _get_cv_context(cv)
-        html_string = render_to_string(template_path, context, request=request)
-
-        pdf_file = HTML(string=html_string, base_url=request.build_absolute_uri('/')).write_pdf()
-
+        html_string = render_to_string(cv.get_template_path(), _get_cv_context(cv), request=request)
+        pdf_file = HTML(string=html_string, base_url=request.build_absolute_uri('/')).write_pdf(presentational_hints=True)
         cv.increment_download()
         UsageManager.increment_usage(request.user, 'cv_ia')
-
-        filename = f"CV_{cv.first_name}_{cv.last_name}.pdf".replace(' ', '_')
         response = HttpResponse(pdf_file, content_type='application/pdf')
-        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        response['Content-Disposition'] = f'attachment; filename="CV_Premium_{cv.last_name}.pdf"'
         return response
     except Exception as e:
-        # Fallback to xhtml2pdf if WeasyPrint fails
-        from .utils_pdf import render_html_to_pdf_bytes
-        template_path = cv.get_template_path()
-        context = _get_cv_context(cv)
-        pdf_bytes = render_html_to_pdf_bytes(template_path, context)
-        if pdf_bytes:
-            cv.increment_download()
-            filename = f"CV_{cv.first_name}_{cv.last_name}.pdf".replace(' ', '_')
-            response = HttpResponse(pdf_bytes, content_type='application/pdf')
-            response['Content-Disposition'] = f'attachment; filename="{filename}"'
-            return response
-        messages.error(request, f"Erreur de génération PDF: {str(e)}")
+        messages.error(request, f"Erreur PDF Premium (WeasyPrint requis): {str(e)}")
         return redirect('cv_builder')
 
 
-# -------------------------------------------------------------------
-# AUTO-SAVE (AJAX)
-# -------------------------------------------------------------------
 @login_required
 @require_POST
 def cv_save_draft_api(request):
     """Endpoint AJAX pour sauvegarde automatique."""
     try:
         data = json.loads(request.body)
-        cv_id = data.get('cv_id')
-        cv = get_object_or_404(CVProfile, pk=cv_id, user=request.user)
-
-        # Update only the fields that are sent
-        fields_to_update = []
-        for field in ['first_name', 'last_name', 'professional_title', 'email', 'phone',
-                      'city', 'country', 'summary', 'primary_color', 'secondary_color',
-                      'font_family', 'photo_frame', 'skill_display']:
-            if field in data:
-                setattr(cv, field, data[field])
-                fields_to_update.append(field)
-
-        if 'section_order' in data:
-            cv.section_order = data['section_order']
-            fields_to_update.append('section_order')
-
-        if 'template_slug' in data:
-            tpl = CVTemplate.objects.filter(slug=data['template_slug']).first()
-            if tpl:
-                cv.template = tpl
-                fields_to_update.append('template')
-
-        if fields_to_update:
-            cv.save(update_fields=fields_to_update + ['updated_at'])
-
-        return JsonResponse({'status': 'ok', 'saved_at': timezone.now().isoformat()})
+        cv = get_object_or_404(CVProfile, pk=data.get('cv_id'), user=request.user)
+        fields = ['first_name', 'last_name', 'professional_title', 'email', 'phone', 'city', 'country', 'summary', 'primary_color', 'secondary_color', 'font_family', 'photo_frame', 'skill_display', 'job_category', 'job_description']
+        updated = []
+        for f in fields:
+            if f in data:
+                setattr(cv, f, data[f])
+                updated.append(f)
+        if updated: cv.save(update_fields=updated + ['updated_at'])
+        return JsonResponse({'status': 'ok'})
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
 
 
-# -------------------------------------------------------------------
-# AI ENHANCE (AJAX)
-# -------------------------------------------------------------------
 @login_required
 @require_POST
 def cv_ai_enhance_api(request):
-    """Utilise l'IA pour améliorer un texte (résumé, description, etc.)."""
+    """Utilise Groq pour améliorer un texte."""
     try:
         data = json.loads(request.body)
-        text = data.get('text', '')
-        field_type = data.get('type', 'summary')
-
-        if not text:
-            return JsonResponse({'status': 'error', 'message': 'Texte vide'}, status=400)
-
-        # Use the existing AI infrastructure
-        from ai_assistant.models import AICachedResponse
-        import hashlib
-
-        prompt_map = {
-            'summary': f"Réécris ce résumé professionnel de manière concise et impactante pour un CV. Garde le même sens, utilise un ton professionnel. Maximum 4 phrases:\n\n{text}",
-            'description': f"Réécris cette description d'expérience professionnelle de manière concise et impactante pour un CV. Utilise des verbes d'action. Maximum 3 phrases:\n\n{text}",
-            'ats_keywords': f"Analyse ce texte de CV et suggère 10 mots-clés ATS importants qui manquent:\n\n{text}",
-        }
-        prompt = prompt_map.get(field_type, prompt_map['summary'])
-
-        # Check cache
-        cache_key = hashlib.md5(prompt.encode()).hexdigest()
-        cached = AICachedResponse.objects.filter(question_normalisee=prompt).first()
-        if cached:
-            return JsonResponse({'status': 'ok', 'enhanced_text': cached.reponse})
-
-        # Call AI (using settings-based API)
-        try:
-            from django.conf import settings
-            import google.generativeai as genai
-
-            genai.configure(api_key=settings.GEMINI_API_KEY)
-            model = genai.GenerativeModel('gemini-2.0-flash')
-            response = model.generate_content(prompt)
-            enhanced = response.text
-
-            # Cache the response
-            AICachedResponse.objects.create(
-                question_originale=prompt,
-                question_normalisee=prompt,
-                reponse=enhanced,
-            )
-
-            return JsonResponse({'status': 'ok', 'enhanced_text': enhanced})
-        except Exception:
-            return JsonResponse({'status': 'error', 'message': 'Service IA temporairement indisponible'}, status=503)
-
+        text, ftype = data.get('text', ''), data.get('type', 'summary')
+        if not text: return JsonResponse({'status': 'error', 'message': 'Texte vide'}, status=400)
+        
+        from .groq_client import GroqCVClient
+        groq = GroqCVClient()
+        enhanced = groq.enhance_text(text, ftype)
+        if enhanced: return JsonResponse({'status': 'ok', 'enhanced_text': enhanced})
+        return JsonResponse({'status': 'error', 'message': 'Erreur Groq'}, status=503)
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
 
 
-# -------------------------------------------------------------------
-# CV SCORE (AJAX)
-# -------------------------------------------------------------------
 @login_required
 def cv_score_api(request):
-    """Retourne le score ATS du CV."""
+    """Analyse ATS via Groq."""
     cv_id = request.GET.get('cv_id')
     cv = get_object_or_404(CVProfile, pk=cv_id, user=request.user)
-
-    offer_title = request.GET.get('offer_title', '')
-    offer_desc = request.GET.get('offer_desc', '')
-
-    if offer_title:
-        scores = score_cv_for_offer(cv, offer_title, offer_desc)
-    else:
-        scores = score_cv(cv)
-
-    # Save score result
-    CVScoreResult.objects.create(
-        cv_profile=cv,
-        overall_score=scores['overall_score'],
-        keyword_score=scores['keyword_score'],
-        action_verbs_score=scores['action_verbs_score'],
-        completeness_score=scores['completeness_score'],
-        formatting_score=scores['formatting_score'],
-        missing_keywords=scores.get('missing_keywords', []),
-        suggestions=scores.get('suggestions', []),
-        weak_descriptions=scores.get('weak_descriptions', []),
-        target_offer_title=offer_title,
-    )
-
-    cv.last_ats_score = scores['overall_score']
-    cv.save(update_fields=['last_ats_score'])
-
-    return JsonResponse(scores)
+    
+    from .groq_client import GroqCVClient
+    cv_text = _collect_all_text(cv)
+    groq = GroqCVClient()
+    scores = groq.analyze_cv(cv_text, cv.job_category, cv.job_description)
+    
+    if scores:
+        CVScoreResult.objects.create(cv_profile=cv, **scores)
+        cv.last_ats_score = scores['overall_score']
+        cv.save(update_fields=['last_ats_score'])
+        return JsonResponse(scores)
+    return JsonResponse({'status': 'error', 'message': 'Analyse échouée'}, status=500)
 
 
-# -------------------------------------------------------------------
-# DUPLICATE CV
-# -------------------------------------------------------------------
 @login_required
 @require_POST
 def cv_duplicate_view(request):
-    """Duplique un CV."""
-    cv_id = request.POST.get('cv_id')
-    cv = get_object_or_404(CVProfile, pk=cv_id, user=request.user)
+    cv = get_object_or_404(CVProfile, pk=request.POST.get('cv_id'), user=request.user)
     new_cv = cv.duplicate()
     messages.success(request, f"CV dupliqué : {new_cv.title}")
     return redirect('cv_builder')
 
-
-# -------------------------------------------------------------------
-# SWITCH CV
-# -------------------------------------------------------------------
 @login_required
 def cv_switch_view(request, cv_id):
-    """Change le CV actif."""
     cv = get_object_or_404(CVProfile, pk=cv_id, user=request.user)
     CVProfile.objects.filter(user=request.user, is_primary=True).update(is_primary=False)
     cv.is_primary = True
     cv.save(update_fields=['is_primary'])
     return redirect('cv_builder')
 
-
-# -------------------------------------------------------------------
-# NEW CV
-# -------------------------------------------------------------------
 @login_required
 @require_POST
 def cv_new_view(request):
-    """Crée un nouveau CV vierge."""
     default_tpl = CVTemplate.objects.filter(is_active=True, slug='modern').first()
-    cv = CVProfile.objects.create(
-        user=request.user,
-        title=f"CV #{CVProfile.objects.filter(user=request.user).count() + 1}",
-        template=default_tpl,
-    )
+    cv = CVProfile.objects.create(user=request.user, title=f"Nouveau CV", template=default_tpl, is_primary=True)
     CVProfile.objects.filter(user=request.user, is_primary=True).exclude(pk=cv.pk).update(is_primary=False)
-    cv.is_primary = True
-    cv.save(update_fields=['is_primary'])
     _prefill_cv(cv, request.user, request.user.profile)
-    messages.success(request, "Nouveau CV créé !")
     return redirect('cv_builder')
 
-
-# -------------------------------------------------------------------
-# DELETE CV
-# -------------------------------------------------------------------
 @login_required
 @require_POST
 def cv_delete_view(request):
-    """Supprime un CV."""
-    cv_id = request.POST.get('cv_id')
-    cv = get_object_or_404(CVProfile, pk=cv_id, user=request.user)
-    cv.delete()
-    messages.success(request, "CV supprimé.")
+    get_object_or_404(CVProfile, pk=request.POST.get('cv_id'), user=request.user).delete()
     return redirect('cv_builder')
 
-
-# -------------------------------------------------------------------
-# VERSION HISTORY
-# -------------------------------------------------------------------
 @login_required
 def cv_version_history_view(request):
-    """Liste l'historique des versions d'un CV."""
-    cv_id = request.GET.get('cv_id')
-    cv = get_object_or_404(CVProfile, pk=cv_id, user=request.user)
-    versions = cv.versions.all()[:20]
-    return JsonResponse({
-        'versions': [
-            {
-                'version': v.version_number,
-                'date': v.created_at.strftime('%d/%m/%Y %H:%M'),
-                'snapshot': v.snapshot_data,
-            }
-            for v in versions
-        ]
-    })
+    cv = get_object_or_404(CVProfile, pk=request.GET.get('cv_id'), user=request.user)
+    return JsonResponse({'versions': [{'version': v.version_number, 'date': v.created_at.isoformat()} for v in cv.versions.all()]})
