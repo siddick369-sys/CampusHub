@@ -11,13 +11,12 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     build-essential \
     gcc \
-
     libpq-dev \
     pkg-config \
     libcairo2-dev \
     libffi-dev \
     netcat-openbsd && \
-    && apt-get clean && \
+    apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
 # Install python dependencies
