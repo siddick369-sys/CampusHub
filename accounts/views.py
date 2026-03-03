@@ -125,6 +125,7 @@ def register_view(request):
             profile.city = form.cleaned_data.get('city')
             profile.country = form.cleaned_data.get('country')
             
+            code = f"{random.randint(100000, 999999)}"
             profile.verification_code = code
             profile.email_verified = False
             
