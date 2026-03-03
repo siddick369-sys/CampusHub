@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <style>
+        @page {
+            size: A4;
+            margin: 0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: {
+                    {
+                    cv.primary_color|default: "#b8860b"
+                }
+            }
+
+            ;
+
+            --bg-dark: {
+                    {
+                    cv.secondary_color|default: "#1a1a2e"
+                }
+            }
+
+            ;
+            --text: #2d3748;
+            --muted: #718096;
+        }
+
+        body {
+            font-family: '{{ cv.font_family|default:"Lora" }}',
+            'DejaVu Sans',
+            serif;
+            font-size: 10px;
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        /* TOP BAND */
+        .top-band {
+            background: var(--bg-dark);
+            color: #fff;
+            padding: 28px 35px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .top-band .photo-block img {
+            width: 85px;
+            height: 85px;
+            object-fit: cover;
+            border: 2px solid var(--primary);
+        }
+
+        .photo-circle img {
+            border-radius: 50%;
+        }
+
+        .photo-square img {
+            border-radius: 4px;
+        }
+
+        .photo-rounded img {
+            border-radius: 12px;
+        }
+
+        .top-info {
+            flex: 1;
+        }
+
+        .top-name {
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .top-title {
+            font-size: 12px;
+            color: var(--primary);
+            font-weight: 500;
+            margin-top: 2px;
+        }
+
+        .top-contact {
+            margin-top: 8px;
+            font-size: 9px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .top-contact span {
+            margin-right: 10px;
+        }
+
+        /* BODY */
+        .body-content {
+            padding: 25px 35px;
+        }
+
+        .summary-exec {
+            font-size: 10.5px;
+            color: var(--muted);
+            font-style: italic;
+            border-left: 3px solid var(--primary);
+            padding-left: 12px;
+            margin-bottom: 18px;
+            line-height: 1.7;
+        }
+
+        .section {
+            margin-top: 16px;
+        }
+
+        .section-title {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--bg-dark);
+            padding-bottom: 4px;
+            border-bottom: 2px solid var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .entry {
+            margin-bottom: 10px;
+            page-break-inside: avoid;
+        }
+
+        .entry-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+        }
+
+        .entry-title {
+            font-weight: 700;
+            font-size: 11px;
+        }
+
+        .entry-date {
+            font-size: 9px;
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .entry-company {
+            font-size: 10px;
+            color: var(--muted);
+            font-weight: 500;
+        }
+
+        .entry-desc {
+            font-size: 9.5px;
+            color: var(--muted);
+            margin-top: 3px;
+        }
+
+        /* SKILLS — clean horizontal */
+        .skills-exec {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .skill-exec-item {
+            background: var(--bg-dark);
+            color: #fff;
+            padding: 3px 10px;
+            border-radius: 3px;
+            font-size: 9px;
+            font-weight: 500;
+        }
+
+        /* LANGUAGES */
+        .lang-exec {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .lang-exec-item {
+            font-size: 9.5px;
+        }
+
+        .lang-exec-level {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        /* CERTIFICATIONS */
+        .cert-exec {
+            margin-bottom: 5px;
+            font-size: 9.5px;
+        }
+
+        .cert-exec strong {
+            color: var(--bg-dark);
+        }
+
+        .interests-exec {
+            font-size: 9.5px;
+            color: var(--muted);
+        }
+    </style>
+</head>
+
+<body>
+    <!-- TOP BAND -->
+    <div class="top-band">
+        {% if cv.photo and cv.photo_frame != 'none' %}
+        <div class="photo-block photo-{{ cv.photo_frame|default:'circle' }}">
+            <img src="{{ cv.photo.url }}" alt="">
+        </div>
+        {% endif %}
+        <div class="top-info">
+            <div class="top-name">{{ cv.first_name }} {{ cv.last_name }}</div>
+            {% if cv.professional_title %}<div class="top-title">{{ cv.professional_title }}</div>{% endif %}
+            <div class="top-contact">
+                {% if cv.email %}<span>{{ cv.email }}</span>{% endif %}
+                {% if cv.phone %}<span>{{ cv.phone }}</span>{% endif %}
+                {% if cv.city %}<span>{{ cv.city }}{% if cv.country %}, {{ cv.country }}{% endif %}</span>{% endif %}
+                {% if cv.linkedin_url %}<span>LinkedIn</span>{% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="body-content">
+        {% if cv.summary %}
+        <div class="summary-exec">{{ cv.summary }}</div>
+        {% endif %}
+
+        {% for section_key in section_order %}
+
+        {% if section_key == 'experience' and experiences %}
+        <div class="section">
+            <div class="section-title">Expérience Professionnelle</div>
+            {% for exp in experiences %}
+            <div class="entry">
+                <div class="entry-row"><span class="entry-title">{{ exp.job_title }}</span><span class="entry-date">{{ exp.start_date }} — {% if exp.is_current %}Présent{% else %}{{ exp.end_date }}{% endif %}</span></div>
+                <div class="entry-company">{{ exp.company_name }}{% if exp.location %} · {{ exp.location }}{% endif %}</div>
+                {% if exp.description %}<div class="entry-desc">{{ exp.description }}</div>{% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if section_key == 'education' and educations %}
+        <div class="section">
+            <div class="section-title">Formation</div>
+            {% for edu in educations %}
+            <div class="entry">
+                <div class="entry-row"><span class="entry-title">{{ edu.diploma }}</span><span class="entry-date">{{ edu.start_date }}{% if edu.end_date %} — {{ edu.end_date }}{% endif %}</span></div>
+                <div class="entry-company">{{ edu.institution }}</div>
+                {% if edu.description %}<div class="entry-desc">{{ edu.description }}</div>{% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if section_key == 'skills' and skills %}
+        <div class="section">
+            <div class="section-title">Compétences</div>
+            <div class="skills-exec">
+                {% for skill in skills %}
+                <span class="skill-exec-item">{{ skill.name }}</span>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if section_key == 'languages' and languages %}
+        <div class="section">
+            <div class="section-title">Langues</div>
+            <div class="lang-exec">
+                {% for lang in languages %}
+                <div class="lang-exec-item">{{ lang.language }} <span class="lang-exec-level">({{ lang.get_level_display }})</span></div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if section_key == 'projects' and projects %}
+        <div class="section">
+            <div class="section-title">Projets</div>
+            {% for proj in projects %}
+            <div class="entry">
+                <div class="entry-title">{{ proj.title }}</div>
+                {% if proj.description %}<div class="entry-desc">{{ proj.description }}</div>{% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if section_key == 'certifications' and certifications %}
+        <div class="section">
+            <div class="section-title">Certifications</div>
+            {% for cert in certifications %}
+            <div class="cert-exec"><strong>{{ cert.name }}</strong> — {{ cert.issuer }} {% if cert.date %}({{ cert.date }}){% endif %}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if section_key == 'interests' and interests %}
+        <div class="section">
+            <div class="section-title">Centres d'intérêt</div>
+            <div class="interests-exec">{% for interest in interests %}{{ interest.name }}{% if not forloop.last %} · {% endif %}{% endfor %}</div>
+        </div>
+        {% endif %}
+
+        {% endfor %}
+    </div>
+</body>
+
+</html>

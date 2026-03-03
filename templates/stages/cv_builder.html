@@ -1,0 +1,959 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Générateur de CV Pro — CampusHub{% endblock %}
+
+{% block content %}
+<style>
+    /* ===== CV BUILDER LAYOUT ===== */
+    .cv-builder-container {
+        display: flex;
+        gap: 0;
+        min-height: calc(100vh - 70px);
+        background: #f1f5f9;
+    }
+
+    /* LEFT PANEL — Editor */
+    .cv-editor-panel {
+        width: 45%;
+        background: #fff;
+        overflow-y: auto;
+        max-height: calc(100vh - 70px);
+        border-right: 1px solid #e2e8f0;
+    }
+
+    .cv-editor-header {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+        color: #fff;
+        padding: 16px 20px;
+    }
+
+    .cv-editor-header h4 {
+        font-weight: 700;
+        font-size: 1.1rem;
+        margin: 0;
+    }
+
+    .cv-editor-header .cv-meta {
+        font-size: 0.8rem;
+        opacity: 0.7;
+    }
+
+    .cv-editor-body {
+        padding: 20px;
+    }
+
+    /* RIGHT PANEL — Preview */
+    .cv-preview-panel {
+        width: 55%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px;
+        overflow-y: auto;
+        max-height: calc(100vh - 70px);
+        background: #e2e8f0;
+    }
+
+    .cv-preview-frame {
+        width: 100%;
+        max-width: 595px;
+        min-height: 842px;
+        background: #fff;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12);
+        border-radius: 4px;
+        overflow: hidden;
+    }
+
+    .cv-preview-frame iframe {
+        width: 100%;
+        min-height: 842px;
+        border: none;
+    }
+
+    /* ACCORDION Sections */
+    .cv-section-card {
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        margin-bottom: 12px;
+        overflow: hidden;
+    }
+
+    .cv-section-header {
+        background: #f8fafc;
+        padding: 12px 16px;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-weight: 600;
+        font-size: 0.95rem;
+        transition: background 0.2s;
+    }
+
+    .cv-section-header:hover {
+        background: #f1f5f9;
+    }
+
+    .cv-section-header .badge {
+        font-size: 0.7rem;
+    }
+
+    .cv-section-body {
+        padding: 16px;
+        display: none;
+    }
+
+    .cv-section-body.active {
+        display: block;
+    }
+
+    /* Formset repeatable items */
+    .formset-item {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 12px;
+        margin-bottom: 10px;
+        position: relative;
+    }
+
+    .formset-item .btn-delete-item {
+        position: absolute;
+        right: 8px;
+        top: 8px;
+        color: #ef4444;
+        background: none;
+        border: none;
+        font-size: 1rem;
+        cursor: pointer;
+    }
+
+    .btn-add-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        color: #2563eb;
+        font-weight: 600;
+        font-size: 0.85rem;
+        cursor: pointer;
+        border: 1px dashed #2563eb;
+        background: none;
+        padding: 6px 14px;
+        border-radius: 8px;
+        transition: all 0.2s;
+    }
+
+    .btn-add-item:hover {
+        background: rgba(37, 99, 235, 0.05);
+    }
+
+    /* Template Gallery */
+    .template-gallery {
+        display: flex;
+        gap: 10px;
+        overflow-x: auto;
+        padding: 10px 0;
+    }
+
+    .template-thumb {
+        flex-shrink: 0;
+        width: 100px;
+        height: 140px;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.7rem;
+        text-align: center;
+        color: #64748b;
+        transition: all 0.2s;
+        background: #f8fafc;
+        padding: 4px;
+    }
+
+    .template-thumb:hover,
+    .template-thumb.selected {
+        border-color: #2563eb;
+        box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+    }
+
+    .template-thumb.selected {
+        background: rgba(37, 99, 235, 0.05);
+    }
+
+    /* Bottom Action Bar */
+    .cv-action-bar {
+        position: sticky;
+        bottom: 0;
+        background: #fff;
+        border-top: 1px solid #e2e8f0;
+        padding: 12px 20px;
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        z-index: 10;
+    }
+
+    /* ATS Score Widget */
+    .ats-score-widget {
+        background: linear-gradient(135deg, #1e293b, #334155);
+        border-radius: 12px;
+        padding: 16px;
+        color: #fff;
+        margin-bottom: 16px;
+    }
+
+    .ats-score-circle {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        border: 3px solid;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        font-weight: 700;
+        margin: 0 auto;
+    }
+
+    .ats-score-circle.excellent {
+        border-color: #22c55e;
+        color: #22c55e;
+    }
+
+    .ats-score-circle.good {
+        border-color: #eab308;
+        color: #eab308;
+    }
+
+    .ats-score-circle.poor {
+        border-color: #ef4444;
+        color: #ef4444;
+    }
+
+    /* Auto-save indicator */
+    .autosave-indicator {
+        font-size: 0.75rem;
+        color: #94a3b8;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .autosave-indicator.saving {
+        color: #eab308;
+    }
+
+    .autosave-indicator.saved {
+        color: #22c55e;
+    }
+
+    /* Mobile responsive */
+    @media (max-width: 992px) {
+        .cv-builder-container {
+            flex-direction: column;
+        }
+
+        .cv-editor-panel,
+        .cv-preview-panel {
+            width: 100%;
+            max-height: none;
+        }
+
+        .cv-preview-panel {
+            padding: 10px;
+        }
+    }
+
+    /* Form row helpers */
+    .form-row-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+
+    .form-row-3 {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 10px;
+    }
+
+    /* CV List Sidebar */
+    .cv-list-pill {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 8px 12px;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        margin-bottom: 4px;
+        transition: all 0.2s;
+        cursor: pointer;
+        text-decoration: none;
+        color: #334155;
+    }
+
+    .cv-list-pill:hover {
+        background: #f1f5f9;
+    }
+
+    .cv-list-pill.active {
+        background: #2563eb;
+        color: #fff;
+    }
+</style>
+
+<div class="cv-builder-container">
+    <!-- ===== LEFT: EDITOR ===== -->
+    <div class="cv-editor-panel">
+        <div class="cv-editor-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h4><i class="bi bi-file-earmark-person me-2"></i>CV Builder Pro</h4>
+                    <div class="cv-meta">{{ cv.title }} · v{{ cv.version }}</div>
+                </div>
+                <div class="autosave-indicator" id="autosaveStatus">
+                    <i class="bi bi-cloud-check"></i> Sauvegardé
+                </div>
+            </div>
+        </div>
+
+        <div class="cv-editor-body">
+            <form method="post" enctype="multipart/form-data" id="cvForm">
+                {% csrf_token %}
+
+                <!-- Template Selection -->
+                <div class="cv-section-card">
+                    <div class="cv-section-header" onclick="toggleSection(this)">
+                        <span><i class="bi bi-palette me-2"></i>Design & Template</span>
+                        <i class="bi bi-chevron-down"></i>
+                    </div>
+                    <div class="cv-section-body active">
+                        <label class="form-label fw-semibold mb-2">Choisir un design</label>
+                        <div class="template-gallery" id="templateGallery">
+                            {% for tpl in templates %}
+                            <div class="template-thumb {% if cv.template and cv.template.slug == tpl.slug %}selected{% endif %}" onclick="selectTemplate('{{ tpl.slug }}', this)" data-slug="{{ tpl.slug }}">
+                                <div>
+                                    {% if tpl.is_premium %}<span class="badge bg-warning text-dark mb-1">⭐ Premium</span><br>{% endif %}
+                                    <strong>{{ tpl.name }}</strong>
+                                    <br><small>{{ tpl.description }}</small>
+                                </div>
+                            </div>
+                            {% empty %}
+                            <div class="template-thumb selected" data-slug="modern">
+                                <div><strong>Modern</strong><br><small>2 colonnes</small></div>
+                            </div>
+                            <div class="template-thumb" data-slug="classic">
+                                <div><strong>Classic</strong><br><small>Centré</small></div>
+                            </div>
+                            <div class="template-thumb" data-slug="minimal">
+                                <div><strong>Minimal</strong><br><small>Épuré</small></div>
+                            </div>
+                            <div class="template-thumb" data-slug="creative">
+                                <div><strong>Creative</strong><br><small>Coloré</small></div>
+                            </div>
+                            <div class="template-thumb" data-slug="executive">
+                                <div><strong>Executive</strong><br><small>Luxe</small></div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <input type="hidden" name="template_slug" id="templateSlugInput" value="{{ cv.template.slug|default:'modern' }}">
+
+                        <div class="form-row-3 mt-3">
+                            <div>
+                                <label class="form-label small">Couleur principale</label>
+                                {{ form.primary_color }}
+                            </div>
+                            <div>
+                                <label class="form-label small">Police</label>
+                                {{ form.font_family }}
+                            </div>
+                            <div>
+                                <label class="form-label small">Cadre photo</label>
+                                {{ form.photo_frame }}
+                            </div>
+                        </div>
+                        <div class="form-row-2 mt-2">
+                            <div>
+                                <label class="form-label small">Affichage compétences</label>
+                                {{ form.skill_display }}
+                            </div>
+                            <div>
+                                <label class="form-label small">Couleur secondaire</label>
+                                {{ form.secondary_color }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Personal Info -->
+                <div class="cv-section-card">
+                    <div class="cv-section-header" onclick="toggleSection(this)">
+                        <span><i class="bi bi-person me-2"></i>Informations Personnelles</span>
+                        <i class="bi bi-chevron-down"></i>
+                    </div>
+                    <div class="cv-section-body active">
+                        <div class="mb-2">
+                            <label class="form-label small">Nom du CV</label>
+                            {{ form.title }}
+                        </div>
+                        <div class="form-row-2">
+                            <div><label class="form-label small">Prénom</label>{{ form.first_name }}</div>
+                            <div><label class="form-label small">Nom</label>{{ form.last_name }}</div>
+                        </div>
+                        <div class="mt-2">
+                            <label class="form-label small">Titre professionnel</label>
+                            {{ form.professional_title }}
+                        </div>
+                        <div class="form-row-2 mt-2">
+                            <div><label class="form-label small">Email</label>{{ form.email }}</div>
+                            <div><label class="form-label small">Téléphone</label>{{ form.phone }}</div>
+                        </div>
+                        <div class="form-row-2 mt-2">
+                            <div><label class="form-label small">Ville</label>{{ form.city }}</div>
+                            <div><label class="form-label small">Pays</label>{{ form.country }}</div>
+                        </div>
+                        <div class="form-row-3 mt-2">
+                            <div><label class="form-label small">LinkedIn</label>{{ form.linkedin_url }}</div>
+                            <div><label class="form-label small">Portfolio</label>{{ form.portfolio_url }}</div>
+                            <div><label class="form-label small">GitHub</label>{{ form.github_url }}</div>
+                        </div>
+                        <div class="mt-2">
+                            <label class="form-label small">Photo</label>
+                            {{ form.photo }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Summary -->
+                <div class="cv-section-card">
+                    <div class="cv-section-header" onclick="toggleSection(this)">
+                        <span><i class="bi bi-chat-square-text me-2"></i>Résumé Professionnel</span>
+                        <i class="bi bi-chevron-down"></i>
+                    </div>
+                    <div class="cv-section-body">
+                        {{ form.summary }}
+                        <button type="button" class="btn btn-sm btn-outline-primary mt-2" onclick="aiEnhance('summary')">
+                            <i class="bi bi-stars me-1"></i> Améliorer avec l'IA
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Experience -->
+                <div class="cv-section-card">
+                    <div class="cv-section-header" onclick="toggleSection(this)">
+                        <span><i class="bi bi-briefcase me-2"></i>Expériences</span>
+                        <span class="badge bg-primary">{{ exp_formset.forms|length }}</span>
+                    </div>
+                    <div class="cv-section-body">
+                        {{ exp_formset.management_form }}
+                        <div id="exp-container">
+                            {% for form_item in exp_formset %}
+                            <div class="formset-item">
+                                <button type="button" class="btn-delete-item" title="Supprimer"><i class="bi bi-x-lg"></i></button>
+                                {% for hidden in form_item.hidden_fields %}{{ hidden }}{% endfor %}
+                                <div class="form-row-2">
+                                    <div><label class="form-label small">Poste</label>{{ form_item.job_title }}</div>
+                                    <div><label class="form-label small">Entreprise</label>{{ form_item.company_name }}</div>
+                                </div>
+                                <div class="form-row-3 mt-2">
+                                    <div><label class="form-label small">Lieu</label>{{ form_item.location }}</div>
+                                    <div><label class="form-label small">Début</label>{{ form_item.start_date }}</div>
+                                    <div><label class="form-label small">Fin</label>{{ form_item.end_date }}</div>
+                                </div>
+                                <div class="form-check mt-2">
+                                    {{ form_item.is_current }}
+                                    <label class="form-check-label small">En poste actuellement</label>
+                                </div>
+                                <div class="mt-2">
+                                    <label class="form-label small">Description</label>
+                                    {{ form_item.description }}
+                                </div>
+                                {% if form_item.DELETE %}
+                                <div style="display:none">{{ form_item.DELETE }}</div>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <button type="button" class="btn-add-item" onclick="addFormsetItem('exp')">
+                            <i class="bi bi-plus-circle"></i> Ajouter une expérience
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Education -->
+                <div class="cv-section-card">
+                    <div class="cv-section-header" onclick="toggleSection(this)">
+                        <span><i class="bi bi-mortarboard me-2"></i>Formation</span>
+                        <span class="badge bg-primary">{{ edu_formset.forms|length }}</span>
+                    </div>
+                    <div class="cv-section-body">
+                        {{ edu_formset.management_form }}
+                        <div id="edu-container">
+                            {% for form_item in edu_formset %}
+                            <div class="formset-item">
+                                <button type="button" class="btn-delete-item" title="Supprimer"><i class="bi bi-x-lg"></i></button>
+                                {% for hidden in form_item.hidden_fields %}{{ hidden }}{% endfor %}
+                                <div class="form-row-2">
+                                    <div><label class="form-label small">Diplôme</label>{{ form_item.diploma }}</div>
+                                    <div><label class="form-label small">Établissement</label>{{ form_item.institution }}</div>
+                                </div>
+                                <div class="form-row-3 mt-2">
+                                    <div><label class="form-label small">Lieu</label>{{ form_item.location }}</div>
+                                    <div><label class="form-label small">Début</label>{{ form_item.start_date }}</div>
+                                    <div><label class="form-label small">Fin</label>{{ form_item.end_date }}</div>
+                                </div>
+                                <div class="mt-2"><label class="form-label small">Description</label>{{ form_item.description }}</div>
+                                {% if form_item.DELETE %}<div style="display:none">{{ form_item.DELETE }}</div>{% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <button type="button" class="btn-add-item" onclick="addFormsetItem('edu')"><i class="bi bi-plus-circle"></i> Ajouter une formation</button>
+                    </div>
+                </div>
+
+                <!-- Skills -->
+                <div class="cv-section-card">
+                    <div class="cv-section-header" onclick="toggleSection(this)">
+                        <span><i class="bi bi-lightning me-2"></i>Compétences</span>
+                        <span class="badge bg-primary">{{ skill_formset.forms|length }}</span>
+                    </div>
+                    <div class="cv-section-body">
+                        {{ skill_formset.management_form }}
+                        <div id="skill-container">
+                            {% for form_item in skill_formset %}
+                            <div class="formset-item">
+                                <button type="button" class="btn-delete-item" title="Supprimer"><i class="bi bi-x-lg"></i></button>
+                                {% for hidden in form_item.hidden_fields %}{{ hidden }}{% endfor %}
+                                <div class="form-row-3">
+                                    <div><label class="form-label small">Compétence</label>{{ form_item.name }}</div>
+                                    <div><label class="form-label small">Niveau</label>{{ form_item.level }}</div>
+                                    <div><label class="form-label small">Catégorie</label>{{ form_item.category }}</div>
+                                </div>
+                                {% if form_item.DELETE %}<div style="display:none">{{ form_item.DELETE }}</div>{% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <button type="button" class="btn-add-item" onclick="addFormsetItem('skill')"><i class="bi bi-plus-circle"></i> Ajouter</button>
+                    </div>
+                </div>
+
+                <!-- Languages -->
+                <div class="cv-section-card">
+                    <div class="cv-section-header" onclick="toggleSection(this)">
+                        <span><i class="bi bi-translate me-2"></i>Langues</span>
+                        <span class="badge bg-primary">{{ lang_formset.forms|length }}</span>
+                    </div>
+                    <div class="cv-section-body">
+                        {{ lang_formset.management_form }}
+                        <div id="lang-container">
+                            {% for form_item in lang_formset %}
+                            <div class="formset-item">
+                                <button type="button" class="btn-delete-item" title="Supprimer"><i class="bi bi-x-lg"></i></button>
+                                {% for hidden in form_item.hidden_fields %}{{ hidden }}{% endfor %}
+                                <div class="form-row-2">
+                                    <div><label class="form-label small">Langue</label>{{ form_item.language }}</div>
+                                    <div><label class="form-label small">Niveau</label>{{ form_item.level }}</div>
+                                </div>
+                                {% if form_item.DELETE %}<div style="display:none">{{ form_item.DELETE }}</div>{% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <button type="button" class="btn-add-item" onclick="addFormsetItem('lang')"><i class="bi bi-plus-circle"></i> Ajouter</button>
+                    </div>
+                </div>
+
+                <!-- Projects -->
+                <div class="cv-section-card">
+                    <div class="cv-section-header" onclick="toggleSection(this)">
+                        <span><i class="bi bi-kanban me-2"></i>Projets</span>
+                        <span class="badge bg-secondary">Optionnel</span>
+                    </div>
+                    <div class="cv-section-body">
+                        {{ proj_formset.management_form }}
+                        <div id="proj-container">
+                            {% for form_item in proj_formset %}
+                            <div class="formset-item">
+                                <button type="button" class="btn-delete-item" title="Supprimer"><i class="bi bi-x-lg"></i></button>
+                                {% for hidden in form_item.hidden_fields %}{{ hidden }}{% endfor %}
+                                <div class="form-row-2">
+                                    <div><label class="form-label small">Titre</label>{{ form_item.title }}</div>
+                                    <div><label class="form-label small">Technologies</label>{{ form_item.technologies }}</div>
+                                </div>
+                                <div class="mt-2"><label class="form-label small">Description</label>{{ form_item.description }}</div>
+                                <div class="mt-2"><label class="form-label small">URL</label>{{ form_item.url }}</div>
+                                {% if form_item.DELETE %}<div style="display:none">{{ form_item.DELETE }}</div>{% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <button type="button" class="btn-add-item" onclick="addFormsetItem('proj')"><i class="bi bi-plus-circle"></i> Ajouter</button>
+                    </div>
+                </div>
+
+                <!-- Certifications -->
+                <div class="cv-section-card">
+                    <div class="cv-section-header" onclick="toggleSection(this)">
+                        <span><i class="bi bi-award me-2"></i>Certifications</span>
+                        <span class="badge bg-secondary">Optionnel</span>
+                    </div>
+                    <div class="cv-section-body">
+                        {{ cert_formset.management_form }}
+                        <div id="cert-container">
+                            {% for form_item in cert_formset %}
+                            <div class="formset-item">
+                                <button type="button" class="btn-delete-item" title="Supprimer"><i class="bi bi-x-lg"></i></button>
+                                {% for hidden in form_item.hidden_fields %}{{ hidden }}{% endfor %}
+                                <div class="form-row-2">
+                                    <div><label class="form-label small">Certification</label>{{ form_item.name }}</div>
+                                    <div><label class="form-label small">Organisme</label>{{ form_item.issuer }}</div>
+                                </div>
+                                <div class="form-row-2 mt-2">
+                                    <div><label class="form-label small">Date</label>{{ form_item.date }}</div>
+                                    <div><label class="form-label small">URL</label>{{ form_item.url }}</div>
+                                </div>
+                                {% if form_item.DELETE %}<div style="display:none">{{ form_item.DELETE }}</div>{% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <button type="button" class="btn-add-item" onclick="addFormsetItem('cert')"><i class="bi bi-plus-circle"></i> Ajouter</button>
+                    </div>
+                </div>
+
+                <!-- Interests -->
+                <div class="cv-section-card">
+                    <div class="cv-section-header" onclick="toggleSection(this)">
+                        <span><i class="bi bi-heart me-2"></i>Centres d'intérêt</span>
+                        <span class="badge bg-secondary">Optionnel</span>
+                    </div>
+                    <div class="cv-section-body">
+                        {{ interest_formset.management_form }}
+                        <div id="interest-container">
+                            {% for form_item in interest_formset %}
+                            <div class="formset-item">
+                                <button type="button" class="btn-delete-item" title="Supprimer"><i class="bi bi-x-lg"></i></button>
+                                {% for hidden in form_item.hidden_fields %}{{ hidden }}{% endfor %}
+                                <div><label class="form-label small">Centre d'intérêt</label>{{ form_item.name }}</div>
+                                {% if form_item.DELETE %}<div style="display:none">{{ form_item.DELETE }}</div>{% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <button type="button" class="btn-add-item" onclick="addFormsetItem('interest')"><i class="bi bi-plus-circle"></i> Ajouter</button>
+                    </div>
+                </div>
+
+                <!-- ACTION BAR -->
+                <div class="cv-action-bar">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-save me-1"></i> Sauvegarder
+                    </button>
+                    <a href="{% url 'cv_download_pdf' %}?cv_id={{ cv.pk }}" class="btn btn-success">
+                        <i class="bi bi-download me-1"></i> Télécharger PDF
+                    </a>
+                    <button type="button" class="btn btn-outline-primary" onclick="checkATSScore()">
+                        <i class="bi bi-speedometer2 me-1"></i> Score ATS
+                    </button>
+                    <div class="dropdown">
+                        <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-three-dots"></i>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <form method="post" action="{% url 'cv_new' %}" style="display:inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="dropdown-item"><i class="bi bi-plus-lg me-2"></i>Nouveau CV</button>
+                                </form>
+                            </li>
+                            <li>
+                                <form method="post" action="{% url 'cv_duplicate' %}" style="display:inline">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="cv_id" value="{{ cv.pk }}">
+                                    <button type="submit" class="dropdown-item"><i class="bi bi-copy me-2"></i>Dupliquer</button>
+                                </form>
+                            </li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li>
+                                <form method="post" action="{% url 'cv_delete' %}" style="display:inline" onsubmit="return confirm('Supprimer ce CV ?')">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="cv_id" value="{{ cv.pk }}">
+                                    <button type="submit" class="dropdown-item text-danger"><i class="bi bi-trash me-2"></i>Supprimer</button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </form>
+
+            <!-- CV List -->
+            {% if all_cvs|length > 1 %}
+            <div class="mt-3 p-3 bg-light rounded-3">
+                <h6 class="fw-bold mb-2"><i class="bi bi-collection me-2"></i>Mes CVs</h6>
+                {% for cv_item in all_cvs %}
+                <a href="{% url 'cv_switch' cv_item.pk %}" class="cv-list-pill {% if cv_item.pk == cv.pk %}active{% endif %}">
+                    <span>{{ cv_item.title }}</span>
+                    <small>v{{ cv_item.version }}</small>
+                </a>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- ===== RIGHT: PREVIEW ===== -->
+    <div class="cv-preview-panel">
+        <div class="d-flex justify-content-between align-items-center w-100 mb-3" style="max-width: 595px;">
+            <h6 class="fw-bold text-muted mb-0"><i class="bi bi-eye me-2"></i>Aperçu en direct</h6>
+            <button class="btn btn-sm btn-outline-secondary" onclick="refreshPreview()">
+                <i class="bi bi-arrow-clockwise"></i> Rafraîchir
+            </button>
+        </div>
+
+        <!-- ATS Score Widget -->
+        <div class="ats-score-widget w-100 mb-3" style="max-width: 595px;" id="atsScoreWidget" style="display:none">
+            <div class="d-flex align-items-center gap-3">
+                <div class="ats-score-circle" id="atsScoreCircle">--</div>
+                <div>
+                    <div class="fw-bold">Score ATS</div>
+                    <div class="small opacity-75" id="atsScoreLabel">Cliquez "Score ATS" pour analyser</div>
+                </div>
+            </div>
+            <div id="atsSuggestions" class="mt-2" style="font-size: 0.8rem;"></div>
+        </div>
+
+        <div class="cv-preview-frame">
+            <iframe id="cvPreviewIframe" src="{% url 'cv_preview' %}?cv_id={{ cv.pk }}"></iframe>
+        </div>
+    </div>
+</div>
+
+<!-- ATS Score Modal -->
+<div class="modal fade" id="atsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-speedometer2 me-2"></i>Analyse ATS détaillée</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="atsModalBody">
+                <div class="text-center py-4">
+                    <div class="spinner-border text-primary"></div>
+                    <p class="mt-2">Analyse en cours...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Toggle sections
+    function toggleSection(header) {
+        const body = header.nextElementSibling;
+        body.classList.toggle('active');
+        const icon = header.querySelector('.bi-chevron-down, .bi-chevron-up');
+        if (icon) icon.classList.toggle('bi-chevron-up');
+    }
+
+    // Template selection
+    function selectTemplate(slug, el) {
+        document.querySelectorAll('.template-thumb').forEach(t => t.classList.remove('selected'));
+        el.classList.add('selected');
+        document.getElementById('templateSlugInput').value = slug;
+    }
+
+    // Refresh preview
+    function refreshPreview() {
+        const iframe = document.getElementById('cvPreviewIframe');
+        iframe.src = iframe.src;
+    }
+
+    // ATS Score check
+    function checkATSScore() {
+        const modal = new bootstrap.Modal(document.getElementById('atsModal'));
+        modal.show();
+
+        fetch("{% url 'cv_score_api' %}?cv_id={{ cv.pk }}")
+            .then(r => r.json())
+            .then(data => {
+                let scoreClass = data.overall_score >= 70 ? 'excellent' : data.overall_score >= 40 ? 'good' : 'poor';
+
+                // Update widget
+                const circle = document.getElementById('atsScoreCircle');
+                circle.textContent = data.overall_score;
+                circle.className = 'ats-score-circle ' + scoreClass;
+                document.getElementById('atsScoreLabel').textContent =
+                    data.overall_score >= 70 ? 'Excellent !' : data.overall_score >= 40 ? 'Bon, peut être amélioré' : 'À améliorer';
+
+                // Update modal
+                let html = `
+                    <div class="row g-3 mb-3">
+                        <div class="col-3 text-center">
+                            <div class="p-3 bg-light rounded-3">
+                                <div class="fs-3 fw-bold text-primary">${data.overall_score}</div>
+                                <small>Score global</small>
+                            </div>
+                        </div>
+                        <div class="col-3 text-center">
+                            <div class="p-3 bg-light rounded-3">
+                                <div class="fs-4 fw-bold">${data.completeness_score}/25</div>
+                                <small>Complétude</small>
+                            </div>
+                        </div>
+                        <div class="col-3 text-center">
+                            <div class="p-3 bg-light rounded-3">
+                                <div class="fs-4 fw-bold">${data.keyword_score}/25</div>
+                                <small>Mots-clés</small>
+                            </div>
+                        </div>
+                        <div class="col-3 text-center">
+                            <div class="p-3 bg-light rounded-3">
+                                <div class="fs-4 fw-bold">${data.action_verbs_score}/25</div>
+                                <small>Verbes d'action</small>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                if (data.suggestions && data.suggestions.length > 0) {
+                    html += '<h6 class="fw-bold mt-3"><i class="bi bi-lightbulb me-2"></i>Suggestions</h6><ul>';
+                    data.suggestions.forEach(s => html += `<li class="mb-1">${s}</li>`);
+                    html += '</ul>';
+                }
+
+                if (data.missing_keywords && data.missing_keywords.length > 0) {
+                    html += '<h6 class="fw-bold mt-3"><i class="bi bi-key me-2"></i>Mots-clés manquants</h6>';
+                    html += '<div class="d-flex flex-wrap gap-1">';
+                    data.missing_keywords.forEach(k => html += `<span class="badge bg-warning text-dark">${k}</span>`);
+                    html += '</div>';
+                }
+
+                document.getElementById('atsModalBody').innerHTML = html;
+            })
+            .catch(() => {
+                document.getElementById('atsModalBody').innerHTML = '<p class="text-danger">Erreur lors de l\'analyse.</p>';
+            });
+    }
+
+    // AI Enhance
+    function aiEnhance(type) {
+        const textarea = document.querySelector(`[name="summary"]`);
+        if (!textarea || !textarea.value.trim()) {
+            alert('Veuillez d\'abord rédiger un texte.');
+            return;
+        }
+
+        textarea.disabled = true;
+        fetch("{% url 'cv_ai_enhance' %}", {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
+            body: JSON.stringify({ text: textarea.value, type: type })
+        })
+            .then(r => r.json())
+            .then(data => {
+                if (data.enhanced_text) {
+                    textarea.value = data.enhanced_text;
+                } else {
+                    alert(data.message || 'Erreur');
+                }
+            })
+            .catch(() => alert('Erreur de connexion'))
+            .finally(() => textarea.disabled = false);
+    }
+
+    // Auto-save (every 30 seconds)
+    let autoSaveTimer;
+    function setupAutoSave() {
+        const form = document.getElementById('cvForm');
+        if (!form) return;
+
+        form.addEventListener('input', () => {
+            clearTimeout(autoSaveTimer);
+            document.getElementById('autosaveStatus').innerHTML = '<i class="bi bi-cloud-arrow-up"></i> Modifications...';
+            document.getElementById('autosaveStatus').className = 'autosave-indicator';
+
+            autoSaveTimer = setTimeout(() => {
+                autoSave();
+            }, 30000);
+        });
+    }
+
+    function autoSave() {
+        const status = document.getElementById('autosaveStatus');
+        status.innerHTML = '<i class="bi bi-arrow-repeat spin"></i> Sauvegarde...';
+        status.className = 'autosave-indicator saving';
+
+        const data = {
+            cv_id: '{{ cv.pk }}',
+            first_name: document.querySelector('[name="first_name"]')?.value || '',
+            last_name: document.querySelector('[name="last_name"]')?.value || '',
+            professional_title: document.querySelector('[name="professional_title"]')?.value || '',
+            email: document.querySelector('[name="email"]')?.value || '',
+            phone: document.querySelector('[name="phone"]')?.value || '',
+            summary: document.querySelector('[name="summary"]')?.value || '',
+            primary_color: document.querySelector('[name="primary_color"]')?.value || '',
+            font_family: document.querySelector('[name="font_family"]')?.value || '',
+            template_slug: document.getElementById('templateSlugInput')?.value || '',
+        };
+
+        fetch("{% url 'cv_save_draft' %}", {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
+            body: JSON.stringify(data)
+        })
+            .then(r => r.json())
+            .then(() => {
+                status.innerHTML = '<i class="bi bi-cloud-check"></i> Sauvegardé';
+                status.className = 'autosave-indicator saved';
+            })
+            .catch(() => {
+                status.innerHTML = '<i class="bi bi-exclamation-triangle"></i> Erreur';
+                status.className = 'autosave-indicator';
+            });
+    }
+
+    // Add formset item (dynamic)
+    function addFormsetItem(prefix) {
+        const container = document.getElementById(`${prefix}-container`);
+        const totalForms = document.querySelector(`#id_${prefix}-TOTAL_FORMS`);
+        const count = parseInt(totalForms.value);
+        const lastItem = container.querySelector('.formset-item:last-child');
+
+        if (lastItem) {
+            const clone = lastItem.cloneNode(true);
+            // Update form indices
+            clone.innerHTML = clone.innerHTML.replace(
+                new RegExp(`${prefix}-(\\d+)-`, 'g'),
+                `${prefix}-${count}-`
+            );
+            // Clear values
+            clone.querySelectorAll('input:not([type="hidden"]):not([type="checkbox"]), textarea').forEach(el => el.value = '');
+            clone.querySelectorAll('input[type="checkbox"]').forEach(el => el.checked = false);
+            container.appendChild(clone);
+            totalForms.value = count + 1;
+        }
+    }
+
+    // Delete formset item
+    document.addEventListener('click', function (e) {
+        if (e.target.closest('.btn-delete-item')) {
+            const item = e.target.closest('.formset-item');
+            const deleteCheckbox = item.querySelector('input[name$="-DELETE"]');
+            if (deleteCheckbox) {
+                deleteCheckbox.checked = true;
+                item.style.display = 'none';
+            } else {
+                item.remove();
+            }
+        }
+    });
+
+    // Init
+    setupAutoSave();
+</script>
+{% endblock %}

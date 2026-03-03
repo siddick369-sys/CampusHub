@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from . import cv_views
 
 urlpatterns = [
      path(
@@ -170,5 +171,17 @@ path(
     path("documents/", views.student_documents_list_view, name="student_documents_list"),
     path("documents/upload/", views.student_document_upload_view, name="student_document_upload"),
     path("documents/<int:pk>/download/", views.student_document_download_view, name="student_document_download"),
-    
+
+    # ===== CV Generator Pro =====
+    path("cv/builder/", cv_views.cv_builder_view, name="cv_builder"),
+    path("cv/preview/", cv_views.cv_preview_view, name="cv_preview"),
+    path("cv/download/", cv_views.cv_download_pdf_view, name="cv_download_pdf"),
+    path("cv/save/", cv_views.cv_save_draft_api, name="cv_save_draft"),
+    path("cv/ai-enhance/", cv_views.cv_ai_enhance_api, name="cv_ai_enhance"),
+    path("cv/score/", cv_views.cv_score_api, name="cv_score_api"),
+    path("cv/duplicate/", cv_views.cv_duplicate_view, name="cv_duplicate"),
+    path("cv/switch/<uuid:cv_id>/", cv_views.cv_switch_view, name="cv_switch"),
+    path("cv/new/", cv_views.cv_new_view, name="cv_new"),
+    path("cv/delete/", cv_views.cv_delete_view, name="cv_delete"),
+    path("cv/versions/", cv_views.cv_version_history_view, name="cv_version_history"),
 ]

@@ -285,3 +285,46 @@ class PlatformReviewAdmin(admin.ModelAdmin):
             import datetime
             obj.responded_at = datetime.datetime.now()
         super().save_model(request, obj, form, change)
+
+
+# ===== CV Generator Pro Admin =====
+from .cv_models import (
+    CVTemplate, CVProfile, CVVersion, CVExperience, CVEducation,
+    CVSkill, CVLanguage, CVProject, CVCertification, CVInterest,
+    CVScoreResult,
+)
+
+
+@admin.register(CVTemplate)
+class CVTemplateAdmin(admin.ModelAdmin):
+    list_display = ('name', 'slug', 'is_premium', 'is_active', 'sort_order')
+    list_filter = ('is_premium', 'is_active')
+    list_editable = ('sort_order', 'is_active')
+
+
+class CVExperienceInline(admin.TabularInline):
+    model = CVExperience
+    extra = 0
+
+class CVEducationInline(admin.TabularInline):
+    model = CVEducation
+    extra = 0
+
+class CVSkillInline(admin.TabularInline):
+    model = CVSkill
+    extra = 0
+
+
+@admin.register(CVProfile)
+class CVProfileAdmin(admin.ModelAdmin):
+    list_display = ('title', 'user', 'version', 'is_primary', 'download_count', 'last_ats_score', 'updated_at')
+    list_filter = ('is_primary', 'is_draft', 'template')
+    search_fields = ('title', 'user__username', 'first_name', 'last_name')
+    inlines = [CVExperienceInline, CVEducationInline, CVSkillInline]
+    readonly_fields = ('download_count', 'view_count', 'applications_used_count')
+
+
+@admin.register(CVScoreResult)
+class CVScoreResultAdmin(admin.ModelAdmin):
+    list_display = ('cv_profile', 'overall_score', 'keyword_score', 'action_verbs_score', 'created_at')
+    list_filter = ('overall_score',)

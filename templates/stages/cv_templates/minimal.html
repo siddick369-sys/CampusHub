@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <style>
+        @page {
+            size: A4;
+            margin: 30px 40px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: {
+                    {
+                    cv.primary_color|default: "#0f172a"
+                }
+            }
+
+            ;
+
+            --accent: {
+                    {
+                    cv.secondary_color|default: "#475569"
+                }
+            }
+
+            ;
+            --text: #334155;
+            --muted: #94a3b8;
+        }
+
+        body {
+            font-family: '{{ cv.font_family|default:"Inter" }}',
+            'DejaVu Sans',
+            sans-serif;
+            font-size: 10px;
+            color: var(--text);
+            line-height: 1.7;
+        }
+
+        .header {
+            margin-bottom: 20px;
+        }
+
+        .header-name {
+            font-size: 30px;
+            font-weight: 300;
+            color: var(--primary);
+            letter-spacing: 4px;
+            text-transform: uppercase;
+        }
+
+        .header-title {
+            font-size: 11px;
+            color: var(--muted);
+            letter-spacing: 2px;
+            margin-top: 2px;
+        }
+
+        .header-line {
+            width: 40px;
+            height: 2px;
+            background: var(--primary);
+            margin: 12px 0;
+        }
+
+        .header-contact {
+            font-size: 9px;
+            color: var(--muted);
+        }
+
+        .header-contact span {
+            margin-right: 12px;
+        }
+
+        .section {
+            margin-top: 18px;
+        }
+
+        .section-title {
+            font-size: 9px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+
+        .entry {
+            margin-bottom: 12px;
+            page-break-inside: avoid;
+        }
+
+        .entry-top {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .entry-title {
+            font-weight: 600;
+            font-size: 10.5px;
+        }
+
+        .entry-date {
+            font-size: 9px;
+            color: var(--muted);
+        }
+
+        .entry-sub {
+            font-size: 10px;
+            color: var(--accent);
+        }
+
+        .entry-desc {
+            font-size: 9.5px;
+            color: var(--muted);
+            margin-top: 3px;
+        }
+
+        .skills-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+
+        .skill-chip {
+            background: #f1f5f9;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 9px;
+            color: var(--text);
+        }
+
+        .lang-row,
+        .cert-row {
+            margin-bottom: 4px;
+            font-size: 9.5px;
+        }
+
+        .lang-level,
+        .cert-date {
+            color: var(--muted);
+        }
+
+        .interests {
+            font-size: 9.5px;
+            color: var(--muted);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <div class="header-name">{{ cv.first_name }} {{ cv.last_name }}</div>
+        {% if cv.professional_title %}<div class="header-title">{{ cv.professional_title }}</div>{% endif %}
+        <div class="header-line"></div>
+        <div class="header-contact">
+            {% if cv.email %}<span>{{ cv.email }}</span>{% endif %}
+            {% if cv.phone %}<span>{{ cv.phone }}</span>{% endif %}
+            {% if cv.city %}<span>{{ cv.city }}{% if cv.country %}, {{ cv.country }}{% endif %}</span>{% endif %}
+            {% if cv.linkedin_url %}<span>LinkedIn</span>{% endif %}
+            {% if cv.github_url %}<span>GitHub</span>{% endif %}
+        </div>
+    </div>
+
+    {% if cv.summary %}
+    <div class="section">
+        <div class="section-title">Profil</div>
+        <div style="font-size: 10px; color: var(--muted); line-height: 1.7;">{{ cv.summary }}</div>
+    </div>
+    {% endif %}
+
+    {% for section_key in section_order %}
+
+    {% if section_key == 'experience' and experiences %}
+    <div class="section">
+        <div class="section-title">Expérience</div>
+        {% for exp in experiences %}
+        <div class="entry">
+            <div class="entry-top"><span class="entry-title">{{ exp.job_title }}</span><span class="entry-date">{{ exp.start_date }} — {% if exp.is_current %}Présent{% else %}{{ exp.end_date }}{% endif %}</span></div>
+            <div class="entry-sub">{{ exp.company_name }} {% if exp.location %}· {{ exp.location }}{% endif %}</div>
+            {% if exp.description %}<div class="entry-desc">{{ exp.description }}</div>{% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if section_key == 'education' and educations %}
+    <div class="section">
+        <div class="section-title">Formation</div>
+        {% for edu in educations %}
+        <div class="entry">
+            <div class="entry-top"><span class="entry-title">{{ edu.diploma }}</span><span class="entry-date">{{ edu.start_date }}{% if edu.end_date %} — {{ edu.end_date }}{% endif %}</span></div>
+            <div class="entry-sub">{{ edu.institution }}</div>
+            {% if edu.description %}<div class="entry-desc">{{ edu.description }}</div>{% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if section_key == 'skills' and skills %}
+    <div class="section">
+        <div class="section-title">Compétences</div>
+        <div class="skills-list">
+            {% for skill in skills %}
+            <span class="skill-chip">{{ skill.name }}</span>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% if section_key == 'languages' and languages %}
+    <div class="section">
+        <div class="section-title">Langues</div>
+        {% for lang in languages %}
+        <div class="lang-row">{{ lang.language }} — <span class="lang-level">{{ lang.get_level_display }}</span></div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if section_key == 'projects' and projects %}
+    <div class="section">
+        <div class="section-title">Projets</div>
+        {% for proj in projects %}
+        <div class="entry">
+            <div class="entry-title">{{ proj.title }}</div>
+            {% if proj.description %}<div class="entry-desc">{{ proj.description }}</div>{% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if section_key == 'certifications' and certifications %}
+    <div class="section">
+        <div class="section-title">Certifications</div>
+        {% for cert in certifications %}
+        <div class="cert-row"><strong>{{ cert.name }}</strong> · {{ cert.issuer }} <span class="cert-date">{% if cert.date %}({{ cert.date }}){% endif %}</span></div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if section_key == 'interests' and interests %}
+    <div class="section">
+        <div class="section-title">Centres d'intérêt</div>
+        <div class="interests">{% for interest in interests %}{{ interest.name }}{% if not forloop.last %} · {% endif %}{% endfor %}</div>
+    </div>
+    {% endif %}
+
+    {% endfor %}
+</body>
+
+</html>

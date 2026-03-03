@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <style>
+        @page {
+            size: A4;
+            margin: 0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: {
+                    {
+                    cv.primary_color|default: "#7c3aed"
+                }
+            }
+
+            ;
+
+            --secondary: {
+                    {
+                    cv.secondary_color|default: "#1e1b4b"
+                }
+            }
+
+            ;
+            --accent: #f59e0b;
+            --text: #1e293b;
+            --muted: #64748b;
+        }
+
+        body {
+            font-family: '{{ cv.font_family|default:"Inter" }}',
+            'DejaVu Sans',
+            sans-serif;
+            font-size: 10px;
+            color: var(--text);
+            line-height: 1.5;
+        }
+
+        .cv-wrapper {
+            display: flex;
+            min-height: 297mm;
+        }
+
+        /* ===== SIDEBAR ===== */
+        .sidebar {
+            width: 38%;
+            background: linear-gradient(180deg, var(--primary), var(--secondary));
+            color: #fff;
+            padding: 30px 18px;
+        }
+
+        .photo-wrapper {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .photo-wrapper img {
+            width: 110px;
+            height: 110px;
+            object-fit: cover;
+            border: 3px solid rgba(255, 255, 255, 0.4);
+        }
+
+        .photo-circle img {
+            border-radius: 50%;
+        }
+
+        .photo-square img {
+            border-radius: 6px;
+        }
+
+        .photo-rounded img {
+            border-radius: 20px;
+        }
+
+        .sidebar-name {
+            text-align: center;
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        .sidebar-title {
+            text-align: center;
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.7);
+            margin-top: 3px;
+        }
+
+        .sidebar h3 {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--accent);
+            margin: 16px 0 8px;
+            padding-bottom: 4px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .sidebar .info-item {
+            font-size: 9px;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .info-icon {
+            width: 18px;
+            height: 18px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 9px;
+            flex-shrink: 0;
+        }
+
+        .skill-creative {
+            margin-bottom: 6px;
+        }
+
+        .skill-creative-name {
+            font-size: 9px;
+            margin-bottom: 2px;
+        }
+
+        .skill-creative-bar {
+            display: flex;
+            gap: 2px;
+        }
+
+        .skill-segment {
+            flex: 1;
+            height: 4px;
+            border-radius: 2px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .skill-segment.active {
+            background: var(--accent);
+        }
+
+        .lang-item-cr {
+            font-size: 9px;
+            margin-bottom: 4px;
+        }
+
+        .lang-badge {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 1px 6px;
+            border-radius: 8px;
+            font-size: 8px;
+        }
+
+        /* ===== MAIN ===== */
+        .main {
+            width: 62%;
+            padding: 28px 24px;
+        }
+
+        .main .section {
+            margin-top: 16px;
+        }
+
+        .main .section-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .section-title::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #e2e8f0;
+        }
+
+        .entry {
+            margin-bottom: 10px;
+            page-break-inside: avoid;
+        }
+
+        .entry-top {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .entry-title {
+            font-weight: 700;
+            font-size: 11px;
+        }
+
+        .entry-date {
+            font-size: 8.5px;
+            background: var(--primary);
+            color: #fff;
+            padding: 1px 8px;
+            border-radius: 10px;
+        }
+
+        .entry-company {
+            font-size: 10px;
+            color: var(--primary);
+            font-weight: 500;
+        }
+
+        .entry-desc {
+            font-size: 9.5px;
+            color: var(--muted);
+            margin-top: 3px;
+        }
+
+        .proj-tech-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 3px;
+            margin-top: 3px;
+        }
+
+        .tech-tag-cr {
+            background: linear-gradient(135deg, rgba(124, 58, 237, 0.1), rgba(245, 158, 11, 0.1));
+            color: var(--primary);
+            padding: 1px 6px;
+            border-radius: 3px;
+            font-size: 8px;
+            font-weight: 600;
+        }
+
+        .interest-item-cr {
+            display: inline-block;
+            background: #f1f5f9;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 9px;
+            margin: 2px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="cv-wrapper">
+        <div class="sidebar">
+            {% if cv.photo and cv.photo_frame != 'none' %}
+            <div class="photo-wrapper photo-{{ cv.photo_frame|default:'circle' }}">
+                <img src="{{ cv.photo.url }}" alt="">
+            </div>
+            {% endif %}
+            <div class="sidebar-name">{{ cv.first_name }}<br>{{ cv.last_name }}</div>
+            {% if cv.professional_title %}<div class="sidebar-title">{{ cv.professional_title }}</div>{% endif %}
+
+            <h3>Contact</h3>
+            {% if cv.email %}<div class="info-item"><span class="info-icon">✉</span> {{ cv.email }}</div>{% endif %}
+            {% if cv.phone %}<div class="info-item"><span class="info-icon">☎</span> {{ cv.phone }}</div>{% endif %}
+            {% if cv.city %}<div class="info-item"><span class="info-icon">📍</span> {{ cv.city }}{% if cv.country %}, {{ cv.country }}{% endif %}</div>{% endif %}
+            {% if cv.linkedin_url %}<div class="info-item"><span class="info-icon">in</span> LinkedIn</div>{% endif %}
+            {% if cv.github_url %}<div class="info-item"><span class="info-icon">⌨</span> GitHub</div>{% endif %}
+
+            {% if skills %}
+            <h3>Compétences</h3>
+            {% for skill in skills %}
+            <div class="skill-creative">
+                <div class="skill-creative-name">{{ skill.name }}</div>
+                <div class="skill-creative-bar">
+                    {% for i in "1234" %}
+                    <div class="skill-segment {% if forloop.counter <= skill.level %}active{% endif %}"></div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+            {% endif %}
+
+            {% if languages %}
+            <h3>Langues</h3>
+            {% for lang in languages %}
+            <div class="lang-item-cr">{{ lang.language }} <span class="lang-badge">{{ lang.level }}</span></div>
+            {% endfor %}
+            {% endif %}
+
+            {% if interests %}
+            <h3>Centres d'intérêt</h3>
+            {% for interest in interests %}
+            <div class="info-item">{{ interest.name }}</div>
+            {% endfor %}
+            {% endif %}
+        </div>
+
+        <div class="main">
+            {% if cv.summary %}
+            <div class="section">
+                <div class="section-title">Profil</div>
+                <div style="font-size: 10px; color: var(--muted); line-height: 1.6;">{{ cv.summary }}</div>
+            </div>
+            {% endif %}
+
+            {% for section_key in section_order %}
+
+            {% if section_key == 'experience' and experiences %}
+            <div class="section">
+                <div class="section-title">Expériences</div>
+                {% for exp in experiences %}
+                <div class="entry">
+                    <div class="entry-top"><span class="entry-title">{{ exp.job_title }}</span><span class="entry-date">{{ exp.start_date }} — {% if exp.is_current %}Présent{% else %}{{ exp.end_date }}{% endif %}</span></div>
+                    <div class="entry-company">{{ exp.company_name }}{% if exp.location %} · {{ exp.location }}{% endif %}</div>
+                    {% if exp.description %}<div class="entry-desc">{{ exp.description }}</div>{% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {% if section_key == 'education' and educations %}
+            <div class="section">
+                <div class="section-title">Formation</div>
+                {% for edu in educations %}
+                <div class="entry">
+                    <div class="entry-top"><span class="entry-title">{{ edu.diploma }}</span><span class="entry-date">{{ edu.start_date }}{% if edu.end_date %} — {{ edu.end_date }}{% endif %}</span></div>
+                    <div class="entry-company">{{ edu.institution }}</div>
+                    {% if edu.description %}<div class="entry-desc">{{ edu.description }}</div>{% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {% if section_key == 'projects' and projects %}
+            <div class="section">
+                <div class="section-title">Projets</div>
+                {% for proj in projects %}
+                <div class="entry">
+                    <div class="entry-title">{{ proj.title }}</div>
+                    {% if proj.description %}<div class="entry-desc">{{ proj.description }}</div>{% endif %}
+                    {% if proj.technologies %}
+                    <div class="proj-tech-tags">
+                        {% for tech in proj.technologies.split ',' %}
+                        <span class="tech-tag-cr">{{ tech|striptags }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {% if section_key == 'certifications' and certifications %}
+            <div class="section">
+                <div class="section-title">Certifications</div>
+                {% for cert in certifications %}
+                <div class="entry">
+                    <div class="entry-title">{{ cert.name }}</div>
+                    <div class="entry-desc">{{ cert.issuer }} {% if cert.date %}· {{ cert.date }}{% endif %}</div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {% endfor %}
+        </div>
+    </div>
+</body>
+
+</html>
