@@ -32,13 +32,14 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 # Install runtime system dependencies
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends --fix-missing \
+    apt-get install -y --no-install-recommends \
     libpq-dev \
     libcairo2 \
     libpangocairo-1.0-0 \
     libffi8 \
     netcat-openbsd \
     gettext && \
+    apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
 # Copy wheels from builder

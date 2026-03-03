@@ -45,6 +45,4 @@ def create_or_update_profile(sender, instance, created, **kwargs):
     """
     if created:
         Profile.objects.create(user=instance)
-    else:
-        # On met à jour le profil si l'utilisateur existe déjà
-        instance.profile.save()
+    # Suppression du else pour éviter les crashs de validation lors des updates (ex: login)
