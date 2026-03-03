@@ -17,10 +17,6 @@ class Migration(migrations.Migration):
             name='favoriteservice',
             options={'ordering': ['-created_at']},
         ),
-        migrations.RemoveField(
-            model_name='favoriteservice',
-            name='updated_at',
-        ),
         migrations.AddField(
             model_name='favoriteservice',
             name='last_notified_at',
